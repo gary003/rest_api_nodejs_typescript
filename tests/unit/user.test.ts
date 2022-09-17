@@ -1,7 +1,7 @@
 import chai from "chai"
 import { createSandbox, SinonSandbox } from "sinon"
 import { moneyTypes } from "../../src/services/user/dto"
-import { addCurrency, deleteUserById, getAllUsers, getUserWalletInfo, saveNewUser } from "../../src/services/user/index"
+import { addCurrency, deleteUserById, getAllUsers, getUserWalletInfo, saveNewUser, transfertMoney } from "../../src/services/user/index"
 
 import * as mod from "../../src/dataServices/typeorm/user"
 
@@ -135,6 +135,22 @@ describe("Unit tests user", () => {
       chai.assert.exists(response, "Should get a valid response from DB")
       chai.assert.isTrue(response, "Should get true response from DB")
       chai.assert.isTrue(fakeDeleteUserByIdDB.calledOnce)
+    })
+  })
+
+  describe.only("services > user > index > transfertMoney", () => {
+    beforeEach(() => {
+      sandbox = createSandbox()
+    })
+
+    afterEach(() => {
+      sandbox.restore()
+    })
+    it("should transfert money", async () => {
+      const res = await transfertMoney(moneyTypes.soft_currency, "35269564-0234-11ed-b939-0242ac120002", "68965564-0234-11ed-b939-0242ac120002", 15)
+      console.log({ res })
+
+      chai.assert.exists(res, "Should transfert money")
     })
   })
 })

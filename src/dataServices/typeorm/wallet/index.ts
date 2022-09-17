@@ -34,7 +34,9 @@ export const updateWalletByWalletId = async (walletId: string, currencyType: mon
 }
 
 export const updateWalletByWalletIdTransaction = async (transactionRunner: QueryRunner, walletId: string, currencyType: moneyTypes, newBalance: number): Promise<boolean> => {
+  // console.log({ walletId, currencyType, newBalance })
   const WalletsRepository = transactionRunner.manager.getRepository(Wallet)
+
   const result = await WalletsRepository.update(walletId, { [currencyType]: newBalance })
 
   if (result.affected === 0) throw new Error("Impossible to found the requested wallet")

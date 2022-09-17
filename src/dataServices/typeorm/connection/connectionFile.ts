@@ -21,7 +21,7 @@ export const connectionTypeORM = async (): Promise<DataSource> => {
   return connection
 }
 
-export const createTransactionRunner = async (): Promise<QueryRunner> => {
+export const createAndStartTransaction = async (): Promise<QueryRunner> => {
   const connection = await connectionTypeORM()
 
   const queryRunner = connection.createQueryRunner()

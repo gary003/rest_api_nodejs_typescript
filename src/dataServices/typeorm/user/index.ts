@@ -2,9 +2,7 @@ import { Wallet } from "../wallet/entity"
 import { connectionTypeORM } from "../../typeorm/connection/connectionFile"
 import { User } from "./entity"
 import { createNewWallet, updateWalletByWalletId } from "../wallet"
-import { QueryRunner } from "typeorm"
 import { selectUserInfoEnum } from "./dto"
-import { moneyTypes, user } from "../../../services/user/dto"
 import { getUserWalletInfo } from "../../../services/user"
 
 export const getSelectGetAllDBUsers = async (sel: { [s: string]: string }): Promise<string[]> => {
@@ -28,8 +26,6 @@ export const getAllDBUsers = async () => {
     .select(selectArr)
     .getRawMany()
     .catch((err) => console.log(err.sqlMessage))
-
-  // console.log(result)
 
   await connection.destroy()
 
