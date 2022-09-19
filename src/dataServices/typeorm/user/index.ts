@@ -35,24 +35,14 @@ export const getAllDBUsers = async () => {
 }
 
 export const saveNewUserDB = async (userId: string, firstname: string, lastname: string): Promise<User> => {
-  const connection = await connectionTypeORM()
-
   const newUser = new User()
   newUser.userId = userId
   newUser.firstname = firstname
   newUser.lastname = lastname
 
-  const UserRepository = connection.getRepository(User)
+  await createNewWallet(newUser)
 
-  const result: User | void = await UserRepository.save(newUser).catch((err) => console.error(err))
-
-  await connection.destroy()
-
-  if (!result) throw new Error("Impossible to save the new user")
-
-  const newWallet = await createNewWallet(result)
-
-  return result
+  return newUser
 }
 
 export const deleteUserByIdDB = async (userId: string): Promise<boolean> => {

@@ -27,7 +27,7 @@ describe("Unit tests user", () => {
           hardCurrency: 2000,
           softCurrency: 2000,
         },
-      } as any
+      }
 
       const fakeSaveNewUserDB = sandbox.stub(mod, "saveNewUserDB").returns(Promise.resolve(fakeUser))
 
@@ -138,7 +138,7 @@ describe("Unit tests user", () => {
     })
   })
 
-  describe.only("services > user > index > transfertMoney", () => {
+  describe("services > user > index > transfertMoney", () => {
     beforeEach(() => {
       sandbox = createSandbox()
     })
