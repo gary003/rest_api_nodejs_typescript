@@ -4,7 +4,7 @@ import express from "express"
 import userRoute from "./routes/user/index"
 
 import swaggerUi from "swagger-ui-express"
-import swaggerJson from "./services/swagger/config"
+import swaggerJson from "./helpers/swagger/config"
 
 import cors from "cors"
 

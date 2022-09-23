@@ -18,11 +18,11 @@ export const decryptData = (encryptedData: string): string => {
   return bytes.toString(crypto.enc.Utf8)
 }
 
-const encryptedPassword = encryptData("azerty_pwd!")
-console.log({ secretKey }, encryptedPassword)
+// const encryptedPassword = encryptData("azerty_pwd!")
+// console.log({ secretKey }, encryptedPassword)
 
-console.log({ secretKey }, decryptData("U2FsdGVkX18bsqymq2Ulk4ogcawmaT0LwBRvezZblRI="))
-console.log({ secretKey }, decryptData(encryptedPassword))
+// console.log({ secretKey }, decryptData("U2FsdGVkX18bsqymq2Ulk4ogcawmaT0LwBRvezZblRI="))
+// console.log({ secretKey }, decryptData(encryptedPassword))
 
 // import * as crypto from "crypto"
 
