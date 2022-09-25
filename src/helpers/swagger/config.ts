@@ -24,6 +24,14 @@ const swaggerJson = {
           description: "Each user have a wallet",
           type: "string",
         },
+        firstname: {
+          description: "firstname of the user",
+          type: "string",
+        },
+        lastname: {
+          description: "user's lastname",
+          type: "string",
+        },
       },
       required: ["userId"],
     },
