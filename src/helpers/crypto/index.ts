@@ -1,28 +1,33 @@
-// require('dotenv').config()
+require("dotenv").config()
 
-import * as crypto from "crypto-js"
+import crypto from "crypto-js"
 
 const secretKey: string = process.env.CRYPTO_SECRET_KEY
 
 if (!secretKey) throw new Error("Please specify a secretKey for encryption")
 
-export const encryptData = (str: string) => {
-  const cipher: string = crypto.AES.encrypt(str, secretKey).toString()
+export const encryptData = async (str: string): Promise<string> => {
+  const cipher = crypto.AES.encrypt(str, secretKey)
 
-  return cipher
+  const encryptedStr: string = cipher.toString()
+
+  return encryptedStr
 }
 
-export const decryptData = (encryptedData: string): string => {
+export const decryptData = async (encryptedData: string): Promise<string> => {
   const bytes = crypto.AES.decrypt(encryptedData, secretKey)
 
-  return bytes.toString(crypto.enc.Utf8)
+  const decryptedStr: string = bytes.toString(crypto.enc.Utf8)
+
+  return decryptedStr
 }
 
-// const encryptedPassword = encryptData("azerty_pwd!")
-// console.log({ secretKey }, encryptedPassword)
-
-// console.log({ secretKey }, decryptData("U2FsdGVkX18bsqymq2Ulk4ogcawmaT0LwBRvezZblRI="))
-// console.log({ secretKey }, decryptData(encryptedPassword))
+// test functions
+// ;(async () => {
+//   const encryptedPassword = await encryptData("azerty_pwd!")
+//   console.log({ secretKey }, encryptedPassword)
+//   console.log({ secretKey }, await decryptData(encryptedPassword))
+// })()
 
 // import * as crypto from "crypto"
 
