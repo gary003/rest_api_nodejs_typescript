@@ -2,36 +2,25 @@ import { Wallet } from "../wallet/entity"
 import { connectionTypeORM } from "../../typeorm/connection/connectionFile"
 import { User } from "./entity"
 import { createNewWallet, updateWalletByWalletId } from "../wallet"
-import { selectUserInfoEnum } from "./dto"
 import { getUserWalletInfo } from "../../../services/user"
+import { userInfo } from "./dto"
 
-export const getSelectGetAllDBUsers = async (sel: { [s: string]: string }): Promise<string[]> => {
-  const selectArr = Object.values(sel).reduce((acc, value) => {
-    const str = value + " AS " + value.split(".")[1]
-    return acc.concat(str)
-  }, [])
-
-  return selectArr
-}
-
-export const getAllDBUsers = async () => {
+export const getAllDBUsers = async (): Promise<userInfo[]> => {
   const connection = await connectionTypeORM()
 
   const UserRepository = connection.getRepository(User)
 
-  const selectArr = await getSelectGetAllDBUsers(selectUserInfoEnum)
-
   const result = await UserRepository.createQueryBuilder("user")
-    .innerJoinAndMapOne("user.wallet", Wallet, "wallet", "wallet.userId = user.userId")
-    .select(selectArr)
-    .getRawMany()
+    .innerJoinAndMapOne("user.Wallet", Wallet, "wallet", "wallet.userId = user.userId")
+    .getMany()
     .catch((err) => console.log(err.sqlMessage))
 
   await connection.destroy()
 
   if (!result) throw new Error("Impossible to retreive any user")
+  // console.log(result)
 
-  return result
+  return result as userInfo[]
 }
 
 export const saveNewUserDB = async (userId: string, firstname: string, lastname: string): Promise<User> => {
@@ -53,7 +42,8 @@ export const deleteUserByIdDB = async (userId: string): Promise<boolean> => {
 
   const WalletRepository = connection.getRepository(Wallet)
 
-  const deletedWallet = await WalletRepository.delete(userToDeleteInfo.wallet.walletId).catch((err) => console.log(err))
+  const deletedWallet = await WalletRepository.delete(userToDeleteInfo.Wallet.walletId).catch((err) => console.log(err))
+  // console.log({ deletedWallet })
 
   if (!deletedWallet || deletedWallet.affected === 0) {
     await connection.destroy()
@@ -74,18 +64,18 @@ export const deleteUserByIdDB = async (userId: string): Promise<boolean> => {
   return true
 }
 
-export const getUserWalletInfoDB = async (userId: string) => {
+export const getUserWalletInfoDB = async (userId: string): Promise<userInfo> => {
   const connection = await connectionTypeORM()
 
   const UserRepository = connection.getRepository(User)
 
-  const userWalletInfo: any = await UserRepository.createQueryBuilder("user")
-    .innerJoinAndMapOne("user.wallet", Wallet, "wallets", "wallets.userId = user.userId")
+  const userWalletInfo = await UserRepository.createQueryBuilder("user")
+    .innerJoinAndMapOne("user.Wallet", Wallet, "wallets", "wallets.userId = user.userId")
     .where("user.userId = :userId", { userId: userId })
     .getOne()
     .catch((err) => err)
 
   await connection.destroy()
 
-  return userWalletInfo
+  return userWalletInfo as userInfo
 }

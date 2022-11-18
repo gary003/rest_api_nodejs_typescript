@@ -148,7 +148,7 @@ describe("Unit tests user", () => {
     })
     it("should transfert money", async () => {
       const res = await transfertMoney(moneyTypes.soft_currency, "35269564-0234-11ed-b939-0242ac120002", "68965564-0234-11ed-b939-0242ac120002", 15)
-      console.log({ res })
+      // console.log({ res })
 
       chai.assert.exists(res, "Should transfert money")
     })
