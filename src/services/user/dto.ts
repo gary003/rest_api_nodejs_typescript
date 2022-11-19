@@ -5,15 +5,9 @@ export enum moneyTypes {
   "soft_currency" = "softCurrency",
 }
 
-export type user = {
-  userId: string
-  firstname: string
-  lastname: string
-}
-
 export type userWalletDTO = {
   userId: string
   firstname: string
   lastname: string
-  Wallet: wallet
+  Wallet?: wallet
 }

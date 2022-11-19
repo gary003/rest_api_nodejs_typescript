@@ -1,19 +1,18 @@
-import { UserInfo } from "os"
 import { commitAndQuitTransactionRunner, createAndStartTransaction, rollBackAndQuitTransactionRunner } from "../../dataServices/typeorm/connection/connectionFile"
 import { getAllDBUsers, getUserWalletInfoDB, saveNewUserDB, deleteUserByIdDB } from "../../dataServices/typeorm/user"
 import { updateWalletByWalletId, updateWalletByWalletIdTransaction } from "../../dataServices/typeorm/wallet"
-import { moneyTypes, user, userWalletDTO } from "./dto"
+import { moneyTypes, userWalletDTO } from "./dto"
 
 export const getAllUsers = async (): Promise<userWalletDTO[]> => {
-  const allUsers = (await getAllDBUsers().catch((err) => console.log(err))) as unknown as user[]
+  const allUsers: userWalletDTO[] = (await getAllDBUsers().catch((err) => console.log(err))) as unknown as userWalletDTO[]
 
   if (!allUsers) throw new Error("Impossible to retreive any user")
 
-  return allUsers as userWalletDTO[]
+  return allUsers
 }
 
-export const saveNewUser = async (userId: string, firstname: string, lastname: string): Promise<user> => {
-  const newUser = (await saveNewUserDB(userId, firstname, lastname).catch((err) => console.log(err))) as unknown as user
+export const saveNewUser = async (userId: string, firstname: string, lastname: string): Promise<userWalletDTO> => {
+  const newUser: userWalletDTO = (await saveNewUserDB(userId, firstname, lastname).catch((err) => console.log(err))) as unknown as userWalletDTO
 
   if (!newUser) throw new Error("Impossible to save the new user")
 
@@ -24,7 +23,7 @@ export const addCurrency = async (userId: string, currencyType: moneyTypes, amou
   if (amount <= 0) throw new Error("The amount to add must be at least equal to 1")
   if (!Object.values(moneyTypes).includes(currencyType)) throw new Error("Wrong type of currency")
 
-  const currentUserWalletInfo = await getUserWalletInfo(userId)
+  const currentUserWalletInfo: userWalletDTO = await getUserWalletInfo(userId)
 
   const resultUpdate = await updateWalletByWalletId(String(currentUserWalletInfo.Wallet.walletId), currencyType, currentUserWalletInfo[currencyType] + amount).catch((err) => console.log(err))
 
@@ -34,7 +33,7 @@ export const addCurrency = async (userId: string, currencyType: moneyTypes, amou
 }
 
 export const deleteUserById = async (userId: string): Promise<boolean> => {
-  const deletedUser = await deleteUserByIdDB(userId)
+  const deletedUser: boolean = await deleteUserByIdDB(userId)
 
   if (!deletedUser) throw new Error("Impossible to delete the user")
 
@@ -42,11 +41,11 @@ export const deleteUserById = async (userId: string): Promise<boolean> => {
 }
 
 export const getUserWalletInfo = async (userId: string): Promise<userWalletDTO> => {
-  const userWalletI = await getUserWalletInfoDB(userId)
+  const userWalletI = (await getUserWalletInfoDB(userId)) as userWalletDTO
 
   if (!userWalletI) throw new Error("No user found !")
 
-  return userWalletI as userWalletDTO
+  return userWalletI
 }
 
 export const transfertMoneyParamsValidator = async (currency: moneyTypes, giverId: string, recipientId: string, amount: number) => {
@@ -74,9 +73,9 @@ export const transfertMoney = async (currency: moneyTypes, giverId: string, reci
 
   if (!transacRunner) throw new Error("Impossible to create transaction")
 
-  const giverNewBalance = Number(giverUserInfo.Wallet[currency]) - amount
+  const giverNewBalance: number = Number(giverUserInfo.Wallet[currency]) - amount
 
-  const updateWalletGiverResult = await updateWalletByWalletIdTransaction(transacRunner, giverUserInfo.Wallet.walletId, currency, giverNewBalance).catch((err) => console.log(err))
+  const updateWalletGiverResult: boolean | void = await updateWalletByWalletIdTransaction(transacRunner, giverUserInfo.Wallet.walletId, currency, giverNewBalance).catch((err) => console.log(err))
 
   // console.log({ updateWalletGiverResult })
 
@@ -86,11 +85,11 @@ export const transfertMoney = async (currency: moneyTypes, giverId: string, reci
   }
 
   // @ts-ignore
-  const recipientNewBalance = Number(recipientUserInfo.Wallet[currency]) + amount
+  const recipientNewBalance: number = Number(recipientUserInfo.Wallet[currency]) + amount
   // console.log({ recipientUserInfo, recipientNewBalance })
 
   // @ts-ignore
-  const updateWalletRecipientResult = await updateWalletByWalletIdTransaction(transacRunner, recipientUserInfo.Wallet.walletId, currency, recipientNewBalance).catch((err) => console.log(err))
+  const updateWalletRecipientResult: boolean | void = await updateWalletByWalletIdTransaction(transacRunner, recipientUserInfo.Wallet.walletId, currency, recipientNewBalance).catch((err) => console.log(err))
 
   // console.log({ updateWalletRecipientResult })
 
