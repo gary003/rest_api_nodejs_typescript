@@ -1,6 +1,6 @@
 import chai from "chai"
 import { createSandbox, SinonSandbox } from "sinon"
-import { moneyTypes } from "../../src/services/user/dto"
+import { moneyTypes } from "../../src/services/wallet/dto"
 import { addCurrency, deleteUserById, getAllUsers, getUserWalletInfo, saveNewUser, transfertMoney } from "../../src/services/user/index"
 
 import * as mod from "../../src/dataServices/typeorm/user"

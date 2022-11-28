@@ -1,7 +1,8 @@
 import { commitAndQuitTransactionRunner, createAndStartTransaction, rollBackAndQuitTransactionRunner } from "../../dataServices/typeorm/connection/connectionFile"
 import { getAllDBUsers, getUserWalletInfoDB, saveNewUserDB, deleteUserByIdDB } from "../../dataServices/typeorm/user"
 import { updateWalletByWalletId, updateWalletByWalletIdTransaction } from "../../dataServices/typeorm/wallet"
-import { moneyTypes, userWalletDTO } from "./dto"
+import { moneyTypes } from "../wallet/dto"
+import { userWalletDTO } from "./dto"
 
 export const getAllUsers = async (): Promise<userWalletDTO[]> => {
   const allUsers: userWalletDTO[] = (await getAllDBUsers().catch((err) => console.log(err))) as unknown as userWalletDTO[]

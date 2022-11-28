@@ -2,7 +2,7 @@ import { connectionTypeORM } from "../../typeorm/connection/connectionFile"
 import { Wallet } from "./entity"
 import { v4 as uuidv4 } from "uuid"
 import { QueryRunner } from "typeorm"
-import { moneyTypes } from "../../../services/user/dto"
+import { moneyTypes } from "../../../services/wallet/dto"
 import { User } from "../user/entity"
 
 export const getWalletById = async (walletId: string) => {
