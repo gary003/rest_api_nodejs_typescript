@@ -1,6 +1,8 @@
 import chai from "chai"
 import request from "supertest"
-import app from "../../src/app"
+import app from "../../app"
+
+const urlBase = "/api/v1"
 
 let testUserId: string = "cc2c990b6-029c-11ed-b939-0242ac120002"
 
@@ -8,7 +10,7 @@ describe("Functional Tests API", () => {
   describe("route > user > POST", () => {
     it("should add a new user", (done) => {
       request(app)
-        .post("/api/user")
+        .post(`${urlBase}/user`)
         .send({
           userId: testUserId,
           firstname: "Rosita",
@@ -32,7 +34,7 @@ describe("Functional Tests API", () => {
     it("should return an array of all users", (done) => {
       // with Mocha don't use return (return request(app)) !
       request(app)
-        .get("/api/user")
+        .get(`${urlBase}/user`)
         .set("Accept", "application/json")
         .end((err, result) => {
           // console.log(result.body)
@@ -50,7 +52,7 @@ describe("Functional Tests API", () => {
     it("should return a single user", (done) => {
       // with Mocha don't use return (return request(app)) !
       request(app)
-        .get("/api/user/" + testUserId)
+        .get(`${urlBase}/user/${testUserId}`)
         .set("Accept", "application/json")
         .end((err, result) => {
           // console.log(result.body)
@@ -64,7 +66,7 @@ describe("Functional Tests API", () => {
   describe("route > user > DELETE", () => {
     it("should delete a specified user", (done) => {
       request(app)
-        .delete("/api/user/" + testUserId)
+        .delete(`${urlBase}/user/${testUserId}`)
         .set("Accept", "application/json")
         .end((err, result) => {
           // console.log(result.body)

@@ -5,9 +5,9 @@
   "main": "app.js",
   "scripts": {
     "start": "./node_modules/typescript/bin/tsc -p . && node ./dist/bin/server.js",
-    "dev": "./node_modules/nodemon/bin/nodemon.js ./src/bin/server.ts",
+    "dev": "./node_modules/nodemon/bin/nodemon.js ./src/v1/bin/server.ts",
     "build": "./node_modules/typescript/bin/tsc -p .",
-    "test": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register './tests/**/*.test.ts'",
+    "test": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register './src/v1/tests/**/*.test.ts'",
     "coverage": "nyc npm run test"
   },
   "author": "",

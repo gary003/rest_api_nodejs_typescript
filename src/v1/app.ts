@@ -15,6 +15,6 @@ app.use("/apiDoc", swaggerUi.serve, swaggerUi.setup(swaggerJson))
 app.use(cors())
 app.use(express.json())
 
-app.use("/api/user", userRoute)
+app.use("/api/v1/user", userRoute)
 
 export default app

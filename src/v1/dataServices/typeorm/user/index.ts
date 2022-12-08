@@ -1,8 +1,7 @@
 import { Wallet } from "../wallet/entity"
 import { connectionTypeORM } from "../../typeorm/connection/connectionFile"
 import { User } from "./entity"
-import { createNewWallet, updateWalletByWalletId } from "../wallet"
-import { getUserWalletInfo } from "../../../services/user"
+import { createNewWallet } from "../wallet"
 import { userInfo } from "./dto"
 
 export const getAllDBUsers = async (): Promise<userInfo[]> => {
@@ -37,7 +36,7 @@ export const saveNewUserDB = async (userId: string, firstname: string, lastname:
 export const deleteUserByIdDB = async (userId: string): Promise<boolean> => {
   const connection = await connectionTypeORM()
 
-  const userToDeleteInfo = await getUserWalletInfo(userId)
+  const userToDeleteInfo = await getUserWalletInfoDB(userId)
   // console.log({ userToDeleteInfo })
 
   const WalletRepository = connection.getRepository(Wallet)

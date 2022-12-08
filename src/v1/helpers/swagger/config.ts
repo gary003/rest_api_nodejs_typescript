@@ -5,7 +5,7 @@ const localIp = ip.address()
 const swaggerJson = {
   swagger: "2.0",
   host: `${localIp}:${process.env.API_PORT}`,
-  basePath: "/api",
+  basePath: "/api/v1",
   info: {
     title: `${process.env.API_TITLE}`,
     version: `${process.env.API_VERSION}`,

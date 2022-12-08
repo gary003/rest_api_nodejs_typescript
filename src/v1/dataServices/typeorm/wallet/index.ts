@@ -2,8 +2,8 @@ import { connectionTypeORM } from "../../typeorm/connection/connectionFile"
 import { Wallet } from "./entity"
 import { v4 as uuidv4 } from "uuid"
 import { QueryRunner } from "typeorm"
-import { moneyTypes } from "../../../services/wallet/dto"
 import { User } from "../user/entity"
+import { moneyTypes } from "../../../domain"
 
 export const getWalletById = async (walletId: string) => {
   const connection = await connectionTypeORM()
