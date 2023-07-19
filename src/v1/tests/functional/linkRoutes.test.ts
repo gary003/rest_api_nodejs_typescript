@@ -1,6 +1,7 @@
 import chai from "chai"
 import request from "supertest"
 import app from "../../app"
+import logger from "../../helpers/logger"
 
 const urlBase = "/api/v1"
 
@@ -19,11 +20,14 @@ describe("Functional Tests API", () => {
         .set("Accept", "application/json")
         .expect("Content-Type", /json/)
         .end((err, result) => {
-          // console.log(result.body)
-          if (!!err) return done(err)
+          if (err) {
+            logger.debug(`Error occurred in route > user > POST: ${err}`)
+            return done(err)
+          }
+
+          logger.info(result.body)
           chai.assert.isNotEmpty(result.body)
           chai.assert.isTrue(result.body.userId === testUserId)
-          // chai.assert.isNotEmpty(result.body.userId)
           testUserId = result.body.userId
           return done()
         })
@@ -32,13 +36,16 @@ describe("Functional Tests API", () => {
 
   describe("route > user > GET", () => {
     it("should return an array of all users", (done) => {
-      // with Mocha don't use return (return request(app)) !
       request(app)
         .get(`${urlBase}/user`)
         .set("Accept", "application/json")
         .end((err, result) => {
-          // console.log(result.body)
-          if (!!err) return done(err)
+          if (err) {
+            logger.debug(`Error occurred in route > user > GET: ${err}`)
+            return done(err)
+          }
+
+          logger.info(result.body)
           chai.assert.isArray(result.body)
           if (result.body.length > 0) {
             chai.assert.exists(result.body[0].userId)
@@ -50,13 +57,16 @@ describe("Functional Tests API", () => {
 
   describe("route > user > GET", () => {
     it("should return a single user", (done) => {
-      // with Mocha don't use return (return request(app)) !
       request(app)
         .get(`${urlBase}/user/${testUserId}`)
         .set("Accept", "application/json")
         .end((err, result) => {
-          // console.log(result.body)
-          if (!!err) return done(err)
+          if (err) {
+            logger.debug(`Error occurred in route > user > GET: ${err}`)
+            return done(err)
+          }
+
+          logger.info(result.body)
           chai.assert.exists(result.body.userId)
           return done()
         })
@@ -69,8 +79,12 @@ describe("Functional Tests API", () => {
         .delete(`${urlBase}/user/${testUserId}`)
         .set("Accept", "application/json")
         .end((err, result) => {
-          // console.log(result.body)
-          if (!!err) return done(err)
+          if (err) {
+            logger.error(`Error occurred in route > user > DELETE: ${err}`)
+            return done(err)
+          }
+
+          logger.info(result.body)
           chai.assert.isNotNull(result.body)
           return done()
         })

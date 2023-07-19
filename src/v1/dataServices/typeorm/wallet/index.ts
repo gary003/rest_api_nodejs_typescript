@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from "uuid"
 import { QueryRunner } from "typeorm"
 import { User } from "../user/entity"
 import { moneyTypes } from "../../../domain"
+import logger from "../../../helpers/logger"
 
 export const getWalletById = async (walletId: string) => {
   const connection = await connectionTypeORM()
@@ -34,7 +35,8 @@ export const updateWalletByWalletId = async (walletId: string, currencyType: mon
 }
 
 export const updateWalletByWalletIdTransaction = async (transactionRunner: QueryRunner, walletId: string, currencyType: moneyTypes, newBalance: number): Promise<boolean> => {
-  // console.log({ walletId, currencyType, newBalance })
+  logger.debug(JSON.stringify([walletId, currencyType, newBalance]))
+
   const WalletsRepository = transactionRunner.manager.getRepository(Wallet)
 
   const result = await WalletsRepository.update(walletId, { [currencyType]: newBalance })

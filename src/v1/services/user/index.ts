@@ -3,9 +3,13 @@ import { getAllDBUsers, getUserWalletInfoDB, saveNewUserDB, deleteUserByIdDB } f
 import { updateWalletByWalletId, updateWalletByWalletIdTransaction } from "../../dataServices/typeorm/wallet"
 import { moneyTypes } from "../../domain"
 import { userWalletDTO } from "./dto"
+import logger from "../../helpers/logger"
 
 export const getAllUsers = async (): Promise<userWalletDTO[]> => {
-  const allUsers: userWalletDTO[] = (await getAllDBUsers().catch((err) => console.log(err))) as unknown as userWalletDTO[]
+  const allUsers: userWalletDTO[] = (await getAllDBUsers().catch((err) => {
+    logger.error(err)
+    return err
+  })) as unknown as userWalletDTO[]
 
   if (!allUsers) throw new Error("Impossible to retreive any user")
 
@@ -13,7 +17,10 @@ export const getAllUsers = async (): Promise<userWalletDTO[]> => {
 }
 
 export const saveNewUser = async (userId: string, firstname: string, lastname: string): Promise<userWalletDTO> => {
-  const newUser: userWalletDTO = (await saveNewUserDB(userId, firstname, lastname).catch((err) => console.log(err))) as unknown as userWalletDTO
+  const newUser: userWalletDTO = (await saveNewUserDB(userId, firstname, lastname).catch((err) => {
+    logger.error(err)
+    return err
+  })) as unknown as userWalletDTO
 
   if (!newUser) throw new Error("Impossible to save the new user")
 
@@ -26,7 +33,10 @@ export const addCurrency = async (userId: string, currencyType: moneyTypes, amou
 
   const currentUserWalletInfo: userWalletDTO = await getUserWalletInfo(userId)
 
-  const resultUpdate = await updateWalletByWalletId(String(currentUserWalletInfo.Wallet.walletId), currencyType, currentUserWalletInfo[currencyType] + amount).catch((err) => console.log(err))
+  const resultUpdate = await updateWalletByWalletId(String(currentUserWalletInfo.Wallet.walletId), currencyType, currentUserWalletInfo[currencyType] + amount).catch((err) => {
+    logger.error(err)
+    return err
+  })
 
   if (!resultUpdate) throw new Error("Impossible to update wallet")
 
@@ -60,7 +70,7 @@ export const transfertMoneyParamsValidator = async (currency: moneyTypes, giverI
 
   const recipientUserInfo: any = await getUserWalletInfoDB(recipientId)
 
-  // console.log({ giverUserInfo, giverNewBalance, giverWalletToUpdate })
+  logger.debug(giverUserInfo, giverNewBalance)
 
   return [giverUserInfo, recipientUserInfo]
 }
@@ -68,7 +78,7 @@ export const transfertMoneyParamsValidator = async (currency: moneyTypes, giverI
 export const transfertMoney = async (currency: moneyTypes, giverId: string, recipientId: string, amount: number) => {
   const [giverUserInfo, recipientUserInfo] = await transfertMoneyParamsValidator(currency, giverId, recipientId, amount)
 
-  // console.log({ giverUserInfo, recipientUserInfo })
+  logger.debug(giverUserInfo, recipientUserInfo)
 
   const transacRunner = await createAndStartTransaction().catch((err) => err)
 
@@ -76,9 +86,12 @@ export const transfertMoney = async (currency: moneyTypes, giverId: string, reci
 
   const giverNewBalance: number = Number(giverUserInfo.Wallet[currency]) - amount
 
-  const updateWalletGiverResult: boolean | void = await updateWalletByWalletIdTransaction(transacRunner, giverUserInfo.Wallet.walletId, currency, giverNewBalance).catch((err) => console.log(err))
+  const updateWalletGiverResult = await updateWalletByWalletIdTransaction(transacRunner, giverUserInfo.Wallet.walletId, currency, giverNewBalance).catch((err) => {
+    logger.error(err)
+    return err
+  })
 
-  // console.log({ updateWalletGiverResult })
+  logger.debug(updateWalletGiverResult)
 
   if (!updateWalletGiverResult || updateWalletGiverResult[0] === 0) {
     rollBackAndQuitTransactionRunner(transacRunner)
@@ -87,12 +100,15 @@ export const transfertMoney = async (currency: moneyTypes, giverId: string, reci
 
   // @ts-ignore
   const recipientNewBalance: number = Number(recipientUserInfo.Wallet[currency]) + amount
-  // console.log({ recipientUserInfo, recipientNewBalance })
+  logger.debug(recipientUserInfo, recipientNewBalance)
 
   // @ts-ignore
-  const updateWalletRecipientResult: boolean | void = await updateWalletByWalletIdTransaction(transacRunner, recipientUserInfo.Wallet.walletId, currency, recipientNewBalance).catch((err) => console.log(err))
+  const updateWalletRecipientResult = await updateWalletByWalletIdTransaction(transacRunner, recipientUserInfo.Wallet.walletId, currency, recipientNewBalance).catch((err) => {
+    logger.error(err)
+    return err
+  })
 
-  // console.log({ updateWalletRecipientResult })
+  logger.debug(updateWalletRecipientResult)
 
   if (updateWalletRecipientResult[0] === 0) {
     rollBackAndQuitTransactionRunner(transacRunner)

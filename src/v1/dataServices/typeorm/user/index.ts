@@ -3,6 +3,7 @@ import { connectionTypeORM } from "../../typeorm/connection/connectionFile"
 import { User } from "./entity"
 import { createNewWallet } from "../wallet"
 import { userInfo } from "./dto"
+import logger from "../../../helpers/logger"
 
 export const getAllDBUsers = async (): Promise<userInfo[]> => {
   const connection = await connectionTypeORM()
@@ -12,12 +13,16 @@ export const getAllDBUsers = async (): Promise<userInfo[]> => {
   const result = await UserRepository.createQueryBuilder("user")
     .innerJoinAndMapOne("user.Wallet", Wallet, "wallet", "wallet.userId = user.userId")
     .getMany()
-    .catch((err) => console.log(err.sqlMessage))
+    .catch((err) => {
+      logger.debug(err.sqlMessage)
+      return err
+    })
 
   await connection.destroy()
 
   if (!result) throw new Error("Impossible to retreive any user")
-  // console.log(result)
+
+  logger.debug(JSON.stringify(result))
 
   return result as userInfo[]
 }
@@ -37,12 +42,12 @@ export const deleteUserByIdDB = async (userId: string): Promise<boolean> => {
   const connection = await connectionTypeORM()
 
   const userToDeleteInfo = await getUserWalletInfoDB(userId)
-  // console.log({ userToDeleteInfo })
+  logger.debug(JSON.stringify(userToDeleteInfo))
 
   const WalletRepository = connection.getRepository(Wallet)
 
-  const deletedWallet = await WalletRepository.delete(userToDeleteInfo.Wallet.walletId).catch((err) => console.log(err))
-  // console.log({ deletedWallet })
+  const deletedWallet = await WalletRepository.delete(userToDeleteInfo.Wallet.walletId).catch((err) => err)
+  logger.debug(JSON.stringify(deletedWallet))
 
   if (!deletedWallet || deletedWallet.affected === 0) {
     await connection.destroy()
@@ -51,7 +56,10 @@ export const deleteUserByIdDB = async (userId: string): Promise<boolean> => {
 
   const UserRepository = connection.getRepository(User)
 
-  const deletedUser = await UserRepository.delete(userId).catch((err) => console.log(err))
+  const deletedUser = await UserRepository.delete(userId).catch((err) => {
+    logger.debug(err)
+    return err
+  })
 
   if (!deletedUser || deletedUser.affected === 0) {
     await connection.destroy()

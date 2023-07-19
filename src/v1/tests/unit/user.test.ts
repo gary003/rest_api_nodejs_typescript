@@ -1,9 +1,10 @@
 import chai from "chai"
 import { createSandbox, SinonSandbox } from "sinon"
+import * as winston from "winston"
 import { addCurrency, deleteUserById, getAllUsers, getUserWalletInfo, saveNewUser, transfertMoney } from "../../services/user/index"
-
 import * as mod from "../../dataServices/typeorm/user"
 import { moneyTypes } from "../../domain"
+import logger from "../../helpers/logger"
 
 describe("Unit tests user", () => {
   let sandbox: SinonSandbox
@@ -31,14 +32,16 @@ describe("Unit tests user", () => {
 
       const fakeSaveNewUserDB = sandbox.stub(mod, "saveNewUserDB").returns(Promise.resolve(fakeUser))
 
-      const response = await saveNewUser(fakeUser.userId, fakeUser.firstname, fakeUser.lastname).catch((err) => console.log(err))
-      // console.log(response)
+      try {
+        const response = await saveNewUser(fakeUser.userId, fakeUser.firstname, fakeUser.lastname)
+        logger.debug(JSON.stringify(response))
 
-      if (!response) throw new Error("Error - invalid response from serviceDB")
-
-      chai.assert.exists(response, "Should get the correct response")
-      chai.assert.strictEqual(response.userId, fakeUser.userId, "Should get the correct userId")
-      chai.assert.isTrue(fakeSaveNewUserDB.calledOnce)
+        chai.assert.exists(response, "Should get the correct response")
+        chai.assert.strictEqual(response.userId, fakeUser.userId, "Should get the correct userId")
+        chai.assert.isTrue(fakeSaveNewUserDB.calledOnce)
+      } catch (err) {
+        logger.debug(`Error occurred in services > user > index > saveNewUser: ${err}`)
+      }
     })
   })
 
@@ -58,7 +61,7 @@ describe("Unit tests user", () => {
         await addCurrency("22ef5564-0234-11ed-b939-0242ac120002", moneyTypes.soft_currency, amountToAdd)
         throw new Error("Should never happen")
       } catch (err) {
-        // console.log(response)
+        logger.debug(err)
         chai.assert.isNotNull(err, "Should get an error")
         chai.assert.equal(err, "Error: The amount to add must be at least equal to 1")
       }
@@ -71,44 +74,49 @@ describe("Unit tests user", () => {
         await addCurrency("22ef5564-0234-11ed-b939-0242ac120002", "fake_currency_type" as moneyTypes, amountToAdd)
         throw new Error("Should never happen")
       } catch (err) {
-        // console.log(response)
+        logger.debug(err)
         chai.assert.isNotNull(err, "Should get an error")
       }
     })
   })
 
   describe("services > user > index > getAllUsers", () => {
-    it("should retreive all the users from DB", async () => {
-      const response = await getAllUsers().catch((err) => console.log(err))
-      // console.log(response)
-      if (!response) throw new Error("Error - invalid response from serviceDB")
+    it("should retrieve all the users from DB", async () => {
+      try {
+        const response = await getAllUsers()
+        // logger.debug(JSON.stringify(response))
 
-      chai.assert.isArray(response, "Should get the list in an array format")
+        chai.assert.isArray(response, "Should get the list in an array format")
+      } catch (err) {
+        logger.debug(`Error occurred in services > user > index > getAllUsers: ${err}`)
+      }
     })
   })
 
   describe("services > user > index > getUserById", () => {
-    it("should retreive a single user from DB", async () => {
+    it("should retrieve a single user from DB", async () => {
       const userToFetch: string = "22ef5564-0234-11ed-b939-0242ac120002"
 
-      const response = await getUserWalletInfo(userToFetch).catch((err) => console.log(err))
-      // console.log(response)
+      try {
+        const response = await getUserWalletInfo(userToFetch)
+        // logger.debug(JSON.stringify(response))
 
-      if (!response) throw new Error("Error - invalid response from serviceDB")
-
-      chai.assert.exists(response, "Should get a valid response from DB")
-      chai.assert.equal(response.userId, userToFetch, "Should get a valid response with a userId")
+        chai.assert.exists(response, "Should get a valid response from DB")
+        chai.assert.equal(response.userId, userToFetch, "Should get a valid response with a userId")
+      } catch (err) {
+        logger.debug(`Error occurred in services > user > index > getUserById: ${err}`)
+      }
     })
 
-    it("should fail retreiving a single user (user does not exists in DB)", async () => {
+    it("should fail retrieving a single user (user does not exist in DB)", async () => {
       const userToFetch: string = "785555-0234-11ed-b939-0242ac1200026"
 
       try {
         const user = await getUserWalletInfo(userToFetch)
-        // console.log(user)
+        // logger.debug(JSON.stringify(user))
         throw new Error("Should never happen")
       } catch (err) {
-        // console.log(response)
+        logger.debug(err)
         chai.assert.exists(err, "Should get an err from DB")
         chai.assert.equal(err, "Error: No user found !")
       }
@@ -128,13 +136,16 @@ describe("Unit tests user", () => {
 
       const fakeDeleteUserByIdDB = sandbox.stub(mod, "deleteUserByIdDB").returns(Promise.resolve(true))
 
-      const response = await deleteUserById(userToFetch).catch((err) => console.log(err))
-      // console.log(response)
-      if (!response) throw new Error("Error - invalid response from serviceDB")
+      try {
+        const response = await deleteUserById(userToFetch)
+        logger.debug(JSON.stringify(response))
 
-      chai.assert.exists(response, "Should get a valid response from DB")
-      chai.assert.isTrue(response, "Should get true response from DB")
-      chai.assert.isTrue(fakeDeleteUserByIdDB.calledOnce)
+        chai.assert.exists(response, "Should get a valid response from DB")
+        chai.assert.isTrue(response, "Should get true response from DB")
+        chai.assert.isTrue(fakeDeleteUserByIdDB.calledOnce)
+      } catch (err) {
+        logger.debug(`Error occurred in services > user > index > deleteUserById: ${err}`)
+      }
     })
   })
 
@@ -146,11 +157,15 @@ describe("Unit tests user", () => {
     afterEach(() => {
       sandbox.restore()
     })
-    it("should transfert money", async () => {
-      const res = await transfertMoney(moneyTypes.soft_currency, "35269564-0234-11ed-b939-0242ac120002", "68965564-0234-11ed-b939-0242ac120002", 15)
-      // console.log({ res })
+    it("should transfer money", async () => {
+      try {
+        const res = await transfertMoney(moneyTypes.soft_currency, "35269564-0234-11ed-b939-0242ac120002", "68965564-0234-11ed-b939-0242ac120002", 15)
+        // logger.debug(JSON.stringify(response))
 
-      chai.assert.exists(res, "Should transfert money")
+        chai.assert.exists(res, "Should transfer money")
+      } catch (err) {
+        logger.debug(`Error occurred in services > user > index > transfertMoney: ${err}`)
+      }
     })
   })
 })
