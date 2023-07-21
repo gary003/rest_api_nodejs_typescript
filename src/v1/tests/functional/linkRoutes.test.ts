@@ -25,7 +25,7 @@ describe("Functional Tests API", () => {
             return done(err)
           }
 
-          logger.info(result.body)
+          logger.info(JSON.stringify(result.body))
           chai.assert.isNotEmpty(result.body)
           chai.assert.isTrue(result.body.userId === testUserId)
           testUserId = result.body.userId
@@ -45,7 +45,7 @@ describe("Functional Tests API", () => {
             return done(err)
           }
 
-          logger.info(result.body)
+          logger.info(JSON.stringify(result.body))
           chai.assert.isArray(result.body)
           if (result.body.length > 0) {
             chai.assert.exists(result.body[0].userId)
@@ -66,7 +66,7 @@ describe("Functional Tests API", () => {
             return done(err)
           }
 
-          logger.info(result.body)
+          logger.info(JSON.stringify(result.body))
           chai.assert.exists(result.body.userId)
           return done()
         })
@@ -84,7 +84,7 @@ describe("Functional Tests API", () => {
             return done(err)
           }
 
-          logger.info(result.body)
+          logger.info(JSON.stringify(result.body))
           chai.assert.isNotNull(result.body)
           return done()
         })
