@@ -70,7 +70,7 @@ export const transfertMoneyParamsValidator = async (currency: moneyTypes, giverI
 
   const recipientUserInfo: any = await getUserWalletInfoDB(recipientId)
 
-  logger.debug(giverUserInfo, giverNewBalance)
+  logger.debug(JSON.stringify({ giverUserInfo, giverNewBalance }))
 
   return [giverUserInfo, recipientUserInfo]
 }
@@ -78,7 +78,7 @@ export const transfertMoneyParamsValidator = async (currency: moneyTypes, giverI
 export const transfertMoney = async (currency: moneyTypes, giverId: string, recipientId: string, amount: number) => {
   const [giverUserInfo, recipientUserInfo] = await transfertMoneyParamsValidator(currency, giverId, recipientId, amount)
 
-  logger.debug(giverUserInfo, recipientUserInfo)
+  logger.debug(JSON.stringify([giverUserInfo, recipientUserInfo]))
 
   const transacRunner = await createAndStartTransaction().catch((err) => err)
 
@@ -91,7 +91,7 @@ export const transfertMoney = async (currency: moneyTypes, giverId: string, reci
     return err
   })
 
-  logger.debug(updateWalletGiverResult)
+  logger.debug(JSON.stringify(updateWalletGiverResult))
 
   if (!updateWalletGiverResult || updateWalletGiverResult[0] === 0) {
     rollBackAndQuitTransactionRunner(transacRunner)
@@ -100,7 +100,7 @@ export const transfertMoney = async (currency: moneyTypes, giverId: string, reci
 
   // @ts-ignore
   const recipientNewBalance: number = Number(recipientUserInfo.Wallet[currency]) + amount
-  logger.debug(recipientUserInfo, recipientNewBalance)
+  logger.debug(JSON.stringify({ recipientUserInfo, recipientNewBalance }))
 
   // @ts-ignore
   const updateWalletRecipientResult = await updateWalletByWalletIdTransaction(transacRunner, recipientUserInfo.Wallet.walletId, currency, recipientNewBalance).catch((err) => {
@@ -108,7 +108,7 @@ export const transfertMoney = async (currency: moneyTypes, giverId: string, reci
     return err
   })
 
-  logger.debug(updateWalletRecipientResult)
+  logger.debug(JSON.stringify(updateWalletRecipientResult))
 
   if (updateWalletRecipientResult[0] === 0) {
     rollBackAndQuitTransactionRunner(transacRunner)
