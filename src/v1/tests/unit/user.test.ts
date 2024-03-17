@@ -6,13 +6,9 @@ import { moneyTypes } from "../../domain"
 import logger from "../../helpers/logger"
 
 describe("Unit tests user", () => {
-  let sandbox: SinonSandbox
+  let sandbox: SinonSandbox = createSandbox()
 
   describe("services > user > index > saveNewUser", () => {
-    beforeEach(() => {
-      sandbox = createSandbox()
-    })
-
     afterEach(() => {
       sandbox.restore()
     })
@@ -45,10 +41,6 @@ describe("Unit tests user", () => {
   })
 
   describe("services > user > index > addCurrency", () => {
-    beforeEach(() => {
-      sandbox = createSandbox()
-    })
-
     afterEach(() => {
       sandbox.restore()
     })
@@ -80,6 +72,9 @@ describe("Unit tests user", () => {
   })
 
   describe("services > user > index > getAllUsers", () => {
+    afterEach(() => {
+      sandbox.restore()
+    })
     it("should retrieve all the users from DB", async () => {
       try {
         const response = await getAllUsers()
@@ -88,11 +83,15 @@ describe("Unit tests user", () => {
         chai.assert.isArray(response, "Should get the list in an array format")
       } catch (err) {
         logger.debug(`Error occurred in services > user > index > getAllUsers: ${err}`)
+        chai.assert.fail("Fail - Should retreive all users")
       }
     })
   })
 
   describe("services > user > index > getUserById", () => {
+    afterEach(() => {
+      sandbox.restore()
+    })
     it("should retrieve a single user from DB", async () => {
       const userToFetch: string = "22ef5564-0234-11ed-b939-0242ac120002"
 
@@ -104,6 +103,7 @@ describe("Unit tests user", () => {
         chai.assert.equal(response.userId, userToFetch, "Should get a valid response with a userId")
       } catch (err) {
         logger.debug(`Error occurred in services > user > index > getUserById: ${err}`)
+        chai.assert.fail("Fail - should retreive a user")
       }
     })
 
@@ -113,7 +113,7 @@ describe("Unit tests user", () => {
       try {
         const user = await getUserWalletInfo(userToFetch)
         // logger.debug(JSON.stringify(user))
-        throw new Error("Should never happen")
+        chai.assert.fail("Should never happen")
       } catch (err) {
         logger.debug(err)
         chai.assert.exists(err, "Should get an err from DB")
@@ -123,10 +123,6 @@ describe("Unit tests user", () => {
   })
 
   describe("services > user > index > deleteUserById", () => {
-    beforeEach(() => {
-      sandbox = createSandbox()
-    })
-
     afterEach(() => {
       sandbox.restore()
     })
@@ -144,26 +140,24 @@ describe("Unit tests user", () => {
         chai.assert.isTrue(fakeDeleteUserByIdDB.calledOnce)
       } catch (err) {
         logger.debug(`Error occurred in services > user > index > deleteUserById: ${err}`)
+        chai.assert.fail("Fail - Unable to delete the user")
       }
     })
   })
 
   describe("services > user > index > transfertMoney", () => {
-    beforeEach(() => {
-      sandbox = createSandbox()
-    })
-
     afterEach(() => {
       sandbox.restore()
     })
     it("should transfer money", async () => {
       try {
-        const res = await transfertMoney(moneyTypes.soft_currency, "35269564-0234-11ed-b939-0242ac120002", "68965564-0234-11ed-b939-0242ac120002", 15)
+        const res = await transfertMoney(moneyTypes.soft_currency, "35269564-0234-11ed-b939-0242ac120002", "68965564-0234-11ed-b939-0242ac120002", 5)
         // logger.debug(JSON.stringify(response))
 
         chai.assert.exists(res, "Should transfer money")
       } catch (err) {
         logger.debug(`Error occurred in services > user > index > transfertMoney: ${err}`)
+        chai.assert.fail("Fail - The transaction should go through")
       }
     })
   })
