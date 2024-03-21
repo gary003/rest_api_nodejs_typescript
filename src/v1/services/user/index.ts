@@ -1,4 +1,4 @@
-import { commitAndQuitTransactionRunner, createAndStartTransaction, rollBackAndQuitTransactionRunner } from "../../dataServices/typeorm/connection/connectionFile"
+import { acquireLockOnWallet, commitAndQuitTransactionRunner, createAndStartTransaction, rollBackAndQuitTransactionRunner } from "../../dataServices/typeorm/connection/connectionFile"
 import { getAllDBUsers, getUserWalletInfoDB, saveNewUserDB, deleteUserByIdDB } from "../../dataServices/typeorm/user"
 import { updateWalletByWalletId, updateWalletByWalletIdTransaction } from "../../dataServices/typeorm/wallet"
 import { moneyTypes } from "../../domain"
@@ -59,7 +59,7 @@ export const getUserWalletInfo = async (userId: string): Promise<userWalletDTO> 
   return userWalletI
 }
 
-export const transfertMoneyParamsValidator = async (currency: moneyTypes, giverId: string, recipientId: string, amount: number) => {
+export const transferMoneyParamsValidator = async (currency: moneyTypes, giverId: string, recipientId: string, amount: number) => {
   if (!Object.values(moneyTypes).includes(currency)) throw new Error("wrong type of currency")
 
   const giverUserInfo: any = await getUserWalletInfoDB(giverId)
@@ -70,19 +70,31 @@ export const transfertMoneyParamsValidator = async (currency: moneyTypes, giverI
 
   const recipientUserInfo: any = await getUserWalletInfoDB(recipientId)
 
-  logger.debug(JSON.stringify({ giverUserInfo, giverNewBalance }))
+  // logger.debug(JSON.stringify({ giverUserInfo, giverNewBalance }))
 
   return [giverUserInfo, recipientUserInfo]
 }
 
-export const transfertMoney = async (currency: moneyTypes, giverId: string, recipientId: string, amount: number) => {
-  const [giverUserInfo, recipientUserInfo] = await transfertMoneyParamsValidator(currency, giverId, recipientId, amount)
+export const transferMoney = async (currency: moneyTypes, giverId: string, recipientId: string, amount: number) => {
+  const [giverUserInfo, recipientUserInfo] = await transferMoneyParamsValidator(currency, giverId, recipientId, amount)
 
-  logger.debug(JSON.stringify([giverUserInfo, recipientUserInfo]))
+  // logger.debug(JSON.stringify([giverUserInfo, recipientUserInfo]))
 
   const transacRunner = await createAndStartTransaction().catch((err) => err)
 
   if (!transacRunner) throw new Error("Impossible to create transaction")
+
+  // Acquire locks on giver and recipient wallets (pessimistic locking)
+  const lockResultGiver = await acquireLockOnWallet(transacRunner, giverUserInfo.Wallet.walletId)
+  const lockResultRecipient = await acquireLockOnWallet(transacRunner, recipientUserInfo.Wallet.walletId)
+
+  logger.debug({ lockResultGiver, lockResultRecipient })
+
+  if (!lockResultGiver || !lockResultRecipient) {
+    const errorLock = "Error - Lock - Failed to acquire locks on wallets"
+    logger.error(errorLock)
+    throw new Error(errorLock)
+  }
 
   const giverNewBalance: number = Number(giverUserInfo.Wallet[currency]) - amount
 
@@ -118,4 +130,27 @@ export const transfertMoney = async (currency: moneyTypes, giverId: string, reci
   commitAndQuitTransactionRunner(transacRunner)
 
   return true
+}
+
+export const transferMoneyWithRetry = async (currency: moneyTypes, giverId: string, recipientId: string, amount: number, delayTime = 300, maxRetries = 3, attempt = 1) => {
+  while (attempt <= maxRetries) {
+    try {
+      // Call your actual transfer money function here (replace with your implementation)
+      return await transferMoney(currency, giverId, recipientId, amount)
+    } catch (err) {
+      // Check for retryable errors (adapt based on your specific error types)
+      if (attempt >= maxRetries) {
+        throw new Error("Max retry attempt reached: " + attempt + " attempts") // Re-throw non-retryable errors
+      } else if (err.message.includes("Error - Lock")) {
+        const delay = delayTime ** (attempt - 1)
+        logger.warn(`Transfer failed, retrying in ${delay}ms (attempt ${attempt}/${maxRetries})`)
+        await new Promise((resolve) => setTimeout(resolve, delay))
+        attempt += 1
+      } else {
+        throw new Error(err) // Re-throw non-retryable errors
+      }
+    }
+  }
+
+  throw new Error("Error - Should never happen")
 }

@@ -1,6 +1,7 @@
 import chai from "chai"
 import { createSandbox, SinonSandbox } from "sinon"
-import { addCurrency, deleteUserById, getAllUsers, getUserWalletInfo, saveNewUser, transfertMoney } from "../../services/user/index"
+import { addCurrency, deleteUserById, getAllUsers, getUserWalletInfo, saveNewUser, transferMoney, transferMoneyWithRetry } from "../../services/user/index"
+import * as modUser from "../../services/user/index"
 import * as mod from "../../dataServices/typeorm/user"
 import { moneyTypes } from "../../domain"
 import logger from "../../helpers/logger"
@@ -151,13 +152,95 @@ describe("Unit tests user", () => {
     })
     it("should transfer money", async () => {
       try {
-        const res = await transfertMoney(moneyTypes.soft_currency, "35269564-0234-11ed-b939-0242ac120002", "68965564-0234-11ed-b939-0242ac120002", 5)
-        // logger.debug(JSON.stringify(response))
+        const res = await transferMoney(moneyTypes.soft_currency, "35269564-0234-11ed-b939-0242ac120002", "68965564-0234-11ed-b939-0242ac120002", 5)
+        // logger.debug(JSON.stringify(res))
 
         chai.assert.exists(res, "Should transfer money")
       } catch (err) {
         logger.debug(`Error occurred in services > user > index > transfertMoney: ${err}`)
         chai.assert.fail("Fail - The transaction should go through")
+      }
+    })
+  })
+
+  describe("services > user > index > transfertMoneyWithRetry", () => {
+    afterEach(() => {
+      sandbox.restore()
+    })
+    it("Successful transfer (no retry)", async () => {
+      // Mock the transferMoney function to always succeed
+      const mockTransferMoney = sandbox.stub(modUser, "transferMoney").resolves(true)
+
+      // Call the transferMoneyWithRetry function
+      const result = await transferMoneyWithRetry(moneyTypes.soft_currency, "giver123", "recipient456", 100, 300)
+
+      // Verify the transferMoney function was called once
+      sandbox.assert.calledOnce(mockTransferMoney)
+      sandbox.assert.calledWithExactly(mockTransferMoney, moneyTypes.soft_currency, "giver123", "recipient456", 100)
+
+      // Expect the result to be true (successful transfer)
+      chai.assert.isTrue(result)
+    })
+    it("Successful transfer with 1 retry", async () => {
+      // Mock the transferMoney function to fail twice and succeed on the third try
+      const mockTransferMoney = sandbox.stub(modUser, "transferMoney")
+      mockTransferMoney.onFirstCall().rejects(new Error("Error - Lock - Network error"))
+      mockTransferMoney.onSecondCall().resolves(true)
+
+      // Call the transferMoneyWithRetry function
+      const result = await transferMoneyWithRetry(moneyTypes.soft_currency, "giver123", "recipient456", 100, 300)
+
+      // Verify the transferMoney function was called three times
+      sandbox.assert.calledTwice(mockTransferMoney)
+      sandbox.assert.calledWithExactly(mockTransferMoney, moneyTypes.soft_currency, "giver123", "recipient456", 100)
+
+      // Expect the result to be true (successful transfer after retry)
+      chai.assert.isTrue(result)
+    })
+    it("Transfer failure (non-retryable error)", async () => {
+      // Mock the transferMoney function to throw a non-retryable error
+      const mockTransferMoney = sandbox.stub(modUser, "transferMoney").throws(new Error("Insufficient funds"))
+
+      // Call the transferMoneyWithRetry function
+      try {
+        await transferMoneyWithRetry(moneyTypes.soft_currency, "giver123", "recipient456", 100, 300)
+      } catch (err) {
+        chai.assert(err.message.includes("Insufficient funds"))
+        sandbox.assert.calledOnce(mockTransferMoney)
+        chai.assert(mockTransferMoney.calledWithExactly(moneyTypes.soft_currency, "giver123", "recipient456", 100))
+      }
+    })
+    it("Transfer failure with retry", async () => {
+      // Mock the transferMoney function to fail twice and succeed on the third try
+      const mockTransferMoney = sandbox.stub(modUser, "transferMoney")
+      mockTransferMoney.onFirstCall().throws(new Error("Error - Lock - Network error"))
+      mockTransferMoney.onSecondCall().throws(new Error("Network error"))
+      mockTransferMoney.onThirdCall().resolves(true)
+
+      // Call the transferMoneyWithRetry function
+      try {
+        await transferMoneyWithRetry(moneyTypes.soft_currency, "giver123", "recipient456", 100, 300)
+      } catch (error) {
+        chai.assert.isTrue(error.message.includes("Network error"))
+        sandbox.assert.calledTwice(mockTransferMoney)
+        sandbox.assert.calledWithExactly(mockTransferMoney, moneyTypes.soft_currency, "giver123", "recipient456", 100)
+      }
+    })
+    it("Failure - Maximum retries exceeded", async () => {
+      const mockTransferMoney = sandbox.stub(modUser, "transferMoney")
+      mockTransferMoney.onFirstCall().throws(new Error("Error - Lock - Network error"))
+      mockTransferMoney.onSecondCall().throws(new Error("Error - Lock - Network error"))
+      mockTransferMoney.onThirdCall().throws(new Error("Error - Lock - Network error"))
+      mockTransferMoney.onCall(4).throws(new Error("Error - Lock - Network error"))
+      mockTransferMoney.onCall(5).resolves(true)
+
+      // Call the transferMoneyWithRetry function
+      try {
+        await transferMoneyWithRetry(moneyTypes.soft_currency, "giver123", "recipient456", 100, 300)
+      } catch (err) {
+        chai.assert.isTrue(err.message.includes("Max retry attempt reached"))
+        sandbox.assert.calledThrice(mockTransferMoney)
+        sandbox.assert.calledWithExactly(mockTransferMoney, moneyTypes.soft_currency, "giver123", "recipient456", 100)
       }
     })
   })
