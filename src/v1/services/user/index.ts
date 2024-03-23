@@ -88,7 +88,7 @@ export const transferMoney = async (currency: moneyTypes, giverId: string, recip
   const lockResultGiver = await acquireLockOnWallet(transacRunner, giverUserInfo.Wallet.walletId)
   const lockResultRecipient = await acquireLockOnWallet(transacRunner, recipientUserInfo.Wallet.walletId)
 
-  logger.debug({ lockResultGiver, lockResultRecipient })
+  logger.debug(JSON.stringify({ lockResultGiver, lockResultRecipient }))
 
   if (!lockResultGiver || !lockResultRecipient) {
     const errorLock = "Error - Lock - Failed to acquire locks on wallets"

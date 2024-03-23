@@ -1,14 +1,15 @@
 import chai from "chai"
 import { createSandbox, SinonSandbox } from "sinon"
 import { addCurrency, deleteUserById, getAllUsers, getUserWalletInfo, saveNewUser, transferMoney, transferMoneyWithRetry } from "../../services/user/index"
+import * as modUserDB from "../../dataServices/typeorm/user"
+import * as modWalletDB from "../../dataServices/typeorm/wallet"
 import * as modUser from "../../services/user/index"
-import * as mod from "../../dataServices/typeorm/user"
-import * as modWallet from "../../dataServices/typeorm/wallet"
 import * as modConnection from "../../dataServices/typeorm/connection/connectionFile"
 import { moneyTypes } from "../../domain"
 import logger from "../../helpers/logger"
 import { QueryRunner } from "typeorm"
 import { describe, it } from "mocha"
+import { userInfo } from "../../dataServices/typeorm/user/dto"
 
 describe("Unit tests user", () => {
   let sandbox: SinonSandbox = createSandbox()
@@ -17,7 +18,6 @@ describe("Unit tests user", () => {
     afterEach(() => {
       sandbox.restore()
     })
-
     it("should create a new user", async () => {
       const fakeUser = {
         userId: "fake_22ef5564-0234-11ed-b939-0242ac120002",
@@ -30,7 +30,7 @@ describe("Unit tests user", () => {
         },
       }
 
-      const fakeSaveNewUserDB = sandbox.stub(mod, "saveNewUserDB").returns(Promise.resolve(fakeUser))
+      const fakeSaveNewUserDB = sandbox.stub(modUserDB, "saveNewUserDB").returns(Promise.resolve(fakeUser))
 
       try {
         const response = await saveNewUser(fakeUser.userId, fakeUser.firstname, fakeUser.lastname)
@@ -41,6 +41,7 @@ describe("Unit tests user", () => {
         chai.assert.isTrue(fakeSaveNewUserDB.calledOnce)
       } catch (err) {
         logger.debug(`Error occurred in services > user > index > saveNewUser: ${err}`)
+        chai.assert.fail("Should not happen - noerror in catch expected")
       }
     })
   })
@@ -49,29 +50,41 @@ describe("Unit tests user", () => {
     afterEach(() => {
       sandbox.restore()
     })
-
     it("should fail (negative amount)", async () => {
       const amountToAdd = -55
 
       try {
         await addCurrency("22ef5564-0234-11ed-b939-0242ac120002", moneyTypes.soft_currency, amountToAdd)
-        throw new Error("Should never happen")
+        chai.assert.fail("Unexpected success")
       } catch (err) {
         logger.debug(err)
         chai.assert.isNotNull(err, "Should get an error")
         chai.assert.equal(err, "Error: The amount to add must be at least equal to 1")
       }
     })
-
     it("should fail (wrong currency type)", async () => {
       const amountToAdd = 150
-
       try {
         await addCurrency("22ef5564-0234-11ed-b939-0242ac120002", "fake_currency_type" as moneyTypes, amountToAdd)
-        throw new Error("Should never happen")
+        chai.assert.fail("Unexpected success - Should never happen")
       } catch (err) {
         logger.debug(err)
         chai.assert.isNotNull(err, "Should get an error")
+      }
+    })
+    it("should succeed adding currency", async () => {
+      const mockGetUserWalletInfo = sandbox.stub(modUserDB, "getUserWalletInfoDB").resolves({ Wallet: { walletId: "12345" } } as unknown as userInfo)
+      const mockUpdateWalletByWalletId = sandbox.stub(modWalletDB, "updateWalletByWalletId").resolves(true)
+
+      const amountToAdd = 150
+      try {
+        const res = await addCurrency("22ef5564-0234-11ed-b939-0242ac120002", moneyTypes.soft_currency, amountToAdd)
+        chai.assert.isTrue(res)
+        sandbox.assert.calledOnce(mockGetUserWalletInfo)
+        sandbox.assert.calledOnce(mockUpdateWalletByWalletId)
+      } catch (err) {
+        logger.debug(err)
+        chai.assert.fail("Should not get an error")
       }
     })
   })
@@ -134,7 +147,7 @@ describe("Unit tests user", () => {
     it("should delete a single user from DB by its id", async () => {
       const userToFetch: string = "22ef5564-0234-11ed-b939-0242ac120002"
 
-      const fakeDeleteUserByIdDB = sandbox.stub(mod, "deleteUserByIdDB").returns(Promise.resolve(true))
+      const fakeDeleteUserByIdDB = sandbox.stub(modUserDB, "deleteUserByIdDB").returns(Promise.resolve(true))
 
       try {
         const response = await deleteUserById(userToFetch)
@@ -159,7 +172,7 @@ describe("Unit tests user", () => {
       const mockTransferMoneyParamsValidator = sandbox.stub(modUser, "transferMoneyParamsValidator").resolves([{ Wallet: { walletId: "1234", softCurrency: 123 } }, { Wallet: { walletId: "4321", softCurrency: 300 } }])
       const mockCreateAndStartTransaction = sandbox.stub(modConnection, "createAndStartTransaction").resolves({ someTransactionObject: true } as unknown as QueryRunner)
       const mockAcquireLockOnWallet = sandbox.stub(modConnection, "acquireLockOnWallet").resolves(true)
-      const mockUpdateWalletByWalletIdTransaction = sandbox.stub(modWallet, "updateWalletByWalletIdTransaction").resolves(true) // Assuming update functions return success indicator (modify as needed)
+      const mockUpdateWalletByWalletIdTransaction = sandbox.stub(modWalletDB, "updateWalletByWalletIdTransaction").resolves(true) // Assuming update functions return success indicator (modify as needed)
       const mockRollBackAndQuitTransactionRunner = sandbox.stub(modConnection, "rollBackAndQuitTransactionRunner")
       const mockCommitAndQuitTransactionRunner = sandbox.stub(modConnection, "commitAndQuitTransactionRunner")
 
@@ -220,10 +233,10 @@ describe("Unit tests user", () => {
     it("Transfer failure due to acquireLockOnWallet failure (giver)", async () => {
       const mockTransferMoneyParamsValidator = sandbox.stub(modUser, "transferMoneyParamsValidator").resolves([{ Wallet: { walletId: "1234", softCurrency: 123 } }, { Wallet: { walletId: "4321", softCurrency: 300 } }])
       const mockCreateAndStartTransaction = sandbox.stub(modConnection, "createAndStartTransaction").resolves({ someTransactionObject: true } as unknown as QueryRunner)
-      const mockUpdateWalletByWalletIdTransaction = sandbox.stub(modWallet, "updateWalletByWalletIdTransaction").resolves(true) // Assuming update functions return success indicator (modify as needed)
       const mockAcquireLockOnWallet = sandbox.stub(modConnection, "acquireLockOnWallet")
-      mockAcquireLockOnWallet.onFirstCall().resolves(true)
-      mockAcquireLockOnWallet.onSecondCall().resolves(false) // Fail to acquire lock on recipient wallet
+      mockAcquireLockOnWallet.onFirstCall().resolves(false)
+      mockAcquireLockOnWallet.onSecondCall().resolves(true)
+      const mockUpdateWalletByWalletIdTransaction = sandbox.stub(modWalletDB, "updateWalletByWalletIdTransaction").resolves(true) // Assuming update functions return success indicator (modify as needed)
 
       try {
         await transferMoney(moneyTypes.soft_currency, "giver123", "recipient456", 100)
@@ -232,10 +245,33 @@ describe("Unit tests user", () => {
       } catch (err) {
         chai.assert.equal(err.message, "Error - Lock - Failed to acquire locks on wallets")
         sandbox.assert.calledOnce(mockTransferMoneyParamsValidator)
+        sandbox.assert.calledOnce(mockCreateAndStartTransaction)
         sandbox.assert.calledTwice(mockAcquireLockOnWallet)
         sandbox.assert.calledWith(mockAcquireLockOnWallet, { someTransactionObject: true } as unknown as QueryRunner, "1234") // Replace with actual logic
         sandbox.assert.calledWith(mockAcquireLockOnWallet, { someTransactionObject: true } as unknown as QueryRunner, "4321") // Replace with actual logic
+        sandbox.assert.notCalled(mockUpdateWalletByWalletIdTransaction) // Not called due to earlier error
+      }
+    })
+    it("Transfer failure due to acquireLockOnWallet failure (recipient)", async () => {
+      const mockTransferMoneyParamsValidator = sandbox.stub(modUser, "transferMoneyParamsValidator").resolves([{ Wallet: { walletId: "1234", softCurrency: 123 } }, { Wallet: { walletId: "4321", softCurrency: 300 } }])
+      const mockCreateAndStartTransaction = sandbox.stub(modConnection, "createAndStartTransaction").resolves({ someTransactionObject: true } as unknown as QueryRunner)
+      const mockAcquireLockOnWallet = sandbox.stub(modConnection, "acquireLockOnWallet")
+      mockAcquireLockOnWallet.onFirstCall().resolves(true)
+      mockAcquireLockOnWallet.onSecondCall().resolves(false)
+      const mockUpdateWalletByWalletIdTransaction = sandbox.stub(modWalletDB, "updateWalletByWalletIdTransaction").resolves(true) // Assuming update functions return success indicator (modify as needed)
+
+      try {
+        await transferMoney(moneyTypes.soft_currency, "giver123", "recipient456", 100)
+        // Should not reach here if update fails
+        chai.assert.fail("Unexpected successful transfer")
+      } catch (err) {
+        console.log(err.message)
+        chai.assert.equal(err.message, "Error - Lock - Failed to acquire locks on wallets")
+        sandbox.assert.calledOnce(mockTransferMoneyParamsValidator)
         sandbox.assert.calledOnce(mockCreateAndStartTransaction)
+        sandbox.assert.calledTwice(mockAcquireLockOnWallet)
+        sandbox.assert.calledWith(mockAcquireLockOnWallet, { someTransactionObject: true } as unknown as QueryRunner, "1234")
+        sandbox.assert.calledWith(mockAcquireLockOnWallet, { someTransactionObject: true } as unknown as QueryRunner, "4321")
         sandbox.assert.notCalled(mockUpdateWalletByWalletIdTransaction) // Not called due to earlier error
       }
     })
@@ -259,7 +295,7 @@ describe("Unit tests user", () => {
       // Expect the result to be true (successful transfer)
       chai.assert.isTrue(result)
     })
-    it("Successful transfer with 1 retry", async () => {
+    it("Successful transfer (with 1 retry)", async () => {
       // Mock the transferMoney function to fail twice and succeed on the third try
       const mockTransferMoney = sandbox.stub(modUser, "transferMoney")
       mockTransferMoney.onFirstCall().rejects(new Error("Error - Lock - Network error"))
@@ -275,7 +311,7 @@ describe("Unit tests user", () => {
       // Expect the result to be true (successful transfer after retry)
       chai.assert.isTrue(result)
     })
-    it("Transfer failure (non-retryable error)", async () => {
+    it("Failure - Transfer fail (non-retryable error)", async () => {
       // Mock the transferMoney function to throw a non-retryable error
       const mockTransferMoney = sandbox.stub(modUser, "transferMoney").throws(new Error("Insufficient funds"))
 
@@ -288,7 +324,7 @@ describe("Unit tests user", () => {
         chai.assert(mockTransferMoney.calledWithExactly(moneyTypes.soft_currency, "giver123", "recipient456", 100))
       }
     })
-    it("Transfer failure with retry", async () => {
+    it("Failure - Transfer fail (with retryable error followed by non-retryable error)", async () => {
       // Mock the transferMoney function to fail twice and succeed on the third try
       const mockTransferMoney = sandbox.stub(modUser, "transferMoney")
       mockTransferMoney.onFirstCall().throws(new Error("Error - Lock - Network error"))
@@ -304,7 +340,7 @@ describe("Unit tests user", () => {
         sandbox.assert.calledWithExactly(mockTransferMoney, moneyTypes.soft_currency, "giver123", "recipient456", 100)
       }
     })
-    it("Failure - Maximum retries exceeded", async () => {
+    it("Failure - Transfer fail (Maximum retries exceeded)", async () => {
       const mockTransferMoney = sandbox.stub(modUser, "transferMoney")
       mockTransferMoney.onFirstCall().throws(new Error("Error - Lock - Network error"))
       mockTransferMoney.onSecondCall().throws(new Error("Error - Lock - Network error"))
