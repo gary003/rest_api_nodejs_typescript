@@ -103,7 +103,7 @@ export const transferMoney = async (currency: moneyTypes, giverId: string, recip
     return err
   })
 
-  logger.debug(JSON.stringify(updateWalletGiverResult))
+  logger.debug(JSON.stringify({ updateWalletGiverResult }))
 
   if (!updateWalletGiverResult || updateWalletGiverResult[0] === 0) {
     rollBackAndQuitTransactionRunner(transacRunner)
@@ -120,7 +120,7 @@ export const transferMoney = async (currency: moneyTypes, giverId: string, recip
     return err
   })
 
-  logger.debug(JSON.stringify(updateWalletRecipientResult))
+  logger.debug(JSON.stringify({ updateWalletRecipientResult }))
 
   if (updateWalletRecipientResult[0] === 0) {
     rollBackAndQuitTransactionRunner(transacRunner)
@@ -142,7 +142,7 @@ export const transferMoneyWithRetry = async (currency: moneyTypes, giverId: stri
       if (attempt >= maxRetries) {
         throw new Error("Max retry attempt reached: " + attempt + " attempts") // Re-throw non-retryable errors
       } else if (err.message.includes("Error - Lock")) {
-        const delay = delayTime ** (attempt - 1)
+        const delay = delayTime * 2 ** (attempt - 1)
         logger.warn(`Transfer failed, retrying in ${delay}ms (attempt ${attempt}/${maxRetries})`)
         await new Promise((resolve) => setTimeout(resolve, delay))
         attempt += 1
