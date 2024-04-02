@@ -14,7 +14,7 @@ export const getAllDBUsers = async (): Promise<userInfo[]> => {
     .innerJoinAndMapOne("user.Wallet", Wallet, "wallet", "wallet.userId = user.userId")
     .getMany()
     .catch((err) => {
-      logger.debug(err.sqlMessage)
+      logger.error(err.sqlMessage)
       return err
     })
 
@@ -22,7 +22,7 @@ export const getAllDBUsers = async (): Promise<userInfo[]> => {
 
   if (!result) throw new Error("Impossible to retreive any user")
 
-  logger.debug(JSON.stringify(result))
+  // logger.debug(JSON.stringify(result))
 
   return result as userInfo[]
 }
@@ -42,12 +42,14 @@ export const deleteUserByIdDB = async (userId: string): Promise<boolean> => {
   const connection = await connectionTypeORM()
 
   const userToDeleteInfo = await getUserWalletInfoDB(userId)
-  logger.debug(JSON.stringify(userToDeleteInfo))
+
+  // logger.debug(JSON.stringify(userToDeleteInfo))
 
   const WalletRepository = connection.getRepository(Wallet)
 
   const deletedWallet = await WalletRepository.delete(userToDeleteInfo.Wallet.walletId).catch((err) => err)
-  logger.debug(JSON.stringify(deletedWallet))
+
+  // logger.debug(JSON.stringify(deletedWallet))
 
   if (!deletedWallet || deletedWallet.affected === 0) {
     await connection.destroy()
@@ -57,7 +59,7 @@ export const deleteUserByIdDB = async (userId: string): Promise<boolean> => {
   const UserRepository = connection.getRepository(User)
 
   const deletedUser = await UserRepository.delete(userId).catch((err) => {
-    logger.debug(err)
+    logger.error(err)
     return err
   })
 

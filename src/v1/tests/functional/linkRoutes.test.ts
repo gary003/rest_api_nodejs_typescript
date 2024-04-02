@@ -1,7 +1,7 @@
 import chai from "chai"
 import request from "supertest"
 import app from "../../app"
-import logger from "../../helpers/logger"
+// import logger from "../../helpers/logger"
 
 const urlBase = "/api/v1"
 
@@ -21,11 +21,11 @@ describe("Functional Tests API", () => {
         .expect("Content-Type", /json/)
         .end((err, result) => {
           if (err) {
-            logger.debug(`Error occurred in route > user > POST: ${err}`)
+            // logger.debug(`Error occurred in route > user > POST: ${err}`)
             return done(err)
           }
 
-          logger.info(JSON.stringify(result.body))
+          // logger.info(JSON.stringify(result.body))
           chai.assert.isNotEmpty(result.body)
           chai.assert.isTrue(result.body.userId === testUserId)
           testUserId = result.body.userId
@@ -41,11 +41,11 @@ describe("Functional Tests API", () => {
         .set("Accept", "application/json")
         .end((err, result) => {
           if (err) {
-            logger.debug(`Error occurred in route > user > GET: ${err}`)
+            // logger.debug(`Error occurred in route > user > GET: ${err}`)
             return done(err)
           }
 
-          logger.info(JSON.stringify(result.body))
+          // logger.info(JSON.stringify(result.body))
           chai.assert.isArray(result.body)
           if (result.body.length > 0) {
             chai.assert.exists(result.body[0].userId)
@@ -62,11 +62,11 @@ describe("Functional Tests API", () => {
         .set("Accept", "application/json")
         .end((err, result) => {
           if (err) {
-            logger.debug(`Error occurred in route > user > GET: ${err}`)
+            // logger.debug(`Error occurred in route > user > GET: ${err}`)
             return done(err)
           }
 
-          logger.info(JSON.stringify(result.body))
+          // logger.info(JSON.stringify(result.body))
           chai.assert.exists(result.body.userId)
           return done()
         })
@@ -80,11 +80,11 @@ describe("Functional Tests API", () => {
         .set("Accept", "application/json")
         .end((err, result) => {
           if (err) {
-            logger.error(`Error occurred in route > user > DELETE: ${err}`)
+            // logger.error(`Error occurred in route > user > DELETE: ${err}`)
             return done(err)
           }
 
-          logger.info(JSON.stringify(result.body))
+          // logger.info(JSON.stringify(result.body))
           chai.assert.isNotNull(result.body)
           return done()
         })

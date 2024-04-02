@@ -10,6 +10,7 @@ import logger from "../../helpers/logger"
 import { QueryRunner } from "typeorm"
 import { describe, it } from "mocha"
 import { userInfo } from "../../dataServices/typeorm/user/dto"
+import { moneyTransferParamsValidatorErrors, transferMoneyErrors, userFunctionsErrors } from "../../services/user/error.dto"
 
 describe("Unit tests user", () => {
   let sandbox: SinonSandbox = createSandbox()
@@ -34,13 +35,14 @@ describe("Unit tests user", () => {
 
       try {
         const response = await saveNewUser(fakeUser.userId, fakeUser.firstname, fakeUser.lastname)
-        logger.debug(JSON.stringify(response))
+
+        // logger.debug(JSON.stringify(response))
 
         chai.assert.exists(response, "Should get the correct response")
         chai.assert.strictEqual(response.userId, fakeUser.userId, "Should get the correct userId")
         chai.assert.isTrue(fakeSaveNewUserDB.calledOnce)
       } catch (err) {
-        logger.debug(`Error occurred in services > user > index > saveNewUser: ${err}`)
+        // logger.debug(`Error occurred in services > user > index > saveNewUser: ${err}`)
         chai.assert.fail("Should not happen - noerror in catch expected")
       }
     })
@@ -57,9 +59,11 @@ describe("Unit tests user", () => {
         await addCurrency("22ef5564-0234-11ed-b939-0242ac120002", moneyTypes.soft_currency, amountToAdd)
         chai.assert.fail("Unexpected success")
       } catch (err) {
-        logger.debug(err)
         chai.assert.isNotNull(err, "Should get an error")
-        chai.assert.equal(err, "Error: The amount to add must be at least equal to 1")
+
+        const errInfo = JSON.parse(err.message)
+        // logger.debug(errInfo)
+        chai.assert.equal(errInfo.message, moneyTransferParamsValidatorErrors.ErrorInvalidAmount.message)
       }
     })
     it("should fail (wrong currency type)", async () => {
@@ -68,7 +72,7 @@ describe("Unit tests user", () => {
         await addCurrency("22ef5564-0234-11ed-b939-0242ac120002", "fake_currency_type" as moneyTypes, amountToAdd)
         chai.assert.fail("Unexpected success - Should never happen")
       } catch (err) {
-        logger.debug(err)
+        // logger.debug(err)
         chai.assert.isNotNull(err, "Should get an error")
       }
     })
@@ -83,7 +87,7 @@ describe("Unit tests user", () => {
         sandbox.assert.calledOnce(mockGetUserWalletInfo)
         sandbox.assert.calledOnce(mockUpdateWalletByWalletId)
       } catch (err) {
-        logger.debug(err)
+        // logger.debug(err)
         chai.assert.fail("Should not get an error")
       }
     })
@@ -100,7 +104,7 @@ describe("Unit tests user", () => {
 
         chai.assert.isArray(response, "Should get the list in an array format")
       } catch (err) {
-        logger.debug(`Error occurred in services > user > index > getAllUsers: ${err}`)
+        // logger.debug(`Error occurred in services > user > index > getAllUsers: ${err}`)
         chai.assert.fail("Fail - Should retreive all users")
       }
     })
@@ -120,7 +124,7 @@ describe("Unit tests user", () => {
         chai.assert.exists(response, "Should get a valid response from DB")
         chai.assert.equal(response.userId, userToFetch, "Should get a valid response with a userId")
       } catch (err) {
-        logger.debug(`Error occurred in services > user > index > getUserById: ${err}`)
+        // logger.debug(`Error occurred in services > user > index > getUserById: ${err}`)
         chai.assert.fail("Fail - should retreive a user")
       }
     })
@@ -133,9 +137,10 @@ describe("Unit tests user", () => {
         // logger.debug(JSON.stringify(user))
         chai.assert.fail("Should never happen")
       } catch (err) {
-        logger.debug(err)
+        const errorInfo = JSON.parse(err.message)
+        // logger.debug(err)
         chai.assert.exists(err, "Should get an err from DB")
-        chai.assert.equal(err, "Error: No user found !")
+        chai.assert.equal(errorInfo.message, userFunctionsErrors.ErrorFetchingUserInfo.message)
       }
     })
   })
@@ -147,17 +152,19 @@ describe("Unit tests user", () => {
     it("should delete a single user from DB by its id", async () => {
       const userToFetch: string = "22ef5564-0234-11ed-b939-0242ac120002"
 
-      const fakeDeleteUserByIdDB = sandbox.stub(modUserDB, "deleteUserByIdDB").returns(Promise.resolve(true))
+      const mockDeleteUserByIdDB = sandbox.stub(modUserDB, "deleteUserByIdDB").returns(Promise.resolve(true))
+      // const mockWalletUserByIdDB = sandbox.stub(modUserDB, "deleteWalletByIdDB").returns(Promise.resolve(true))
 
       try {
         const response = await deleteUserById(userToFetch)
-        logger.debug(JSON.stringify(response))
+        // logger.debug(JSON.stringify(response))
 
         chai.assert.exists(response, "Should get a valid response from DB")
         chai.assert.isTrue(response, "Should get true response from DB")
-        chai.assert.isTrue(fakeDeleteUserByIdDB.calledOnce)
+        chai.assert.isTrue(mockDeleteUserByIdDB.calledOnce)
+        // chai.assert.isTrue(mockDeleteWalletByIdDB.calledOnce)
       } catch (err) {
-        logger.debug(`Error occurred in services > user > index > deleteUserById: ${err}`)
+        // logger.debug(`Error occurred in services > user > index > deleteUserById: ${err}`)
         chai.assert.fail("Fail - Unable to delete the user")
       }
     })
@@ -243,7 +250,8 @@ describe("Unit tests user", () => {
         // Should not reach here if acquireLockOnWallet fails
         chai.assert.fail("Unexpected successful transfer")
       } catch (err) {
-        chai.assert.equal(err.message, "Error - Lock - Failed to acquire locks on wallets")
+        const errorInfo = JSON.parse(err.message)
+        chai.assert.equal(errorInfo.message, transferMoneyErrors.ErrorLockAcquisition.message)
         sandbox.assert.calledOnce(mockTransferMoneyParamsValidator)
         sandbox.assert.calledOnce(mockCreateAndStartTransaction)
         sandbox.assert.calledTwice(mockAcquireLockOnWallet)
@@ -265,8 +273,8 @@ describe("Unit tests user", () => {
         // Should not reach here if update fails
         chai.assert.fail("Unexpected successful transfer")
       } catch (err) {
-        console.log(err.message)
-        chai.assert.equal(err.message, "Error - Lock - Failed to acquire locks on wallets")
+        const errorInfo = JSON.parse(err.message)
+        chai.assert.equal(errorInfo.message, transferMoneyErrors.ErrorLockAcquisition.message)
         sandbox.assert.calledOnce(mockTransferMoneyParamsValidator)
         sandbox.assert.calledOnce(mockCreateAndStartTransaction)
         sandbox.assert.calledTwice(mockAcquireLockOnWallet)
@@ -352,7 +360,8 @@ describe("Unit tests user", () => {
       try {
         await transferMoneyWithRetry(moneyTypes.soft_currency, "giver123", "recipient456", 100, 300)
       } catch (err) {
-        chai.assert.isTrue(err.message.includes("Max retry attempt reached"))
+        const errorInfo = JSON.parse(err.message)
+        chai.assert.isTrue(errorInfo.message.includes("Max retry attempt reached"))
         sandbox.assert.calledThrice(mockTransferMoney)
         sandbox.assert.calledWithExactly(mockTransferMoney, moneyTypes.soft_currency, "giver123", "recipient456", 100)
       }
