@@ -22,6 +22,7 @@ describe("Functional Tests API", () => {
         .end((err, result) => {
           if (err) {
             // logger.debug(`Error occurred in route > user > POST: ${err}`)
+            chai.assert.fail(err)
             return done(err)
           }
 
@@ -42,6 +43,7 @@ describe("Functional Tests API", () => {
         .end((err, result) => {
           if (err) {
             // logger.debug(`Error occurred in route > user > GET: ${err}`)
+            chai.assert.fail(err)
             return done(err)
           }
 
@@ -63,6 +65,7 @@ describe("Functional Tests API", () => {
         .end((err, result) => {
           if (err) {
             // logger.debug(`Error occurred in route > user > GET: ${err}`)
+            chai.assert.fail(err)
             return done(err)
           }
 
@@ -79,8 +82,10 @@ describe("Functional Tests API", () => {
         .delete(`${urlBase}/user/${testUserId}`)
         .set("Accept", "application/json")
         .end((err, result) => {
-          if (err) {
+          // console.log({ err, result })
+          if (!!err) {
             // logger.error(`Error occurred in route > user > DELETE: ${err}`)
+            chai.assert.fail(err)
             return done(err)
           }
 

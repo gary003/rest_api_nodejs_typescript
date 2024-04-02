@@ -47,7 +47,10 @@ export const deleteUserByIdDB = async (userId: string): Promise<boolean> => {
 
   const WalletRepository = connection.getRepository(Wallet)
 
-  const deletedWallet = await WalletRepository.delete(userToDeleteInfo.Wallet.walletId).catch((err) => err)
+  const deletedWallet = await WalletRepository.delete(userToDeleteInfo.Wallet.walletId).catch((err) => {
+    logger.error(err)
+    return err
+  })
 
   // logger.debug(JSON.stringify(deletedWallet))
 
@@ -55,6 +58,9 @@ export const deleteUserByIdDB = async (userId: string): Promise<boolean> => {
     await connection.destroy()
     throw new Error("Impossible to delete the user in DB (step : 1)")
   }
+
+  // Let the db some time to handle the previous request
+  await new Promise((resolve) => setTimeout(resolve, 1000))
 
   const UserRepository = connection.getRepository(User)
 

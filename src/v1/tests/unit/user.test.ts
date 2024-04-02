@@ -153,7 +153,7 @@ describe("Unit tests user", () => {
       const userToFetch: string = "22ef5564-0234-11ed-b939-0242ac120002"
 
       const mockDeleteUserByIdDB = sandbox.stub(modUserDB, "deleteUserByIdDB").returns(Promise.resolve(true))
-      // const mockWalletUserByIdDB = sandbox.stub(modUserDB, "deleteWalletByIdDB").returns(Promise.resolve(true))
+      // const mockDeleteWalletByIdDB = sandbox.stub(modWalletDB, "").returns(Promise.resolve(true))
 
       try {
         const response = await deleteUserById(userToFetch)
