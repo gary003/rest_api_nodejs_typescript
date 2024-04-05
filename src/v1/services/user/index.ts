@@ -9,7 +9,7 @@ import logger from "../../helpers/logger"
 export const getAllUsers = async (): Promise<userWalletDTO[]> => {
   const allUsers: userWalletDTO[] = await getAllDBUsers().catch((err) => {
     logger.error(err)
-    return err
+    return null
   })
 
   if (!allUsers) throw new Error(JSON.stringify(userFunctionsErrors.ErrorRetrievingUsers))
@@ -20,7 +20,7 @@ export const getAllUsers = async (): Promise<userWalletDTO[]> => {
 export const saveNewUser = async (userId: string, firstname: string, lastname: string): Promise<userWalletDTO> => {
   const newUser: userWalletDTO = await saveNewUserDB(userId, firstname, lastname).catch((err) => {
     logger.error(err)
-    return err
+    return null
   })
 
   if (!newUser) throw new Error(JSON.stringify(userFunctionsErrors.ErrorCreatingUser))
@@ -36,7 +36,7 @@ export const addCurrency = async (userId: string, currencyType: moneyTypes, amou
 
   const resultUpdate = await updateWalletByWalletId(String(currentUserWalletInfo.Wallet.walletId), currencyType, currentUserWalletInfo[currencyType] + amount).catch((err) => {
     logger.error(err)
-    return err
+    return null
   })
 
   if (!resultUpdate) throw new Error(JSON.stringify(userFunctionsErrors.ErrorUpdatingWallet))
@@ -81,7 +81,10 @@ export const transferMoney = async (currency: moneyTypes, giverId: string, recip
 
   // logger.debug(JSON.stringify([giverUserInfo, recipientUserInfo]))
 
-  const transacRunner = await createAndStartTransaction().catch((err) => err)
+  const transacRunner = await createAndStartTransaction().catch((err) => {
+    logger.error(err)
+    return null
+  })
 
   if (!transacRunner) {
     logger.error(transferMoneyErrors.ErrorTransactionCreation)
@@ -104,7 +107,7 @@ export const transferMoney = async (currency: moneyTypes, giverId: string, recip
 
   const updateWalletGiverResult = await updateWalletByWalletIdTransaction(transacRunner, giverUserInfo.Wallet.walletId, currency, giverNewBalance).catch((err) => {
     logger.error(err)
-    return err
+    return null
   })
 
   // logger.debug(JSON.stringify({ updateWalletGiverResult }))
@@ -121,7 +124,7 @@ export const transferMoney = async (currency: moneyTypes, giverId: string, recip
 
   const updateWalletRecipientResult = await updateWalletByWalletIdTransaction(transacRunner, recipientUserInfo.Wallet.walletId, currency, recipientNewBalance).catch((err) => {
     logger.error(err)
-    return err
+    return null
   })
 
   // logger.debug(JSON.stringify({ updateWalletRecipientResult }))
@@ -138,25 +141,21 @@ export const transferMoney = async (currency: moneyTypes, giverId: string, recip
 }
 
 export const transferMoneyWithRetry = async (currency: moneyTypes, giverId: string, recipientId: string, amount: number, delayTime = 300, maxRetries = 3, attempt = 1) => {
-  while (attempt <= maxRetries) {
-    try {
-      // Call your actual transfer money function here (replace with your implementation)
-      return await transferMoney(currency, giverId, recipientId, amount)
-    } catch (err) {
-      // Check for retryable errors (adapt based on your specific error types)
-      if (attempt >= maxRetries) {
-        logger.warn(`Transfer failed - Max retry attempt reached: ${attempt} attempts`)
-        throw new Error(JSON.stringify({ ...transferMoneyWithRetryErrors.ErrorMaxRetry, maxRetries }))
-      } else if (err.message.includes("Error - Lock")) {
-        const delay = delayTime * 2 ** (attempt - 1)
-        logger.warn(`Transfer failed, retrying in ${delay}ms (attempt ${attempt}/${maxRetries})`)
-        await new Promise((resolve) => setTimeout(resolve, delay))
-        attempt += 1
-      } else {
-        throw new Error(err) // Re-throw non-retryable errors
-      }
+  try {
+    // Call your actual transfer money function here (replace with your implementation)
+    return await transferMoney(currency, giverId, recipientId, amount)
+  } catch (err) {
+    // Check for retryable errors (adapt based on your specific error types)
+    if (attempt >= maxRetries) {
+      logger.warn(`Transfer failed - Max retry attempt reached: ${attempt} attempts`)
+      throw new Error(JSON.stringify({ ...transferMoneyWithRetryErrors.ErrorMaxRetry, maxRetries }))
+    } else if (err.message.includes("Error - Lock")) {
+      const delay = delayTime * 2 ** (attempt - 1)
+      logger.warn(`Transfer failed, retrying in ${delay}ms (attempt ${attempt}/${maxRetries})`)
+      await new Promise((resolve) => setTimeout(resolve, delay))
+      return await transferMoneyWithRetry(currency, giverId, recipientId, amount, delayTime, maxRetries, attempt + 1)
+    } else {
+      throw new Error(err) // Re-throw non-retryable errors
     }
   }
-
-  throw new Error("Error - Should never happen")
 }

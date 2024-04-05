@@ -10,13 +10,13 @@ import logger from "../../helpers/logger"
 import { QueryRunner } from "typeorm"
 import { describe, it } from "mocha"
 import { userInfo } from "../../dataServices/typeorm/user/dto"
-import { moneyTransferParamsValidatorErrors, transferMoneyErrors, userFunctionsErrors } from "../../services/user/error.dto"
+import { moneyTransferParamsValidatorErrors, transferMoneyErrors, userFunctionsErrors, transferMoneyWithRetryErrors } from "../../services/user/error.dto"
 
 describe("Unit tests user", () => {
   let sandbox: SinonSandbox = createSandbox()
 
   describe("services > user > index > saveNewUser", () => {
-    afterEach(() => {
+    beforeEach(() => {
       sandbox.restore()
     })
     it("should create a new user", async () => {
@@ -49,7 +49,7 @@ describe("Unit tests user", () => {
   })
 
   describe("services > user > index > addCurrency", () => {
-    afterEach(() => {
+    beforeEach(() => {
       sandbox.restore()
     })
     it("should fail (negative amount)", async () => {
@@ -94,7 +94,7 @@ describe("Unit tests user", () => {
   })
 
   describe("services > user > index > getAllUsers", () => {
-    afterEach(() => {
+    beforeEach(() => {
       sandbox.restore()
     })
     it("should retrieve all the users from DB", async () => {
@@ -111,7 +111,7 @@ describe("Unit tests user", () => {
   })
 
   describe("services > user > index > getUserById", () => {
-    afterEach(() => {
+    beforeEach(() => {
       sandbox.restore()
     })
     it("should retrieve a single user from DB", async () => {
@@ -146,7 +146,7 @@ describe("Unit tests user", () => {
   })
 
   describe("services > user > index > deleteUserById", () => {
-    afterEach(() => {
+    beforeEach(() => {
       sandbox.restore()
     })
     it("should delete a single user from DB by its id", async () => {
@@ -170,8 +170,8 @@ describe("Unit tests user", () => {
     })
   })
 
-  describe("services > user > index > transfertMoney", () => {
-    afterEach(() => {
+  describe("services > user > index > transferMoney", () => {
+    beforeEach(() => {
       sandbox.restore()
     })
     it("Successful transfer", async () => {
@@ -182,6 +182,7 @@ describe("Unit tests user", () => {
       const mockUpdateWalletByWalletIdTransaction = sandbox.stub(modWalletDB, "updateWalletByWalletIdTransaction").resolves(true) // Assuming update functions return success indicator (modify as needed)
       const mockRollBackAndQuitTransactionRunner = sandbox.stub(modConnection, "rollBackAndQuitTransactionRunner")
       const mockCommitAndQuitTransactionRunner = sandbox.stub(modConnection, "commitAndQuitTransactionRunner")
+      const mockErrorLogger = sandbox.stub(logger, "error")
 
       // Call the transferMoneyWithRetry function
       const result = await transferMoney(moneyTypes.soft_currency, "giver123", "recipient456", 100)
@@ -205,6 +206,8 @@ describe("Unit tests user", () => {
 
       sandbox.assert.calledOnce(mockCommitAndQuitTransactionRunner)
 
+      sandbox.assert.notCalled(mockErrorLogger)
+
       // Expect the result to be true (successful transfer)
       chai.assert.isTrue(result)
     })
@@ -224,16 +227,19 @@ describe("Unit tests user", () => {
     })
     it("Transfer failure due to createAndStartTransaction error", async () => {
       const mockTransferMoneyParamsValidator = sandbox.stub(modUser, "transferMoneyParamsValidator").resolves([{}, {}])
-      const mockCreateAndStartTransaction = sandbox.stub(modConnection, "createAndStartTransaction").throws(new Error("Transaction Error"))
+      const mockCreateAndStartTransaction = sandbox.stub(modConnection, "createAndStartTransaction").rejects(new Error("Transaction Error"))
       const mockAcquireLockOnWallet = sandbox.stub(modConnection, "acquireLockOnWallet")
+      const mockErrorLogger = sandbox.stub(logger, "error")
 
       try {
         await transferMoney(moneyTypes.soft_currency, "giver123", "recipient456", 100)
         chai.assert.fail("Unexpected successful transfer")
       } catch (err) {
-        chai.assert.equal(err.message, "Transaction Error")
+        const errInfo = JSON.parse(err.message)
+        chai.assert.equal(errInfo.message, transferMoneyErrors.ErrorTransactionCreation.message)
         sandbox.assert.calledOnce(mockTransferMoneyParamsValidator)
         sandbox.assert.calledOnce(mockCreateAndStartTransaction)
+        sandbox.assert.called(mockErrorLogger)
         sandbox.assert.notCalled(mockAcquireLockOnWallet)
       }
     })
@@ -244,6 +250,7 @@ describe("Unit tests user", () => {
       mockAcquireLockOnWallet.onFirstCall().resolves(false)
       mockAcquireLockOnWallet.onSecondCall().resolves(true)
       const mockUpdateWalletByWalletIdTransaction = sandbox.stub(modWalletDB, "updateWalletByWalletIdTransaction").resolves(true) // Assuming update functions return success indicator (modify as needed)
+      const mockErrorLogger = sandbox.stub(logger, "error")
 
       try {
         await transferMoney(moneyTypes.soft_currency, "giver123", "recipient456", 100)
@@ -254,6 +261,7 @@ describe("Unit tests user", () => {
         chai.assert.equal(errorInfo.message, transferMoneyErrors.ErrorLockAcquisition.message)
         sandbox.assert.calledOnce(mockTransferMoneyParamsValidator)
         sandbox.assert.calledOnce(mockCreateAndStartTransaction)
+        sandbox.assert.called(mockErrorLogger)
         sandbox.assert.calledTwice(mockAcquireLockOnWallet)
         sandbox.assert.calledWith(mockAcquireLockOnWallet, { someTransactionObject: true } as unknown as QueryRunner, "1234") // Replace with actual logic
         sandbox.assert.calledWith(mockAcquireLockOnWallet, { someTransactionObject: true } as unknown as QueryRunner, "4321") // Replace with actual logic
@@ -267,6 +275,7 @@ describe("Unit tests user", () => {
       mockAcquireLockOnWallet.onFirstCall().resolves(true)
       mockAcquireLockOnWallet.onSecondCall().resolves(false)
       const mockUpdateWalletByWalletIdTransaction = sandbox.stub(modWalletDB, "updateWalletByWalletIdTransaction").resolves(true) // Assuming update functions return success indicator (modify as needed)
+      const mockErrorLogger = sandbox.stub(logger, "error")
 
       try {
         await transferMoney(moneyTypes.soft_currency, "giver123", "recipient456", 100)
@@ -277,6 +286,7 @@ describe("Unit tests user", () => {
         chai.assert.equal(errorInfo.message, transferMoneyErrors.ErrorLockAcquisition.message)
         sandbox.assert.calledOnce(mockTransferMoneyParamsValidator)
         sandbox.assert.calledOnce(mockCreateAndStartTransaction)
+        sandbox.assert.called(mockErrorLogger)
         sandbox.assert.calledTwice(mockAcquireLockOnWallet)
         sandbox.assert.calledWith(mockAcquireLockOnWallet, { someTransactionObject: true } as unknown as QueryRunner, "1234")
         sandbox.assert.calledWith(mockAcquireLockOnWallet, { someTransactionObject: true } as unknown as QueryRunner, "4321")
@@ -285,8 +295,8 @@ describe("Unit tests user", () => {
     })
   })
 
-  describe("services > user > index > transfertMoneyWithRetry", () => {
-    afterEach(() => {
+  describe("services > user > index > transferMoneyWithRetry", () => {
+    beforeEach(() => {
       sandbox.restore()
     })
     it("Successful transfer (no retry)", async () => {
@@ -308,6 +318,7 @@ describe("Unit tests user", () => {
       const mockTransferMoney = sandbox.stub(modUser, "transferMoney")
       mockTransferMoney.onFirstCall().rejects(new Error("Error - Lock - Network error"))
       mockTransferMoney.onSecondCall().resolves(true)
+      const mockWarnLogger = sandbox.stub(logger, "warn")
 
       // Call the transferMoneyWithRetry function
       const result = await transferMoneyWithRetry(moneyTypes.soft_currency, "giver123", "recipient456", 100, 300)
@@ -315,6 +326,7 @@ describe("Unit tests user", () => {
       // Verify the transferMoney function was called three times
       sandbox.assert.calledTwice(mockTransferMoney)
       sandbox.assert.calledWithExactly(mockTransferMoney, moneyTypes.soft_currency, "giver123", "recipient456", 100)
+      sandbox.assert.calledOnce(mockWarnLogger)
 
       // Expect the result to be true (successful transfer after retry)
       chai.assert.isTrue(result)
@@ -338,6 +350,7 @@ describe("Unit tests user", () => {
       mockTransferMoney.onFirstCall().throws(new Error("Error - Lock - Network error"))
       mockTransferMoney.onSecondCall().throws(new Error("Network error"))
       mockTransferMoney.onThirdCall().resolves(true)
+      const mockWarnLogger = sandbox.stub(logger, "warn")
 
       // Call the transferMoneyWithRetry function
       try {
@@ -346,6 +359,7 @@ describe("Unit tests user", () => {
         chai.assert.isTrue(error.message.includes("Network error"))
         sandbox.assert.calledTwice(mockTransferMoney)
         sandbox.assert.calledWithExactly(mockTransferMoney, moneyTypes.soft_currency, "giver123", "recipient456", 100)
+        sandbox.assert.calledOnce(mockWarnLogger)
       }
     })
     it("Failure - Transfer fail (Maximum retries exceeded)", async () => {
@@ -355,15 +369,20 @@ describe("Unit tests user", () => {
       mockTransferMoney.onThirdCall().throws(new Error("Error - Lock - Network error"))
       mockTransferMoney.onCall(4).throws(new Error("Error - Lock - Network error"))
       mockTransferMoney.onCall(5).resolves(true)
+      const mockWarnLogger = sandbox.stub(logger, "warn")
 
       // Call the transferMoneyWithRetry function
+      const maxAttempt = 4
+      const amountToTransfer = 130
+      const delay = 150
       try {
-        await transferMoneyWithRetry(moneyTypes.soft_currency, "giver123", "recipient456", 100, 300)
+        await transferMoneyWithRetry(moneyTypes.soft_currency, "giver123", "recipient456", amountToTransfer, delay, maxAttempt)
       } catch (err) {
         const errorInfo = JSON.parse(err.message)
-        chai.assert.isTrue(errorInfo.message.includes("Max retry attempt reached"))
+        chai.assert.isTrue(errorInfo.message === transferMoneyWithRetryErrors.ErrorMaxRetry.message)
         sandbox.assert.calledThrice(mockTransferMoney)
         sandbox.assert.calledWithExactly(mockTransferMoney, moneyTypes.soft_currency, "giver123", "recipient456", 100)
+        sandbox.assert.callCount(mockWarnLogger, maxAttempt)
       }
     })
   })
