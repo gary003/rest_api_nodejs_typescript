@@ -29,7 +29,6 @@ describe("Functional Tests API", () => {
           // logger.info(JSON.stringify(result.body))
           chai.assert.isNotEmpty(result.body)
           chai.assert.isTrue(result.body.userId === testUserId)
-          testUserId = result.body.userId
           return done()
         })
     })
@@ -82,7 +81,6 @@ describe("Functional Tests API", () => {
         .delete(`${urlBase}/user/${testUserId}`)
         .set("Accept", "application/json")
         .end((err, result) => {
-          // console.log({ err, result })
           if (!!err) {
             // logger.error(`Error occurred in route > user > DELETE: ${err}`)
             chai.assert.fail(err)

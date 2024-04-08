@@ -367,21 +367,23 @@ describe("Unit tests user", () => {
       mockTransferMoney.onFirstCall().throws(new Error("Error - Lock - Network error"))
       mockTransferMoney.onSecondCall().throws(new Error("Error - Lock - Network error"))
       mockTransferMoney.onThirdCall().throws(new Error("Error - Lock - Network error"))
-      mockTransferMoney.onCall(4).throws(new Error("Error - Lock - Network error"))
-      mockTransferMoney.onCall(5).resolves(true)
+      // mockTransferMoney.onCall(4).throws(new Error("Error - Lock - Network error"))
+      // mockTransferMoney.onCall(5).throws(new Error("Error - Lock - Network error"))
+      // mockTransferMoney.onCall(6).throws(new Error("Error - Lock - Network error"))
+      // mockTransferMoney.onCall(7).resolves(true)
       const mockWarnLogger = sandbox.stub(logger, "warn")
 
       // Call the transferMoneyWithRetry function
-      const maxAttempt = 4
+      const maxAttempt = 3
       const amountToTransfer = 130
-      const delay = 150
+      const delay = 10
       try {
         await transferMoneyWithRetry(moneyTypes.soft_currency, "giver123", "recipient456", amountToTransfer, delay, maxAttempt)
       } catch (err) {
         const errorInfo = JSON.parse(err.message)
         chai.assert.isTrue(errorInfo.message === transferMoneyWithRetryErrors.ErrorMaxRetry.message)
-        sandbox.assert.calledThrice(mockTransferMoney)
-        sandbox.assert.calledWithExactly(mockTransferMoney, moneyTypes.soft_currency, "giver123", "recipient456", 100)
+        sandbox.assert.callCount(mockTransferMoney, maxAttempt)
+        sandbox.assert.calledWithExactly(mockTransferMoney, moneyTypes.soft_currency, "giver123", "recipient456", amountToTransfer)
         sandbox.assert.callCount(mockWarnLogger, maxAttempt)
       }
     })
