@@ -50,6 +50,11 @@ export const userFunctionsErrors: Record<string, errorType> = {
 } as const
 
 export const moneyTransferParamsValidatorErrors: Record<string, errorType> = {
+  ErrorUserInfo: {
+    name: "ErrorUserInfo",
+    message: "Impossible to get user info from db",
+    httpCode: 500,
+  },
   ErrorCurrencyType: {
     name: "ErrorCurrencyType",
     message: "wrong type of currency",

@@ -61,15 +61,29 @@ export const getUserWalletInfo = async (userId: string): Promise<userWalletDTO> 
 }
 
 export const transferMoneyParamsValidator = async (currency: moneyTypes, giverId: string, recipientId: string, amount: number) => {
-  if (!Object.values(moneyTypes).includes(currency)) throw new Error(JSON.stringify(moneyTransferParamsValidatorErrors.currencyTypeError))
+  if (!Object.values(moneyTypes).includes(currency)) throw new Error(JSON.stringify(moneyTransferParamsValidatorErrors.ErrorCurrencyType))
 
-  const giverUserInfo: any = await getUserWalletInfoDB(giverId)
+  const giverUserInfo: any = await getUserWalletInfoDB(giverId).catch((err) => {
+    logger.error(err)
+    return false
+  })
+
+  if (!giverUserInfo) {
+    throw new Error(JSON.stringify(moneyTransferParamsValidatorErrors.ErrorUserInfo))
+  }
 
   const giverNewBalance = Number(giverUserInfo.Wallet[currency]) - amount
 
   if (giverNewBalance < 0) throw new Error(JSON.stringify(moneyTransferParamsValidatorErrors.ErrorInsufficientFunds))
 
-  const recipientUserInfo: any = await getUserWalletInfoDB(recipientId)
+  const recipientUserInfo: any = await getUserWalletInfoDB(recipientId).catch((err) => {
+    logger.error(err)
+    return false
+  })
+
+  if (!recipientUserInfo) {
+    throw new Error(JSON.stringify(moneyTransferParamsValidatorErrors.ErrorUserInfo))
+  }
 
   // logger.debug(JSON.stringify({ giverUserInfo, giverNewBalance }))
 

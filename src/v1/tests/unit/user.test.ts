@@ -1,6 +1,6 @@
 import chai from "chai"
 import { createSandbox, SinonSandbox } from "sinon"
-import { addCurrency, deleteUserById, getAllUsers, getUserWalletInfo, saveNewUser, transferMoney, transferMoneyWithRetry } from "../../services/user/index"
+import { addCurrency, deleteUserById, getAllUsers, getUserWalletInfo, saveNewUser, transferMoney, transferMoneyParamsValidator, transferMoneyWithRetry } from "../../services/user/index"
 import * as modUserDB from "../../dataServices/typeorm/user"
 import * as modWalletDB from "../../dataServices/typeorm/wallet"
 import * as modUser from "../../services/user/index"
@@ -170,6 +170,51 @@ describe("Unit tests user", () => {
     })
   })
 
+  describe("services > user > index > transferMoneyParamsValidator", () => {
+    beforeEach(() => {
+      sandbox.restore()
+    })
+    it("Should throw an error for invalid currency type", async () => {
+      const fakeUserGiver = {
+        userId: "fake_22ef5564-0234-11ed-b939-0242ac120002",
+        firstname: "fake_Eugene",
+        lastname: "fake_Porter",
+        wallet: {
+          walletId: "fake_515f73c2-027d-11ed-b939-0242ac120002",
+          hardCurrency: 2000,
+          softCurrency: 2000,
+        },
+      }
+
+      const fakeUserRecipient = {
+        userId: "fake_22ef5564-0234-11ed-b939-0242ac120002",
+        firstname: "fake_Eugene",
+        lastname: "fake_Porter",
+        wallet: {
+          walletId: "fake_515f73c2-027d-11ed-b939-0242ac120002",
+          hardCurrency: 2000,
+          softCurrency: 2000,
+        },
+      }
+
+      const mockFetchUserDB = sandbox.stub(modUserDB, "getUserWalletInfoDB")
+      mockFetchUserDB.onFirstCall().resolves(fakeUserGiver)
+      mockFetchUserDB.onSecondCall().resolves(fakeUserRecipient)
+
+      const invalidCurrency = "invalid_currency"
+      const amount = 100
+
+      try {
+        await transferMoneyParamsValidator(invalidCurrency as moneyTypes, fakeUserGiver.userId, fakeUserRecipient.userId, amount)
+        chai.assert.fail("Expected error for invalid currency")
+      } catch (err) {
+        const errInfo = JSON.parse(err.message)
+        chai.assert.equal(errInfo.message, moneyTransferParamsValidatorErrors.ErrorCurrencyType.message)
+        sandbox.assert.notCalled(mockFetchUserDB)
+      }
+    })
+  })
+
   describe("services > user > index > transferMoney", () => {
     beforeEach(() => {
       sandbox.restore()
@@ -211,6 +256,7 @@ describe("Unit tests user", () => {
       // Expect the result to be true (successful transfer)
       chai.assert.isTrue(result)
     })
+
     it("Transfer failure due to transferMoneyParamsValidator error", async () => {
       const mockTransferMoneyParamsValidator = sandbox.stub(modUser, "transferMoneyParamsValidator").throws(new Error("Validation Error"))
       const mockCreateAndStartTransaction = sandbox.stub(modConnection, "createAndStartTransaction").resolves({ someTransactionObject: true } as unknown as QueryRunner)
