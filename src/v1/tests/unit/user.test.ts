@@ -213,6 +213,47 @@ describe("Unit tests user", () => {
         sandbox.assert.notCalled(mockFetchUserDB)
       }
     })
+
+    it("Should throw an error for insufficient funds", async () => {
+      const validCurrency = moneyTypes.soft_currency
+      const fakeUserGiver = {
+        userId: "fake_22ef5564-0234-11ed-b939-0242ac120002",
+        firstname: "fake_Eugene",
+        lastname: "fake_Porter",
+        Wallet: {
+          walletId: "fake_515f73c2-027d-11ed-b939-0242ac120002",
+          hardCurrency: 2000,
+          softCurrency: 100, // Insufficient funds
+        },
+      }
+
+      const fakeUserRecipient = {
+        userId: "fake_22ef5564-0234-11ed-b939-0242ac120002",
+        firstname: "fake_Eugene",
+        lastname: "fake_Porter",
+        Wallet: {
+          walletId: "fake_515f73c2-027d-11ed-b939-0242ac120002",
+          hardCurrency: 2000,
+          softCurrency: 2000,
+        },
+      }
+
+      const mockFetchUserDB = sandbox.stub(modUserDB, "getUserWalletInfoDB")
+      mockFetchUserDB.onFirstCall().resolves(fakeUserGiver)
+      mockFetchUserDB.onSecondCall().resolves(fakeUserRecipient)
+
+      const amount = 200 // Attempt to transfer more than available
+
+      try {
+        await transferMoneyParamsValidator(validCurrency, fakeUserGiver.userId, fakeUserRecipient.userId, amount)
+        chai.assert.fail("Expected error for insufficient funds")
+      } catch (err) {
+        console.log(err)
+        const errInfo = JSON.parse(err.message)
+        chai.assert.equal(errInfo.message, moneyTransferParamsValidatorErrors.ErrorInsufficientFunds.message)
+        sandbox.assert.calledOnce(mockFetchUserDB)
+      }
+    })
   })
 
   describe("services > user > index > transferMoney", () => {
