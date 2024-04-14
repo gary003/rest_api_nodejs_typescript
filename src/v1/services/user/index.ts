@@ -64,7 +64,6 @@ export const transferMoneyParamsValidator = async (currency: moneyTypes, giverId
   if (!Object.values(moneyTypes).includes(currency)) throw new Error(JSON.stringify(moneyTransferParamsValidatorErrors.ErrorCurrencyType))
 
   const giverUserInfo: any = await getUserWalletInfoDB(giverId).catch((err) => {
-    logger.error(err)
     return false
   })
 
@@ -77,7 +76,6 @@ export const transferMoneyParamsValidator = async (currency: moneyTypes, giverId
   if (giverNewBalance < 0) throw new Error(JSON.stringify(moneyTransferParamsValidatorErrors.ErrorInsufficientFunds))
 
   const recipientUserInfo: any = await getUserWalletInfoDB(recipientId).catch((err) => {
-    logger.error(err)
     return false
   })
 

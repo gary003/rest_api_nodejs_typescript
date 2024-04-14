@@ -46,11 +46,48 @@ describe("Unit tests user", () => {
         chai.assert.fail("Should not happen - noerror in catch expected")
       }
     })
+    it("should fail creating a new user", async () => {
+      const fakeUser = {
+        userId: "fake_22ef5564-0234-11ed-b939-0242ac120002",
+        firstname: "fake_Eugene",
+        lastname: "fake_Porter",
+        wallet: {
+          walletId: "fake_515f73c2-027d-11ed-b939-0242ac120002",
+          hardCurrency: 2000,
+          softCurrency: 2000,
+        },
+      }
+
+      const fakeSaveNewUserDB = sandbox.stub(modUserDB, "saveNewUserDB").rejects(null)
+
+      try {
+        const response = await saveNewUser(fakeUser.userId, fakeUser.firstname, fakeUser.lastname)
+        chai.assert.fail("Unexpected success")
+      } catch (err) {
+        const errInfo = JSON.parse(err.message)
+        chai.assert.equal(errInfo.message, userFunctionsErrors.ErrorCreatingUser.message)
+      }
+    })
   })
 
   describe("services > user > index > addCurrency", () => {
     beforeEach(() => {
       sandbox.restore()
+    })
+    it("should succeed adding currency", async () => {
+      const mockGetUserWalletInfo = sandbox.stub(modUserDB, "getUserWalletInfoDB").resolves({ Wallet: { walletId: "12345" } } as unknown as userInfo)
+      const mockUpdateWalletByWalletId = sandbox.stub(modWalletDB, "updateWalletByWalletId").resolves(true)
+
+      const amountToAdd = 150
+      try {
+        const res = await addCurrency("22ef5564-0234-11ed-b939-0242ac120002", moneyTypes.soft_currency, amountToAdd)
+        chai.assert.isTrue(res)
+        sandbox.assert.calledOnce(mockGetUserWalletInfo)
+        sandbox.assert.calledOnce(mockUpdateWalletByWalletId)
+      } catch (err) {
+        // logger.debug(err)
+        chai.assert.fail("Should not get an error")
+      }
     })
     it("should fail (negative amount)", async () => {
       const amountToAdd = -55
@@ -74,21 +111,6 @@ describe("Unit tests user", () => {
       } catch (err) {
         // logger.debug(err)
         chai.assert.isNotNull(err, "Should get an error")
-      }
-    })
-    it("should succeed adding currency", async () => {
-      const mockGetUserWalletInfo = sandbox.stub(modUserDB, "getUserWalletInfoDB").resolves({ Wallet: { walletId: "12345" } } as unknown as userInfo)
-      const mockUpdateWalletByWalletId = sandbox.stub(modWalletDB, "updateWalletByWalletId").resolves(true)
-
-      const amountToAdd = 150
-      try {
-        const res = await addCurrency("22ef5564-0234-11ed-b939-0242ac120002", moneyTypes.soft_currency, amountToAdd)
-        chai.assert.isTrue(res)
-        sandbox.assert.calledOnce(mockGetUserWalletInfo)
-        sandbox.assert.calledOnce(mockUpdateWalletByWalletId)
-      } catch (err) {
-        // logger.debug(err)
-        chai.assert.fail("Should not get an error")
       }
     })
   })
@@ -174,6 +196,41 @@ describe("Unit tests user", () => {
     beforeEach(() => {
       sandbox.restore()
     })
+    it("Should return the 2 users info objects correctly", async () => {
+      const validCurrency = moneyTypes.soft_currency
+      const fakeUserGiver = {
+        userId: "fake_22ef5564-0234-11ed-b939-0242ac120002",
+        firstname: "fake_Eugene",
+        lastname: "fake_Porter",
+        Wallet: {
+          walletId: "fake_515f73c2-027d-11ed-b939-0242ac120002",
+          hardCurrency: 2000,
+          softCurrency: 2000, // Sufficient funds
+        },
+      }
+
+      const fakeUserRecipient = {
+        userId: "fake_22ef5564-0234-11ed-b939-0242ac120002",
+        firstname: "fake_Eugene",
+        lastname: "fake_Porter",
+        Wallet: {
+          walletId: "fake_515f73c2-027d-11ed-b939-0242ac120002",
+          hardCurrency: 2000,
+          softCurrency: 2000,
+        },
+      }
+
+      const mockFetchUserDB = sandbox.stub(modUserDB, "getUserWalletInfoDB")
+      mockFetchUserDB.onFirstCall().resolves(fakeUserGiver)
+      mockFetchUserDB.onSecondCall().resolves(fakeUserRecipient)
+
+      const amount = 100
+
+      const [giverUserInfo, recipientUserInfo] = await transferMoneyParamsValidator(validCurrency, fakeUserGiver.userId, fakeUserRecipient.userId, amount)
+
+      chai.assert.isObject(giverUserInfo)
+      chai.assert.isObject(recipientUserInfo)
+    })
     it("Should throw an error for invalid currency type", async () => {
       const fakeUserGiver = {
         userId: "fake_22ef5564-0234-11ed-b939-0242ac120002",
@@ -213,7 +270,6 @@ describe("Unit tests user", () => {
         sandbox.assert.notCalled(mockFetchUserDB)
       }
     })
-
     it("Should throw an error for insufficient funds", async () => {
       const validCurrency = moneyTypes.soft_currency
       const fakeUserGiver = {
@@ -248,10 +304,89 @@ describe("Unit tests user", () => {
         await transferMoneyParamsValidator(validCurrency, fakeUserGiver.userId, fakeUserRecipient.userId, amount)
         chai.assert.fail("Expected error for insufficient funds")
       } catch (err) {
-        console.log(err)
         const errInfo = JSON.parse(err.message)
         chai.assert.equal(errInfo.message, moneyTransferParamsValidatorErrors.ErrorInsufficientFunds.message)
         sandbox.assert.calledOnce(mockFetchUserDB)
+      }
+    })
+    it("Should throw an error if retrieving giver user info fails", async () => {
+      const validCurrency = moneyTypes.soft_currency
+      const fakeUserRecipient = {
+        userId: "fake_22ef5564-0234-11ed-b939-0242ac120002",
+        firstname: "fake_Eugene",
+        lastname: "fake_Porter",
+        Wallet: {
+          walletId: "fake_515f73c2-027d-11ed-b939-0242ac120002",
+          hardCurrency: 2000,
+          softCurrency: 2000,
+        },
+      }
+
+      const fakeUserGiver = {
+        // Define fake giver object but don't use it
+        userId: "fake_giver_id",
+        firstname: "fake_Eugene",
+        lastname: "fake_Porter",
+        Wallet: {
+          walletId: "fake_515f73c2-027d-11ed-b939-0242ac120002",
+          hardCurrency: 2000,
+          softCurrency: 2000,
+        },
+      }
+
+      const mockFetchUserDB = sandbox.stub(modUserDB, "getUserWalletInfoDB")
+      mockFetchUserDB.onFirstCall().rejects(null)
+      mockFetchUserDB.onSecondCall().rejects(null)
+
+      const amount = 100
+
+      try {
+        await transferMoneyParamsValidator(validCurrency, "fake_giver_id", fakeUserRecipient.userId, amount) // Use a fake giver ID
+        chai.assert.fail("Expected error retrieving giver user info")
+      } catch (err) {
+        const errInfo = JSON.parse(err.message)
+        chai.assert.equal(errInfo.message, moneyTransferParamsValidatorErrors.ErrorUserInfo.message) // Verify specific error message
+        sandbox.assert.calledOnce(mockFetchUserDB)
+      }
+    })
+    it("Should throw an error if retrieving receiver user info fails", async () => {
+      const validCurrency = moneyTypes.soft_currency
+      const fakeUserRecipient = {
+        userId: "fake_22ef5564-0234-11ed-b939-0242ac120002",
+        firstname: "fake_Eugene",
+        lastname: "fake_Porter",
+        Wallet: {
+          walletId: "fake_515f73c2-027d-11ed-b939-0242ac120002",
+          hardCurrency: 2000,
+          softCurrency: 2000,
+        },
+      }
+
+      const fakeUserGiver = {
+        // Define fake giver object but don't use it
+        userId: "fake_giver_id",
+        firstname: "fake_Eugene",
+        lastname: "fake_Porter",
+        Wallet: {
+          walletId: "fake_515f73c2-027d-11ed-b939-0242ac120002",
+          hardCurrency: 2000,
+          softCurrency: 2000,
+        },
+      }
+
+      const mockFetchUserDB = sandbox.stub(modUserDB, "getUserWalletInfoDB")
+      mockFetchUserDB.onFirstCall().resolves(fakeUserGiver)
+      mockFetchUserDB.onSecondCall().rejects(null)
+
+      const amount = 100
+
+      try {
+        await transferMoneyParamsValidator(validCurrency, "fake_giver_id", fakeUserRecipient.userId, amount) // Use a fake giver ID
+        chai.assert.fail("Expected error retrieving giver user info")
+      } catch (err) {
+        const errInfo = JSON.parse(err.message)
+        chai.assert.equal(errInfo.message, moneyTransferParamsValidatorErrors.ErrorUserInfo.message) // Verify specific error message
+        sandbox.assert.calledTwice(mockFetchUserDB)
       }
     })
   })
