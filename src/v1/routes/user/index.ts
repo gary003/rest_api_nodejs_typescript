@@ -10,7 +10,7 @@ userRouter
   .get(async (_: Request, res: Response) => {
     const results = await getAllUsers().catch((err) => {
       logger.error(err)
-      return err
+      return null
     })
 
     if (!results) return res.status(500).json("Impossible to retreive any user")
@@ -22,7 +22,7 @@ userRouter
 
     const result = await saveNewUser(userId, firstname, lastname).catch((err) => {
       logger.error(err)
-      return err
+      return null
     })
 
     if (!result) return res.status(500).json("Impossible to save the new user")
@@ -35,7 +35,7 @@ userRouter
   .get(async (req: Request, res: Response) => {
     const result = await getUserWalletInfo(req.params.userId).catch((err) => {
       logger.error(err)
-      return err
+      return null
     })
 
     if (!result) return res.status(500).json("Impossible to retreive any user")
@@ -45,7 +45,7 @@ userRouter
   .delete(async (req: Request, res: Response) => {
     const result = await deleteUserById(req.params.userId).catch((err) => {
       logger.error(err)
-      return err
+      return null
     })
 
     if (!result) return res.status(500).json("Impossible to delete the user")

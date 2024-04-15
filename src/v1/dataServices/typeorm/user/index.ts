@@ -33,7 +33,12 @@ export const saveNewUserDB = async (userId: string, firstname: string, lastname:
   newUser.firstname = firstname
   newUser.lastname = lastname
 
-  await createNewWallet(newUser)
+  const walletCreation = await createNewWallet(newUser).catch((err) => {
+    logger.error(err)
+    return null
+  })
+
+  if (!walletCreation) throw new Error("Impossible to create a new wallet or user")
 
   return newUser
 }
@@ -60,7 +65,7 @@ export const deleteUserByIdDB = async (userId: string): Promise<boolean> => {
   }
 
   // Let the db some time to handle the previous request
-  await new Promise((resolve) => setTimeout(resolve, 1000))
+  await new Promise((resolve) => setTimeout(resolve, 10))
 
   const UserRepository = connection.getRepository(User)
 
