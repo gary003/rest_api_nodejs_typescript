@@ -8,6 +8,8 @@
     "dev": "./node_modules/nodemon/bin/nodemon.js ./src/v1/bin/server.ts",
     "build": "./node_modules/typescript/bin/tsc -p .",
     "test": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register './src/v1/tests/**/*.test.ts'",
+    "test:unit": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register './src/v1/tests/unit/**/*.test.ts'",
+    "test:functional": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register './src/v1/tests/functional/**/*.test.ts'",
     "coverage": "nyc npm run test"
   },
   "author": "",
