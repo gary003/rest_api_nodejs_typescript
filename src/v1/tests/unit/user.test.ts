@@ -1,16 +1,16 @@
-import chai from "chai"
-import { createSandbox, SinonSandbox } from "sinon"
-import { addCurrency, deleteUserById, getAllUsers, getUserWalletInfo, saveNewUser, transferMoney, transferMoneyParamsValidator, transferMoneyWithRetry } from "../../services/user/index"
 import * as modUserDB from "../../dataServices/typeorm/user"
 import * as modWalletDB from "../../dataServices/typeorm/wallet"
 import * as modUser from "../../services/user/index"
 import * as modConnection from "../../dataServices/typeorm/connection/connectionFile"
 import { moneyTypes } from "../../domain"
-import logger from "../../helpers/logger"
-import { QueryRunner } from "typeorm"
+import { createSandbox, SinonSandbox } from "sinon"
 import { describe, it } from "mocha"
-import { userInfo } from "../../dataServices/typeorm/user/dto"
+import chai from "chai"
+import { addCurrency, deleteUserById, getAllUsers, getUserWalletInfo, saveNewUser, transferMoney, transferMoneyParamsValidator, transferMoneyWithRetry } from "../../services/user/index"
 import { moneyTransferParamsValidatorErrors, transferMoneyErrors, userFunctionsErrors, transferMoneyWithRetryErrors } from "../../services/user/error.dto"
+import { QueryRunner } from "typeorm"
+import { userInfo } from "../../dataServices/typeorm/user/dto"
+import logger from "../../helpers/logger"
 
 describe("Unit tests user", () => {
   let sandbox: SinonSandbox = createSandbox()
@@ -512,7 +512,7 @@ describe("Unit tests user", () => {
         sandbox.assert.calledTwice(mockAcquireLockOnWallet)
         sandbox.assert.calledWith(mockAcquireLockOnWallet, { someTransactionObject: true } as unknown as QueryRunner, "1234")
         sandbox.assert.calledWith(mockAcquireLockOnWallet, { someTransactionObject: true } as unknown as QueryRunner, "4321")
-        sandbox.assert.notCalled(mockUpdateWalletByWalletIdTransaction) // Not called due to earlier error
+        sandbox.assert.notCalled(mockUpdateWalletByWalletIdTransaction)
       }
     })
   })

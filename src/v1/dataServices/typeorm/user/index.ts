@@ -65,7 +65,7 @@ export const deleteUserByIdDB = async (userId: string): Promise<boolean> => {
   }
 
   // Let the db some time to handle the previous request
-  await new Promise((resolve) => setTimeout(resolve, 10))
+  await new Promise((resolve) => setTimeout(resolve, 209))
 
   const UserRepository = connection.getRepository(User)
 
