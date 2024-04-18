@@ -1,7 +1,8 @@
 import express from "express"
+import logger from "../helpers/logger"
 
 export function handleError(err: Error, req: express.Request, res: express.Response, next: express.NextFunction) {
-  console.error(err.stack) // Log the error for debugging
+  logger.error(err.stack) // Log the error for debugging
 
   // Set default status code to 500 (Internal Server Error)
   let statusCode = 500
