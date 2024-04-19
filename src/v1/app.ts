@@ -1,7 +1,7 @@
 require("dotenv").config()
 
 import express from "express"
-import userRoute from "./routes/user/index"
+import userRoute from "./application/routes/user/index"
 
 import { handleError } from "./middlewares/errorHandler"
 import { handleNotFound } from "./middlewares/handleNotFound"

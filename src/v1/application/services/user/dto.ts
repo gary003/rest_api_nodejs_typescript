@@ -1,4 +1,4 @@
-import { wallet } from "../../domain"
+import { wallet } from "../../../domain"
 
 export type userWalletDTO = {
   userId: string

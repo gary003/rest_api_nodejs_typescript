@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express"
 import { deleteUserById, getAllUsers, getUserWalletInfo, saveNewUser } from "../../services/user/index"
 
-import logger from "../../helpers/logger"
+import logger from "../../../infrastructure/logger"
 
 const userRouter = Router()
 

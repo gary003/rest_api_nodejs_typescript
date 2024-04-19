@@ -1,6 +1,6 @@
 import chai from "chai"
 import request from "supertest"
-import app from "../../app"
+import app from "../../../../../app"
 import { expect } from "chai"
 import { describe, it } from "mocha"
 // import logger from "../../helpers/logger"
@@ -10,7 +10,7 @@ const urlBase = "/api/v1"
 let testUserId: string = "cc2c990b6-029c-11ed-b939-0242ac120002"
 
 describe("Functional Tests API", () => {
-  describe("route > user > POST", () => {
+  describe("application > route > user > POST", () => {
     it("should add a new user", async () => {
       try {
         const response = await request(app)
@@ -32,7 +32,7 @@ describe("Functional Tests API", () => {
     })
   })
 
-  describe("route > user > GET (all users)", () => {
+  describe("application > route > user > GET (all users)", () => {
     it("should return an array of all users", async () => {
       try {
         const response = await request(app).get(`${urlBase}/user`).set("Accept", "application/json").expect("Content-Type", /json/)
@@ -49,7 +49,7 @@ describe("Functional Tests API", () => {
     })
   })
 
-  describe("route > user > GET (single user)", () => {
+  describe("application > route > user > GET (single user)", () => {
     it("should return a single user", async () => {
       try {
         const response = await request(app).get(`${urlBase}/user/${testUserId}`).set("Accept", "application/json").expect("Content-Type", /json/)
@@ -62,7 +62,7 @@ describe("Functional Tests API", () => {
     })
   })
 
-  describe("route > user > DELETE", () => {
+  describe("application > route > user > DELETE", () => {
     it("should delete a specified user", async () => {
       try {
         const response = await request(app).delete(`${urlBase}/user/${testUserId}`).set("Accept", "application/json").expect("Content-Type", /json/)

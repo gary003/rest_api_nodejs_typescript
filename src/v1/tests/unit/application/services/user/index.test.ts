@@ -1,21 +1,21 @@
-import * as modUserDB from "../../dataServices/typeorm/user"
-import * as modWalletDB from "../../dataServices/typeorm/wallet"
-import * as modUser from "../../services/user/index"
-import * as modConnection from "../../dataServices/typeorm/connection/connectionFile"
-import { moneyTypes } from "../../domain"
+import * as modUserDB from "../../../../../infrastructure/persistance/user"
+import * as modWalletDB from "../../../../../infrastructure/persistance/wallet"
+import * as modUser from "../../../../../application/services/user/index"
+import * as modConnection from "../../../../../infrastructure/persistance/connection/connectionFile"
+import { moneyTypes } from "../../../../../domain"
 import { createSandbox, SinonSandbox } from "sinon"
 import { describe, it } from "mocha"
 import chai from "chai"
-import { addCurrency, deleteUserById, getAllUsers, getUserWalletInfo, saveNewUser, transferMoney, transferMoneyParamsValidator, transferMoneyWithRetry } from "../../services/user/index"
-import { moneyTransferParamsValidatorErrors, transferMoneyErrors, userFunctionsErrors, transferMoneyWithRetryErrors } from "../../services/user/error.dto"
-import { QueryRunner } from "typeorm"
-import { userInfo } from "../../dataServices/typeorm/user/dto"
-import logger from "../../helpers/logger"
+import { addCurrency, deleteUserById, getAllUsers, getUserWalletInfo, saveNewUser, transferMoney, transferMoneyParamsValidator, transferMoneyWithRetry } from "../../../../../application/services/user/index"
+import { moneyTransferParamsValidatorErrors, transferMoneyErrors, userFunctionsErrors, transferMoneyWithRetryErrors } from "../../../../../application/services/user/error.dto"
+import { transactionQueryRunnerType } from "../../../../../infrastructure/persistance/connection/connectionFile"
+import { userInfo } from "../../../../../infrastructure/persistance/user/dto"
+import logger from "../../../../../infrastructure/logger"
 
 describe("Unit tests user", () => {
   let sandbox: SinonSandbox = createSandbox()
 
-  describe("services > user > index > saveNewUser", () => {
+  describe("application > services > user > index > saveNewUser", () => {
     beforeEach(() => {
       sandbox.restore()
     })
@@ -70,20 +70,20 @@ describe("Unit tests user", () => {
     })
   })
 
-  describe("services > user > index > addCurrency", () => {
+  describe("application > services > user > index > addCurrency", () => {
     beforeEach(() => {
       sandbox.restore()
     })
     it("should succeed adding currency", async () => {
       const mockGetUserWalletInfo = sandbox.stub(modUserDB, "getUserWalletInfoDB").resolves({ Wallet: { walletId: "12345" } } as unknown as userInfo)
-      const mockUpdateWalletByWalletId = sandbox.stub(modWalletDB, "updateWalletByWalletId").resolves(true)
+      const mockUpdateWalletByWalletIdDB = sandbox.stub(modWalletDB, "updateWalletByWalletIdDB").resolves(true)
 
       const amountToAdd = 150
       try {
         const res = await addCurrency("22ef5564-0234-11ed-b939-0242ac120002", moneyTypes.soft_currency, amountToAdd)
         chai.assert.isTrue(res)
         sandbox.assert.calledOnce(mockGetUserWalletInfo)
-        sandbox.assert.calledOnce(mockUpdateWalletByWalletId)
+        sandbox.assert.calledOnce(mockUpdateWalletByWalletIdDB)
       } catch (err) {
         // logger.debug(err)
         chai.assert.fail("Should not get an error")
@@ -115,7 +115,7 @@ describe("Unit tests user", () => {
     })
   })
 
-  describe("services > user > index > getAllUsers", () => {
+  describe("application > services > user > index > getAllUsers", () => {
     beforeEach(() => {
       sandbox.restore()
     })
@@ -126,13 +126,13 @@ describe("Unit tests user", () => {
 
         chai.assert.isArray(response, "Should get the list in an array format")
       } catch (err) {
-        // logger.debug(`Error occurred in services > user > index > getAllUsers: ${err}`)
+        // logger.debug(`Error occurred in application > services > user > index > getAllUsers: ${err}`)
         chai.assert.fail("Fail - Should retreive all users")
       }
     })
   })
 
-  describe("services > user > index > getUserById", () => {
+  describe("application > services > user > index > getUserById", () => {
     beforeEach(() => {
       sandbox.restore()
     })
@@ -146,7 +146,7 @@ describe("Unit tests user", () => {
         chai.assert.exists(response, "Should get a valid response from DB")
         chai.assert.equal(response.userId, userToFetch, "Should get a valid response with a userId")
       } catch (err) {
-        // logger.debug(`Error occurred in services > user > index > getUserById: ${err}`)
+        // logger.debug(`Error occurred in application > services > user > index > getUserById: ${err}`)
         chai.assert.fail("Fail - should retreive a user")
       }
     })
@@ -167,7 +167,7 @@ describe("Unit tests user", () => {
     })
   })
 
-  describe("services > user > index > deleteUserById", () => {
+  describe("application > services > user > index > deleteUserById", () => {
     beforeEach(() => {
       sandbox.restore()
     })
@@ -186,13 +186,13 @@ describe("Unit tests user", () => {
         chai.assert.isTrue(mockDeleteUserByIdDB.calledOnce)
         // chai.assert.isTrue(mockDeleteWalletByIdDB.calledOnce)
       } catch (err) {
-        // logger.debug(`Error occurred in services > user > index > deleteUserById: ${err}`)
+        // logger.debug(`Error occurred in application > services > user > index > deleteUserById: ${err}`)
         chai.assert.fail("Fail - Unable to delete the user")
       }
     })
   })
 
-  describe("services > user > index > transferMoneyParamsValidator", () => {
+  describe("application > services > user > index > transferMoneyParamsValidator", () => {
     beforeEach(() => {
       sandbox.restore()
     })
@@ -391,14 +391,14 @@ describe("Unit tests user", () => {
     })
   })
 
-  describe("services > user > index > transferMoney", () => {
+  describe("application > services > user > index > transferMoney", () => {
     beforeEach(() => {
       sandbox.restore()
     })
     it("Successful transfer", async () => {
       // Mock all the dependent functions
       const mockTransferMoneyParamsValidator = sandbox.stub(modUser, "transferMoneyParamsValidator").resolves([{ Wallet: { walletId: "1234", softCurrency: 123 } }, { Wallet: { walletId: "4321", softCurrency: 300 } }] as unknown as userInfo[])
-      const mockCreateAndStartTransaction = sandbox.stub(modConnection, "createAndStartTransaction").resolves({ someTransactionObject: true } as unknown as QueryRunner)
+      const mockCreateAndStartTransaction = sandbox.stub(modConnection, "createAndStartTransaction").resolves({ someTransactionObject: true } as unknown as transactionQueryRunnerType)
       const mockAcquireLockOnWallet = sandbox.stub(modConnection, "acquireLockOnWallet").resolves(true)
       const mockUpdateWalletByWalletIdTransaction = sandbox.stub(modWalletDB, "updateWalletByWalletIdTransaction").resolves(true) // Assuming update functions return success indicator (modify as needed)
       const mockRollBackAndQuitTransactionRunner = sandbox.stub(modConnection, "rollBackAndQuitTransactionRunner")
@@ -415,13 +415,13 @@ describe("Unit tests user", () => {
       sandbox.assert.calledOnce(mockCreateAndStartTransaction)
 
       sandbox.assert.calledTwice(mockAcquireLockOnWallet)
-      sandbox.assert.calledWith(mockAcquireLockOnWallet, { someTransactionObject: true } as unknown as QueryRunner, "1234") // Replace with actual wallet ID logic
-      sandbox.assert.calledWith(mockAcquireLockOnWallet, { someTransactionObject: true } as unknown as QueryRunner, "4321") // Replace with actual wallet ID logic
+      sandbox.assert.calledWith(mockAcquireLockOnWallet, { someTransactionObject: true } as unknown as transactionQueryRunnerType, "1234") // Replace with actual wallet ID logic
+      sandbox.assert.calledWith(mockAcquireLockOnWallet, { someTransactionObject: true } as unknown as transactionQueryRunnerType, "4321") // Replace with actual wallet ID logic
 
       sandbox.assert.calledTwice(mockUpdateWalletByWalletIdTransaction)
       // Replace these assertions with the expected arguments and return values based on your implementation
-      sandbox.assert.calledWith(mockUpdateWalletByWalletIdTransaction, { someTransactionObject: true } as unknown as QueryRunner, "1234", moneyTypes.soft_currency, 23)
-      sandbox.assert.calledWith(mockUpdateWalletByWalletIdTransaction, { someTransactionObject: true } as unknown as QueryRunner, "4321", moneyTypes.soft_currency, 400)
+      sandbox.assert.calledWith(mockUpdateWalletByWalletIdTransaction, { someTransactionObject: true } as unknown as transactionQueryRunnerType, "1234", moneyTypes.soft_currency, 23)
+      sandbox.assert.calledWith(mockUpdateWalletByWalletIdTransaction, { someTransactionObject: true } as unknown as transactionQueryRunnerType, "4321", moneyTypes.soft_currency, 400)
 
       sandbox.assert.notCalled(mockRollBackAndQuitTransactionRunner) // No rollback expected in successful case
 
@@ -435,7 +435,7 @@ describe("Unit tests user", () => {
 
     it("Transfer failure due to transferMoneyParamsValidator error", async () => {
       const mockTransferMoneyParamsValidator = sandbox.stub(modUser, "transferMoneyParamsValidator").throws(new Error("Validation Error"))
-      const mockCreateAndStartTransaction = sandbox.stub(modConnection, "createAndStartTransaction").resolves({ someTransactionObject: true } as unknown as QueryRunner)
+      const mockCreateAndStartTransaction = sandbox.stub(modConnection, "createAndStartTransaction").resolves({ someTransactionObject: true } as unknown as transactionQueryRunnerType)
 
       try {
         await transferMoney(moneyTypes.soft_currency, "giver123", "recipient456", 100)
@@ -467,7 +467,7 @@ describe("Unit tests user", () => {
     })
     it("Transfer failure due to acquireLockOnWallet failure (giver)", async () => {
       const mockTransferMoneyParamsValidator = sandbox.stub(modUser, "transferMoneyParamsValidator").resolves([{ Wallet: { walletId: "1234", softCurrency: 123 } }, { Wallet: { walletId: "4321", softCurrency: 300 } }] as unknown as userInfo[])
-      const mockCreateAndStartTransaction = sandbox.stub(modConnection, "createAndStartTransaction").resolves({ someTransactionObject: true } as unknown as QueryRunner)
+      const mockCreateAndStartTransaction = sandbox.stub(modConnection, "createAndStartTransaction").resolves({ someTransactionObject: true } as unknown as transactionQueryRunnerType)
       const mockAcquireLockOnWallet = sandbox.stub(modConnection, "acquireLockOnWallet")
       mockAcquireLockOnWallet.onFirstCall().resolves(false)
       mockAcquireLockOnWallet.onSecondCall().resolves(true)
@@ -485,14 +485,14 @@ describe("Unit tests user", () => {
         sandbox.assert.calledOnce(mockCreateAndStartTransaction)
         sandbox.assert.called(mockErrorLogger)
         sandbox.assert.calledTwice(mockAcquireLockOnWallet)
-        sandbox.assert.calledWith(mockAcquireLockOnWallet, { someTransactionObject: true } as unknown as QueryRunner, "1234") // Replace with actual logic
-        sandbox.assert.calledWith(mockAcquireLockOnWallet, { someTransactionObject: true } as unknown as QueryRunner, "4321") // Replace with actual logic
+        sandbox.assert.calledWith(mockAcquireLockOnWallet, { someTransactionObject: true } as unknown as transactionQueryRunnerType, "1234") // Replace with actual logic
+        sandbox.assert.calledWith(mockAcquireLockOnWallet, { someTransactionObject: true } as unknown as transactionQueryRunnerType, "4321") // Replace with actual logic
         sandbox.assert.notCalled(mockUpdateWalletByWalletIdTransaction) // Not called due to earlier error
       }
     })
     it("Transfer failure due to acquireLockOnWallet failure (recipient)", async () => {
       const mockTransferMoneyParamsValidator = sandbox.stub(modUser, "transferMoneyParamsValidator").resolves([{ Wallet: { walletId: "1234", softCurrency: 123 } }, { Wallet: { walletId: "4321", softCurrency: 300 } }] as unknown as userInfo[])
-      const mockCreateAndStartTransaction = sandbox.stub(modConnection, "createAndStartTransaction").resolves({ someTransactionObject: true } as unknown as QueryRunner)
+      const mockCreateAndStartTransaction = sandbox.stub(modConnection, "createAndStartTransaction").resolves({ someTransactionObject: true } as unknown as transactionQueryRunnerType)
       const mockAcquireLockOnWallet = sandbox.stub(modConnection, "acquireLockOnWallet")
       mockAcquireLockOnWallet.onFirstCall().resolves(true)
       mockAcquireLockOnWallet.onSecondCall().resolves(false)
@@ -510,14 +510,14 @@ describe("Unit tests user", () => {
         sandbox.assert.calledOnce(mockCreateAndStartTransaction)
         sandbox.assert.called(mockErrorLogger)
         sandbox.assert.calledTwice(mockAcquireLockOnWallet)
-        sandbox.assert.calledWith(mockAcquireLockOnWallet, { someTransactionObject: true } as unknown as QueryRunner, "1234")
-        sandbox.assert.calledWith(mockAcquireLockOnWallet, { someTransactionObject: true } as unknown as QueryRunner, "4321")
+        sandbox.assert.calledWith(mockAcquireLockOnWallet, { someTransactionObject: true } as unknown as transactionQueryRunnerType, "1234")
+        sandbox.assert.calledWith(mockAcquireLockOnWallet, { someTransactionObject: true } as unknown as transactionQueryRunnerType, "4321")
         sandbox.assert.notCalled(mockUpdateWalletByWalletIdTransaction)
       }
     })
   })
 
-  describe("services > user > index > transferMoneyWithRetry", () => {
+  describe("application > services > user > index > transferMoneyWithRetry", () => {
     beforeEach(() => {
       sandbox.restore()
     })

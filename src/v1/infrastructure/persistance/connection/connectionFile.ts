@@ -1,7 +1,9 @@
 import { DataSourceOptions, QueryRunner, DataSource } from "typeorm"
 import { v4 as uuidv4 } from "uuid"
 
-export const connectionTypeORM = async (): Promise<DataSource> => {
+export type transactionQueryRunnerType = QueryRunner
+
+export const connectionDB = async (): Promise<DataSource> => {
   const connectionOptions: DataSourceOptions = {
     name: uuidv4(),
     type: process.env.DB_DRIVER,
@@ -22,7 +24,7 @@ export const connectionTypeORM = async (): Promise<DataSource> => {
 }
 
 export const createAndStartTransaction = async (): Promise<QueryRunner> => {
-  const connection = await connectionTypeORM()
+  const connection = await connectionDB()
 
   const queryRunner = connection.createQueryRunner()
 

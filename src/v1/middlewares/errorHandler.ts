@@ -1,5 +1,5 @@
 import express from "express"
-import logger from "../helpers/logger"
+import logger from "../infrastructure/logger"
 
 export function handleError(err: Error, req: express.Request, res: express.Response, next: express.NextFunction) {
   logger.error(err.stack) // Log the error for debugging

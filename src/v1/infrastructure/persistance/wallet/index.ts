@@ -1,4 +1,4 @@
-import { connectionTypeORM } from "../../typeorm/connection/connectionFile"
+import { connectionDB } from "../connection/connectionFile"
 import { Wallet } from "./entity"
 import { v4 as uuidv4 } from "uuid"
 import { QueryRunner } from "typeorm"
@@ -6,8 +6,8 @@ import { User } from "../user/entity"
 import { moneyTypes } from "../../../domain"
 // import logger from "../../../helpers/logger"
 
-export const getWalletById = async (walletId: string) => {
-  const connection = await connectionTypeORM()
+export const getWalletByIdDB = async (walletId: string) => {
+  const connection = await connectionDB()
 
   const WalletsRepository = connection.getRepository(Wallet)
 
@@ -20,8 +20,8 @@ export const getWalletById = async (walletId: string) => {
   return wallet
 }
 
-export const updateWalletByWalletId = async (walletId: string, currencyType: moneyTypes, newBalance: number): Promise<boolean> => {
-  const connection = await connectionTypeORM()
+export const updateWalletByWalletIdDB = async (walletId: string, currencyType: moneyTypes, newBalance: number): Promise<boolean> => {
+  const connection = await connectionDB()
 
   const WalletsRepository = connection.getRepository(Wallet)
 
@@ -46,8 +46,8 @@ export const updateWalletByWalletIdTransaction = async (transactionRunner: Query
   return true
 }
 
-export const createNewWallet = async (user: User): Promise<Wallet> => {
-  const connection = await connectionTypeORM()
+export const createNewWalletDB = async (user: User): Promise<Wallet> => {
+  const connection = await connectionDB()
 
   const WalletsRepository = connection.getRepository(Wallet)
 
@@ -66,8 +66,8 @@ export const createNewWallet = async (user: User): Promise<Wallet> => {
   return newWallet
 }
 
-// export const deleteWalletById = async (walletId: string): Promise<boolean> => {
-//   const connection = await connectionTypeORM()
+// export const deleteWalletByIdDB = async (walletId: string): Promise<boolean> => {
+//   const connection = await connectionDB()
 
 //   const WalletsRepository = connection.getRepository(Wallet)
 

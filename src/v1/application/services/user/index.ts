@@ -1,11 +1,11 @@
-import { acquireLockOnWallet, commitAndQuitTransactionRunner, createAndStartTransaction, rollBackAndQuitTransactionRunner } from "../../dataServices/typeorm/connection/connectionFile"
-import { getAllDBUsers, getUserWalletInfoDB, saveNewUserDB, deleteUserByIdDB } from "../../dataServices/typeorm/user"
-import { updateWalletByWalletId, updateWalletByWalletIdTransaction } from "../../dataServices/typeorm/wallet"
-import { moneyTypes } from "../../domain"
+import { acquireLockOnWallet, commitAndQuitTransactionRunner, createAndStartTransaction, rollBackAndQuitTransactionRunner } from "../../../infrastructure/persistance/connection/connectionFile"
+import { getAllDBUsers, getUserWalletInfoDB, saveNewUserDB, deleteUserByIdDB } from "../../../infrastructure/persistance/user"
+import { updateWalletByWalletIdDB, updateWalletByWalletIdTransaction } from "../../../infrastructure/persistance/wallet"
+import { moneyTypes } from "../../../domain"
 import { userWalletDTO } from "./dto"
 import { transferMoneyErrors, userFunctionsErrors, moneyTransferParamsValidatorErrors, transferMoneyWithRetryErrors } from "./error.dto"
-import logger from "../../helpers/logger"
-import { userInfo } from "../../dataServices/typeorm/user/dto"
+import logger from "../../../infrastructure/logger"
+import { userInfo } from "../../../infrastructure/persistance/user/dto"
 
 export const getAllUsers = async (): Promise<userWalletDTO[]> => {
   const allUsers: userWalletDTO[] = await getAllDBUsers().catch((err) => {
@@ -38,7 +38,7 @@ export const addCurrency = async (userId: string, currencyType: moneyTypes, amou
     return null
   })
 
-  const resultUpdate = await updateWalletByWalletId(String(currentUserWalletInfo.Wallet.walletId), currencyType, currentUserWalletInfo[currencyType] + amount).catch((err) => {
+  const resultUpdate = await updateWalletByWalletIdDB(String(currentUserWalletInfo.Wallet.walletId), currencyType, currentUserWalletInfo[currencyType] + amount).catch((err) => {
     logger.error(err)
     return null
   })

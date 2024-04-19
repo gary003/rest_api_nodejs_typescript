@@ -1,12 +1,12 @@
 import { Wallet } from "../wallet/entity"
-import { connectionTypeORM } from "../../typeorm/connection/connectionFile"
+import { connectionDB } from "../connection/connectionFile"
 import { User } from "./entity"
-import { createNewWallet } from "../wallet"
+import { createNewWalletDB } from "../wallet"
 import { userInfo } from "./dto"
-import logger from "../../../helpers/logger"
+import logger from "../../../infrastructure/logger"
 
 export const getAllDBUsers = async (): Promise<userInfo[]> => {
-  const connection = await connectionTypeORM()
+  const connection = await connectionDB()
 
   const UserRepository = connection.getRepository(User)
 
@@ -33,7 +33,7 @@ export const saveNewUserDB = async (userId: string, firstname: string, lastname:
   newUser.firstname = firstname
   newUser.lastname = lastname
 
-  const walletCreation = await createNewWallet(newUser).catch((err) => {
+  const walletCreation = await createNewWalletDB(newUser).catch((err) => {
     logger.error(err)
     return null
   })
@@ -44,7 +44,7 @@ export const saveNewUserDB = async (userId: string, firstname: string, lastname:
 }
 
 export const deleteUserByIdDB = async (userId: string): Promise<boolean> => {
-  const connection = await connectionTypeORM()
+  const connection = await connectionDB()
 
   const userToDeleteInfo = await getUserWalletInfoDB(userId)
 
@@ -85,7 +85,7 @@ export const deleteUserByIdDB = async (userId: string): Promise<boolean> => {
 }
 
 export const getUserWalletInfoDB = async (userId: string): Promise<userInfo> => {
-  const connection = await connectionTypeORM()
+  const connection = await connectionDB()
 
   const UserRepository = connection.getRepository(User)
 
