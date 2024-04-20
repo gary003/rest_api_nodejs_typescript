@@ -11,7 +11,7 @@ export const getWalletByIdDB = async (walletId: string) => {
 
   const WalletsRepository = connection.getRepository(Wallet)
 
-  const wallet: Wallet | void = await WalletsRepository.findOne({ where: { walletId } }).catch((err) => console.error(err))
+  const wallet: Wallet | void | null = await WalletsRepository.findOne({ where: { walletId } }).catch((err) => console.error(err))
 
   await connection.destroy()
 

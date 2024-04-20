@@ -1,7 +1,7 @@
 export enum walletAttributes {
   WALLETID = "walletId",
-  SOFTCURRENCY = "softCurrency",
-  // HARDCURRENCY = "hardCurrency",
+  softCurrency = "softCurrency",
+  hardCurrency = "hardCurrency",
 }
 
 export type walletDBInfo = Record<walletAttributes, string | number>

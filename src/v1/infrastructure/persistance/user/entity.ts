@@ -4,17 +4,17 @@ import { Wallet } from "../wallet/entity"
 @Entity()
 export class User {
   @PrimaryColumn("varchar")
-  userId: string
+  userId!: string
 
   @Column({
     type: "varchar",
     nullable: false,
   })
-  firstname: string
+  firstname!: string
 
   @Column({
     type: "varchar",
     nullable: false,
   })
-  lastname: string
+  lastname!: string
 }

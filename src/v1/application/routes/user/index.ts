@@ -1,7 +1,10 @@
 import { Router, Request, Response } from "express"
 import { deleteUserById, getAllUsers, getUserWalletInfo, saveNewUser } from "../../services/user/index"
 
+import { errorAPIUSER } from "./error.dto"
+
 import logger from "../../../infrastructure/logger"
+import { validateUserIdParams } from "./validation"
 
 const userRouter = Router()
 
@@ -13,7 +16,7 @@ userRouter
       return null
     })
 
-    if (!results) return res.status(500).json("Impossible to retreive any user")
+    if (!results) return res.status(500).json(errorAPIUSER.errorAPIGetAllUsers)
 
     return res.status(200).json(results)
   })
@@ -25,7 +28,7 @@ userRouter
       return null
     })
 
-    if (!result) return res.status(500).json("Impossible to save the new user")
+    if (!result) return res.status(500).json(errorAPIUSER.errorAPIUserCreation)
 
     return res.status(200).json(result)
   })
@@ -33,22 +36,40 @@ userRouter
 userRouter
   .route("/:userId")
   .get(async (req: Request, res: Response) => {
-    const result = await getUserWalletInfo(req.params.userId).catch((err) => {
+    const userId = await validateUserIdParams(req.params.userId).catch((err) => {
       logger.error(err)
       return null
     })
 
-    if (!result) return res.status(500).json("Impossible to retreive any user")
+    if (!userId) {
+      return res.status(400).json(errorAPIUSER.errorAPIInvalidUserId)
+    }
+
+    const result = await getUserWalletInfo(userId).catch((err) => {
+      logger.error(err)
+      return null
+    })
+
+    if (!result) return res.status(500).json(errorAPIUSER.errorAPIGetUser)
 
     return res.status(200).json(result)
   })
   .delete(async (req: Request, res: Response) => {
-    const result = await deleteUserById(req.params.userId).catch((err) => {
+    const userId = await validateUserIdParams(req.params.userId).catch((err) => {
       logger.error(err)
       return null
     })
 
-    if (!result) return res.status(500).json("Impossible to delete the user")
+    if (!userId) {
+      return res.status(400).json(errorAPIUSER.errorAPIInvalidUserId)
+    }
+
+    const result = await deleteUserById(userId).catch((err) => {
+      logger.error(err)
+      return null
+    })
+
+    if (!result) return res.status(500).json(errorAPIUSER.errorAPIDeleteUser)
 
     return res.status(200).json(result)
   })

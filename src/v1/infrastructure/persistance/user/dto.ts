@@ -22,6 +22,3 @@ const us = {
     coconut: 12,
   },
 } as userInfo
-
-console.log(us)
-console.log(us.Wallet.softCurrency)

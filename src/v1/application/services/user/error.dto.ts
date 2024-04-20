@@ -1,4 +1,9 @@
 export const transferMoneyErrors: Record<string, errorType> = {
+  ErrorParamsValidator: {
+    name: "ErrorParamsValidator",
+    message: "Error - Failed to retreive recipient - giver informations",
+    httpCode: 500,
+  },
   ErrorLockAcquisition: {
     name: "ErrorLockAcquisition",
     message: "Error - Lock - Failed to acquire locks on wallets",
@@ -25,6 +30,16 @@ export const userFunctionsErrors: Record<string, errorType> = {
   ErrorRetrievingUsers: {
     name: "ErrorRetrievingUsers",
     message: "Error - Failed to retrieve users from database",
+    httpCode: 500,
+  },
+  ErrorGettingWalletInfo: {
+    name: "ErrorGettingWalletInfo",
+    message: "Error - no wallet ibfo found",
+    httpCode: 500,
+  },
+  ErrorNoWalletUser: {
+    name: "ErrorNoWalletUser",
+    message: "Error - User with no wallet",
     httpCode: 500,
   },
   ErrorCreatingUser: {

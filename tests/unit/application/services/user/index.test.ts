@@ -1,21 +1,23 @@
-import * as modUserDB from "../../../../../infrastructure/persistance/user"
-import * as modWalletDB from "../../../../../infrastructure/persistance/wallet"
-import * as modUser from "../../../../../application/services/user/index"
-import * as modConnection from "../../../../../infrastructure/persistance/connection/connectionFile"
-import { moneyTypes } from "../../../../../domain"
+require("dotenv").config()
+
+import * as modUserDB from "../../../../../src/v1/infrastructure/persistance/user"
+import * as modWalletDB from "../../../../../src/v1/infrastructure/persistance/wallet"
+import * as modUser from "../../../../../src/v1/application/services/user/index"
+import * as modConnection from "../../../../../src/v1/infrastructure/persistance/connection/connectionFile"
+import { moneyTypes } from "../../../../../src/v1/domain"
 import { createSandbox, SinonSandbox } from "sinon"
 import { describe, it } from "mocha"
 import chai from "chai"
-import { addCurrency, deleteUserById, getAllUsers, getUserWalletInfo, saveNewUser, transferMoney, transferMoneyParamsValidator, transferMoneyWithRetry } from "../../../../../application/services/user/index"
-import { moneyTransferParamsValidatorErrors, transferMoneyErrors, userFunctionsErrors, transferMoneyWithRetryErrors } from "../../../../../application/services/user/error.dto"
-import { transactionQueryRunnerType } from "../../../../../infrastructure/persistance/connection/connectionFile"
-import { userInfo } from "../../../../../infrastructure/persistance/user/dto"
-import logger from "../../../../../infrastructure/logger"
+import { addCurrency, deleteUserById, getAllUsers, getUserWalletInfo, saveNewUser, transferMoney, transferMoneyParamsValidator, transferMoneyWithRetry } from "../../../../../src/v1/application/services/user/index"
+import { moneyTransferParamsValidatorErrors, transferMoneyErrors, userFunctionsErrors, transferMoneyWithRetryErrors, errorType } from "../../../../../src/v1/application/services/user/error.dto"
+import { transactionQueryRunnerType } from "../../../../../src/v1/infrastructure/persistance/connection/connectionFile"
+import { userInfo } from "../../../../../src/v1/infrastructure/persistance/user/dto"
+import logger from "../../../../../src/v1/infrastructure/logger"
 
 describe("Unit tests user", () => {
   let sandbox: SinonSandbox = createSandbox()
 
-  describe("application > services > user > index > saveNewUser", () => {
+  describe("src > v1 > application > services > user > index > saveNewUser", () => {
     beforeEach(() => {
       sandbox.restore()
     })
@@ -39,7 +41,7 @@ describe("Unit tests user", () => {
         chai.assert.exists(response, "Should get the correct response")
         chai.assert.strictEqual(response.userId, fakeUser.userId, "Should get the correct userId")
         chai.assert.isTrue(fakeSaveNewUserDB.calledOnce)
-      } catch (err) {
+      } catch (err: any) {
         chai.assert.fail("Should not happen - no error in catch expected")
       }
     })
@@ -61,16 +63,16 @@ describe("Unit tests user", () => {
       try {
         await saveNewUser(fakeUser.userId, fakeUser.firstname, fakeUser.lastname)
         chai.assert.fail("Unexpected success")
-      } catch (err) {
+      } catch (err: any) {
         const errInfo = JSON.parse(err.message)
-        chai.assert.equal(errInfo.message, userFunctionsErrors.ErrorCreatingUser.message)
+        chai.assert.equal(errInfo.message, userFunctionsErrors.ErrorCreatingUser!.message)
         sandbox.assert.calledOnce(fakeSaveNewUserDB)
         sandbox.assert.calledOnce(mockErrorLogger)
       }
     })
   })
 
-  describe("application > services > user > index > addCurrency", () => {
+  describe("src > v1 > application > services > user > index > addCurrency", () => {
     beforeEach(() => {
       sandbox.restore()
     })
@@ -84,7 +86,7 @@ describe("Unit tests user", () => {
         chai.assert.isTrue(res)
         sandbox.assert.calledOnce(mockGetUserWalletInfo)
         sandbox.assert.calledOnce(mockUpdateWalletByWalletIdDB)
-      } catch (err) {
+      } catch (err: any) {
         // logger.debug(err)
         chai.assert.fail("Should not get an error")
       }
@@ -95,12 +97,12 @@ describe("Unit tests user", () => {
       try {
         await addCurrency("22ef5564-0234-11ed-b939-0242ac120002", moneyTypes.soft_currency, amountToAdd)
         chai.assert.fail("Unexpected success")
-      } catch (err) {
+      } catch (err: any) {
         chai.assert.isNotNull(err, "Should get an error")
 
         const errInfo = JSON.parse(err.message)
         // logger.debug(errInfo)
-        chai.assert.equal(errInfo.message, moneyTransferParamsValidatorErrors.ErrorInvalidAmount.message)
+        chai.assert.equal(errInfo.message, moneyTransferParamsValidatorErrors.ErrorInvalidAmount!.message)
       }
     })
     it("should fail (wrong currency type)", async () => {
@@ -108,14 +110,14 @@ describe("Unit tests user", () => {
       try {
         await addCurrency("22ef5564-0234-11ed-b939-0242ac120002", "fake_currency_type" as moneyTypes, amountToAdd)
         chai.assert.fail("Unexpected success - Should never happen")
-      } catch (err) {
+      } catch (err: any) {
         // logger.debug(err)
         chai.assert.isNotNull(err, "Should get an error")
       }
     })
   })
 
-  describe("application > services > user > index > getAllUsers", () => {
+  describe("src > v1 > application > services > user > index > getAllUsers", () => {
     beforeEach(() => {
       sandbox.restore()
     })
@@ -125,14 +127,14 @@ describe("Unit tests user", () => {
         // logger.debug(JSON.stringify(response))
 
         chai.assert.isArray(response, "Should get the list in an array format")
-      } catch (err) {
-        // logger.debug(`Error occurred in application > services > user > index > getAllUsers: ${err}`)
+      } catch (err: any) {
+        // logger.debug(`Error occurred in src > v1 > application > services > user > index > getAllUsers: ${err}`)
         chai.assert.fail("Fail - Should retreive all users")
       }
     })
   })
 
-  describe("application > services > user > index > getUserById", () => {
+  describe("src > v1 > application > services > user > index > getUserById", () => {
     beforeEach(() => {
       sandbox.restore()
     })
@@ -145,8 +147,8 @@ describe("Unit tests user", () => {
 
         chai.assert.exists(response, "Should get a valid response from DB")
         chai.assert.equal(response.userId, userToFetch, "Should get a valid response with a userId")
-      } catch (err) {
-        // logger.debug(`Error occurred in application > services > user > index > getUserById: ${err}`)
+      } catch (err: any) {
+        // logger.debug(`Error occurred in src > v1 > application > services > user > index > getUserById: ${err}`)
         chai.assert.fail("Fail - should retreive a user")
       }
     })
@@ -158,16 +160,16 @@ describe("Unit tests user", () => {
         const user = await getUserWalletInfo(userToFetch)
         // logger.debug(JSON.stringify(user))
         chai.assert.fail("Should never happen")
-      } catch (err) {
+      } catch (err: any) {
         const errorInfo = JSON.parse(err.message)
         // logger.debug(err)
         chai.assert.exists(err, "Should get an err from DB")
-        chai.assert.equal(errorInfo.message, userFunctionsErrors.ErrorFetchingUserInfo.message)
+        chai.assert.equal(errorInfo.message, userFunctionsErrors.ErrorFetchingUserInfo!.message)
       }
     })
   })
 
-  describe("application > services > user > index > deleteUserById", () => {
+  describe("src > v1 > application > services > user > index > deleteUserById", () => {
     beforeEach(() => {
       sandbox.restore()
     })
@@ -185,14 +187,14 @@ describe("Unit tests user", () => {
         chai.assert.isTrue(response, "Should get true response from DB")
         chai.assert.isTrue(mockDeleteUserByIdDB.calledOnce)
         // chai.assert.isTrue(mockDeleteWalletByIdDB.calledOnce)
-      } catch (err) {
-        // logger.debug(`Error occurred in application > services > user > index > deleteUserById: ${err}`)
+      } catch (err: any) {
+        // logger.debug(`Error occurred in src > v1 > application > services > user > index > deleteUserById: ${err}`)
         chai.assert.fail("Fail - Unable to delete the user")
       }
     })
   })
 
-  describe("application > services > user > index > transferMoneyParamsValidator", () => {
+  describe("src > v1 > application > services > user > index > transferMoneyParamsValidator", () => {
     beforeEach(() => {
       sandbox.restore()
     })
@@ -264,9 +266,9 @@ describe("Unit tests user", () => {
       try {
         await transferMoneyParamsValidator(invalidCurrency as moneyTypes, fakeUserGiver.userId, fakeUserRecipient.userId, amount)
         chai.assert.fail("Expected error for invalid currency")
-      } catch (err) {
+      } catch (err: any) {
         const errInfo = JSON.parse(err.message)
-        chai.assert.equal(errInfo.message, moneyTransferParamsValidatorErrors.ErrorCurrencyType.message)
+        chai.assert.equal(errInfo.message, moneyTransferParamsValidatorErrors.ErrorCurrencyType!.message)
         sandbox.assert.notCalled(mockFetchUserDB)
       }
     })
@@ -303,9 +305,9 @@ describe("Unit tests user", () => {
       try {
         await transferMoneyParamsValidator(validCurrency, fakeUserGiver.userId, fakeUserRecipient.userId, amount)
         chai.assert.fail("Expected error for insufficient funds")
-      } catch (err) {
+      } catch (err: any) {
         const errInfo = JSON.parse(err.message)
-        chai.assert.equal(errInfo.message, moneyTransferParamsValidatorErrors.ErrorInsufficientFunds.message)
+        chai.assert.equal(errInfo.message, moneyTransferParamsValidatorErrors.ErrorInsufficientFunds!.message)
         sandbox.assert.calledOnce(mockFetchUserDB)
       }
     })
@@ -343,9 +345,9 @@ describe("Unit tests user", () => {
       try {
         await transferMoneyParamsValidator(validCurrency, "fake_giver_id", fakeUserRecipient.userId, amount) // Use a fake giver ID
         chai.assert.fail("Expected error retrieving giver user info")
-      } catch (err) {
+      } catch (err: any) {
         const errInfo = JSON.parse(err.message)
-        chai.assert.equal(errInfo.message, moneyTransferParamsValidatorErrors.ErrorUserInfo.message) // Verify specific error message
+        chai.assert.equal(errInfo.message, moneyTransferParamsValidatorErrors.ErrorUserInfo!.message) // Verify specific error message
         sandbox.assert.calledOnce(mockFetchUserDB)
       }
     })
@@ -383,15 +385,15 @@ describe("Unit tests user", () => {
       try {
         await transferMoneyParamsValidator(validCurrency, "fake_giver_id", fakeUserRecipient.userId, amount) // Use a fake giver ID
         chai.assert.fail("Expected error retrieving giver user info")
-      } catch (err) {
+      } catch (err: any) {
         const errInfo = JSON.parse(err.message)
-        chai.assert.equal(errInfo.message, moneyTransferParamsValidatorErrors.ErrorUserInfo.message) // Verify specific error message
+        chai.assert.equal(errInfo.message, moneyTransferParamsValidatorErrors.ErrorUserInfo!.message) // Verify specific error message
         sandbox.assert.calledTwice(mockFetchUserDB)
       }
     })
   })
 
-  describe("application > services > user > index > transferMoney", () => {
+  describe("src > v1 > application > services > user > index > transferMoney", () => {
     beforeEach(() => {
       sandbox.restore()
     })
@@ -441,7 +443,7 @@ describe("Unit tests user", () => {
         await transferMoney(moneyTypes.soft_currency, "giver123", "recipient456", 100)
         // Should not reach here if transferMoneyParamsValidator throws
         chai.assert.fail("Unexpected successful transfer")
-      } catch (err) {
+      } catch (err: any) {
         chai.assert.equal(err.message, "Validation Error")
         sandbox.assert.calledOnce(mockTransferMoneyParamsValidator)
         sandbox.assert.notCalled(mockCreateAndStartTransaction)
@@ -456,9 +458,9 @@ describe("Unit tests user", () => {
       try {
         await transferMoney(moneyTypes.soft_currency, "giver123", "recipient456", 100)
         chai.assert.fail("Unexpected successful transfer")
-      } catch (err) {
+      } catch (err: any) {
         const errInfo = JSON.parse(err.message)
-        chai.assert.equal(errInfo.message, transferMoneyErrors.ErrorTransactionCreation.message)
+        chai.assert.equal(errInfo.message, transferMoneyErrors.ErrorTransactionCreation!.message)
         sandbox.assert.calledOnce(mockTransferMoneyParamsValidator)
         sandbox.assert.calledOnce(mockCreateAndStartTransaction)
         sandbox.assert.called(mockErrorLogger)
@@ -478,9 +480,9 @@ describe("Unit tests user", () => {
         await transferMoney(moneyTypes.soft_currency, "giver123", "recipient456", 100)
         // Should not reach here if acquireLockOnWallet fails
         chai.assert.fail("Unexpected successful transfer")
-      } catch (err) {
+      } catch (err: any) {
         const errorInfo = JSON.parse(err.message)
-        chai.assert.equal(errorInfo.message, transferMoneyErrors.ErrorLockAcquisition.message)
+        chai.assert.equal(errorInfo.message, transferMoneyErrors.ErrorLockAcquisition!.message)
         sandbox.assert.calledOnce(mockTransferMoneyParamsValidator)
         sandbox.assert.calledOnce(mockCreateAndStartTransaction)
         sandbox.assert.called(mockErrorLogger)
@@ -503,9 +505,9 @@ describe("Unit tests user", () => {
         await transferMoney(moneyTypes.soft_currency, "giver123", "recipient456", 100)
         // Should not reach here if update fails
         chai.assert.fail("Unexpected successful transfer")
-      } catch (err) {
+      } catch (err: any) {
         const errorInfo = JSON.parse(err.message)
-        chai.assert.equal(errorInfo.message, transferMoneyErrors.ErrorLockAcquisition.message)
+        chai.assert.equal(errorInfo.message, transferMoneyErrors.ErrorLockAcquisition!.message)
         sandbox.assert.calledOnce(mockTransferMoneyParamsValidator)
         sandbox.assert.calledOnce(mockCreateAndStartTransaction)
         sandbox.assert.called(mockErrorLogger)
@@ -517,7 +519,7 @@ describe("Unit tests user", () => {
     })
   })
 
-  describe("application > services > user > index > transferMoneyWithRetry", () => {
+  describe("src > v1 > application > services > user > index > transferMoneyWithRetry", () => {
     beforeEach(() => {
       sandbox.restore()
     })
@@ -555,30 +557,49 @@ describe("Unit tests user", () => {
     })
     it("Failure - Transfer fail (non-retryable error)", async () => {
       // Mock the transferMoney function to throw a non-retryable error
-      const mockTransferMoney = sandbox.stub(modUser, "transferMoney").throws(new Error("Insufficient funds"))
+
+      const fakeInsufficientFundsError: errorType = {
+        name: "fakeNetworkError",
+        message: "Not enough funds to do the transaction",
+        httpCode: 500,
+      }
+
+      const mockTransferMoney = sandbox.stub(modUser, "transferMoney").throws(new Error(JSON.stringify(fakeInsufficientFundsError)))
 
       // Call the transferMoneyWithRetry function
       try {
         await transferMoneyWithRetry(moneyTypes.soft_currency, "giver123", "recipient456", 100, 300)
-      } catch (err) {
-        chai.assert(err.message.includes("Insufficient funds"))
+      } catch (err: any) {
+        const errorInfo = JSON.parse(err.message)
+        chai.assert(errorInfo.message.includes("Not enough funds to do the transaction"))
         sandbox.assert.calledOnce(mockTransferMoney)
         chai.assert(mockTransferMoney.calledWithExactly(moneyTypes.soft_currency, "giver123", "recipient456", 100))
       }
     })
     it("Failure - Transfer fail (with retryable error followed by non-retryable error)", async () => {
+      const fakeNetworkError: errorType = {
+        name: "fakeNetworkError",
+        message: "Network error",
+        httpCode: 500,
+      }
+      const fakeLockError: errorType = {
+        name: "fakeLockError",
+        message: "Error - Lock - Network error",
+        httpCode: 500,
+      }
       // Mock the transferMoney function to fail twice and succeed on the third try
       const mockTransferMoney = sandbox.stub(modUser, "transferMoney")
-      mockTransferMoney.onFirstCall().throws(new Error("Error - Lock - Network error"))
-      mockTransferMoney.onSecondCall().throws(new Error("Network error"))
+      mockTransferMoney.onFirstCall().throws(new Error(JSON.stringify(fakeLockError)))
+      mockTransferMoney.onSecondCall().throws(new Error(JSON.stringify(fakeNetworkError)))
       mockTransferMoney.onThirdCall().resolves(true)
       const mockWarnLogger = sandbox.stub(logger, "warn")
 
       // Call the transferMoneyWithRetry function
       try {
         await transferMoneyWithRetry(moneyTypes.soft_currency, "giver123", "recipient456", 100, 300)
-      } catch (error) {
-        chai.assert.isTrue(error.message.includes("Network error"))
+      } catch (error: any) {
+        const errorInfo = JSON.parse(error.message)
+        chai.assert.isTrue(errorInfo.message.includes("Network error"))
         sandbox.assert.calledTwice(mockTransferMoney)
         sandbox.assert.calledWithExactly(mockTransferMoney, moneyTypes.soft_currency, "giver123", "recipient456", 100)
         sandbox.assert.calledOnce(mockWarnLogger)
@@ -601,9 +622,9 @@ describe("Unit tests user", () => {
       const delay = 10
       try {
         await transferMoneyWithRetry(moneyTypes.soft_currency, "giver123", "recipient456", amountToTransfer, delay, maxAttempt)
-      } catch (err) {
+      } catch (err: any) {
         const errorInfo = JSON.parse(err.message)
-        chai.assert.isTrue(errorInfo.message === transferMoneyWithRetryErrors.ErrorMaxRetry.message)
+        chai.assert.isTrue(errorInfo.message === transferMoneyWithRetryErrors.ErrorMaxRetry!.message)
         sandbox.assert.callCount(mockTransferMoney, maxAttempt)
         sandbox.assert.calledWithExactly(mockTransferMoney, moneyTypes.soft_currency, "giver123", "recipient456", amountToTransfer)
         sandbox.assert.callCount(mockWarnLogger, maxAttempt)
