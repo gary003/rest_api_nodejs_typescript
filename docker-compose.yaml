@@ -1,0 +1,21 @@
+version: "3.8"
+
+services:
+  app:
+    build: .
+    ports:
+      - "8080:8080" # Map container port 8080 to host port 8080
+    depends_on:
+      - redis # Wait for Redis to be ready before starting your app
+
+  # Redis service
+  redis:
+    image: redis:latest # Use the official Redis image
+    ports:
+      - "6379:6379" # Map container port 6379 (default Redis port) to host port 6379
+    volumes:
+      - redis-data:/data # Persist Redis data (optional)
+
+volumes:
+  # Optional volume to persist Redis data
+  redis-data: {}

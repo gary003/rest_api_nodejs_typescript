@@ -1,19 +1,22 @@
 {
-  "name": "v1",
+  "author": "Gary Johnson",
+  "description": "This is a project used as a portfolio",
+  "name": "api_backend_template",
   "version": "1.0.0",
-  "description": "",
-  "main": "app.js",
+  "main": "bin/server.ts",
   "scripts": {
-    "start": "./node_modules/typescript/bin/tsc -p . && node ./dist/bin/server.js",
-    "dev": "./node_modules/nodemon/bin/nodemon.js ./src/v1/bin/server.ts",
     "build": "./node_modules/typescript/bin/tsc -p .",
+    "start": "./node_modules/typescript/bin/tsc -p . && node ./dist/bin/server.js",
+    "start-pm2": "./node_modules/typescript/bin/tsc -p . && ./node_modules/pm2/bin/pm2 start ./dist/bin/server.js -i 0",
+    "stop-pm2": "./node_modules/pm2/bin/pm2 stop all",
+    "start-docker": "./node_modules/typescript/bin/tsc -p . && ./node_modules/pm2/bin/pm2-runtime start ./dist/bin/server.js -i 0",
+    "dev": "./node_modules/nodemon/bin/nodemon.js ./app.ts",
+    "dev-pm2": "./node_modules/pm2/bin/pm2 start ./dist/bin/server.js --name app-dev --watch",
     "test": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register './tests/**/*.test.ts'",
     "test:unit": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register './tests/unit/**/*.test.ts'",
     "test:functional": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register './tests/functional/**/*.test.ts'",
     "coverage": "nyc npm run test"
   },
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "cors": "^2.8.5",
     "crypto-js": "^4.1.1",
@@ -22,6 +25,7 @@
     "ip": "^1.1.5",
     "luxon": "^2.5.2",
     "mysql": "^2.18.1",
+    "pm2": "^5.3.1",
     "swagger-ui-express": "^4.1.6",
     "typeorm": "^0.3.17",
     "typescript": "^4.4.4",
@@ -49,5 +53,6 @@
     "sinon": "^14.0.0",
     "supertest": "^6.2.3",
     "ts-node": "^10.7.0"
-  }
+  },
+  "license": "ISC"
 }
