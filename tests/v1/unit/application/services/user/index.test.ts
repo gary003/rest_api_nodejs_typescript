@@ -1,18 +1,18 @@
 require("dotenv").config()
 
-import * as modUserDB from "../../../../../src/v1/infrastructure/persistance/user"
-import * as modWalletDB from "../../../../../src/v1/infrastructure/persistance/wallet"
-import * as modUser from "../../../../../src/v1/application/services/user/index"
-import * as modConnection from "../../../../../src/v1/infrastructure/persistance/connection/connectionFile"
-import { moneyTypes } from "../../../../../src/v1/domain"
+import * as modUserDB from "../../../../../../src/v1/infrastructure/persistance/user"
+import * as modWalletDB from "../../../../../../src/v1/infrastructure/persistance/wallet"
+import * as modUser from "../../../../../../src/v1/application/services/user/index"
+import * as modConnection from "../../../../../../src/v1/infrastructure/persistance/connection/connectionFile"
+import { moneyTypes } from "../../../../../../src/v1/domain"
 import { createSandbox, SinonSandbox } from "sinon"
 import { describe, it } from "mocha"
 import chai from "chai"
-import { addCurrency, deleteUserById, getAllUsers, getUserWalletInfo, saveNewUser, transferMoney, transferMoneyParamsValidator, transferMoneyWithRetry } from "../../../../../src/v1/application/services/user/index"
-import { moneyTransferParamsValidatorErrors, transferMoneyErrors, userFunctionsErrors, transferMoneyWithRetryErrors, errorType } from "../../../../../src/v1/application/services/user/error.dto"
-import { transactionQueryRunnerType } from "../../../../../src/v1/infrastructure/persistance/connection/connectionFile"
-import { userInfo } from "../../../../../src/v1/infrastructure/persistance/user/dto"
-import logger from "../../../../../src/v1/infrastructure/logger"
+import { addCurrency, deleteUserById, getAllUsers, getUserWalletInfo, saveNewUser, transferMoney, transferMoneyParamsValidator, transferMoneyWithRetry } from "../../../../../../src/v1/application/services/user/index"
+import { moneyTransferParamsValidatorErrors, transferMoneyErrors, userFunctionsErrors, transferMoneyWithRetryErrors, errorType } from "../../../../../../src/v1/application/services/user/error.dto"
+import { transactionQueryRunnerType } from "../../../../../../src/v1/infrastructure/persistance/connection/connectionFile"
+import { userInfo } from "../../../../../../src/v1/infrastructure/persistance/user/dto"
+import logger from "../../../../../../src/v1/infrastructure/logger"
 
 describe("Unit tests user", () => {
   let sandbox: SinonSandbox = createSandbox()

@@ -1,6 +1,6 @@
 import chai from "chai"
 import request from "supertest"
-import app from "../../../../../src/v1/app"
+import app from "../../../../../../src/v1/app"
 import { expect } from "chai"
 import { describe, it } from "mocha"
 // import logger from "../../helpers/logger"

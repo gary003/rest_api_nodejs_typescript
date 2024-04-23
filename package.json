@@ -12,9 +12,9 @@
     "start-docker": "./node_modules/typescript/bin/tsc -p . && ./node_modules/pm2/bin/pm2-runtime start ./dist/bin/server.js -i 0",
     "dev": "./node_modules/nodemon/bin/nodemon.js ./app.ts",
     "dev-pm2": "./node_modules/pm2/bin/pm2 start ./dist/bin/server.js --name app-dev --watch",
-    "test": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register './tests/**/*.test.ts'",
-    "test:unit": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register './tests/unit/**/*.test.ts'",
-    "test:functional": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register './tests/functional/**/*.test.ts'",
+    "test:v1": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register './tests/**/*.test.ts'",
+    "test:unit:v1": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register './tests/v1/unit/**/*.test.ts'",
+    "test:functional:v1": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register './tests/v1/functional/**/*.test.ts'",
     "coverage": "nyc npm run test"
   },
   "dependencies": {
