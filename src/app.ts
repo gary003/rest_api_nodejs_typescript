@@ -1,11 +1,10 @@
 require("dotenv").config()
 
 import express from "express"
-import userRoute from "./application/routes/user/index"
-import logger from "./infrastructure/logger"
+import userRoute from "./v1/application/routes/user/index"
 
 import swaggerUi from "swagger-ui-express"
-import swaggerJson from "./helpers/swagger/config"
+import swaggerJson from "./v1/helpers/swagger/config"
 
 import helmet from "helmet"
 import cors from "cors"
@@ -36,7 +35,7 @@ function handleNotFound(req: express.Request, res: express.Response, next: expre
 }
 
 function handleError(err: Error, req: express.Request, res: express.Response, next: express.NextFunction) {
-  logger.error(err.stack) // Log the error for debugging
+  console.error(err.stack) // Log the error for debugging
 
   // Set default status code to 500 (Internal Server Error)
   let statusCode = 500
