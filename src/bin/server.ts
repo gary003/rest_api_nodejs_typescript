@@ -6,7 +6,7 @@ import app from "../app"
 
 const localIp: string = ip.address()
 
-const port: number = Number(process.env.API_PORT) || 8888
+const port: number = Number(process.env.API_PORT) || 8080
 
 const server: http.Server = http.createServer(app)
 

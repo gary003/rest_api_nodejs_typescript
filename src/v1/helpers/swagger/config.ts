@@ -4,11 +4,11 @@ const localIp = ip.address()
 
 const swaggerJson = {
   swagger: "2.0",
-  host: `${localIp}:${process.env.API_PORT}`,
+  host: `${localIp}:${process.env.API_PORT || 8080}`,
   basePath: "/api/v1",
   info: {
-    title: `${process.env.API_TITLE}`,
-    version: `${process.env.API_VERSION}`,
+    title: "api_backend_template",
+    version: "1",
   },
   schemes: ["http"],
   // use for model definition
