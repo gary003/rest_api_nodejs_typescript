@@ -4,14 +4,15 @@ import express from "express"
 import userRoute from "./v1/application/routes/user/index"
 
 import swaggerUi from "swagger-ui-express"
-import swaggerJson from "./v1/helpers/swagger/config"
+import apiDocumentation from "./v1/helpers/apiDocumentation"
 
 import helmet from "helmet"
 import cors from "cors"
+import logger from "./v1/helpers/logger"
 
 const app = express()
 
-app.use("/apiDoc", swaggerUi.serve, swaggerUi.setup(swaggerJson))
+app.use("/apiDoc", swaggerUi.serve, swaggerUi.setup(apiDocumentation))
 
 app.use(helmet())
 app.use(cors())
@@ -35,7 +36,7 @@ function handleNotFound(req: express.Request, res: express.Response, next: expre
 }
 
 function handleError(err: Error, req: express.Request, res: express.Response, next: express.NextFunction) {
-  console.error(err.stack) // Log the error for debugging
+  logger.error(err.stack) // Log the error for debugging
 
   // Set default status code to 500 (Internal Server Error)
   let statusCode = 500

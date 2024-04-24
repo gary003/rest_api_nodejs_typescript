@@ -3,7 +3,6 @@ import request from "supertest"
 import app from "../../../../../../src/app"
 import { expect } from "chai"
 import { describe, it } from "mocha"
-// import logger from "../../helpers/logger"
 
 const urlBase = "/api/v1"
 

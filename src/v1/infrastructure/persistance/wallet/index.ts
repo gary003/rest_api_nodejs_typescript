@@ -4,14 +4,17 @@ import { v4 as uuidv4 } from "uuid"
 import { QueryRunner } from "typeorm"
 import { User } from "../user/entity"
 import { moneyTypes } from "../../../domain"
-import logger from "../../logger"
+import logger from "../../../helpers/logger"
 
 export const getWalletByIdDB = async (walletId: string) => {
   const connection = await connectionDB()
 
   const WalletsRepository = connection.getRepository(Wallet)
 
-  const wallet: Wallet | void | null = await WalletsRepository.findOne({ where: { walletId } }).catch((err) => console.error(err))
+  const wallet: Wallet | void | null = await WalletsRepository.findOne({ where: { walletId } }).catch((err) => {
+    logger.error(err)
+    return null
+  })
 
   await connection.destroy()
 

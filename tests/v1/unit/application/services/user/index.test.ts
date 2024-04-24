@@ -12,7 +12,7 @@ import { addCurrency, deleteUserById, getAllUsers, getUserWalletInfo, saveNewUse
 import { moneyTransferParamsValidatorErrors, transferMoneyErrors, userFunctionsErrors, transferMoneyWithRetryErrors, errorType } from "../../../../../../src/v1/application/services/user/error.dto"
 import { transactionQueryRunnerType } from "../../../../../../src/v1/infrastructure/persistance/connection/connectionFile"
 import { userInfo } from "../../../../../../src/v1/infrastructure/persistance/user/dto"
-import logger from "../../../../../../src/v1/infrastructure/logger"
+import logger from "../../../../../../src/v1/helpers/logger"
 
 describe("Unit tests user", () => {
   let sandbox: SinonSandbox = createSandbox()
@@ -87,7 +87,6 @@ describe("Unit tests user", () => {
         sandbox.assert.calledOnce(mockGetUserWalletInfo)
         sandbox.assert.calledOnce(mockUpdateWalletByWalletIdDB)
       } catch (err: any) {
-        // logger.debug(err)
         chai.assert.fail("Should not get an error")
       }
     })
@@ -101,7 +100,6 @@ describe("Unit tests user", () => {
         chai.assert.isNotNull(err, "Should get an error")
 
         const errInfo = JSON.parse(err.message)
-        // logger.debug(errInfo)
         chai.assert.equal(errInfo.message, moneyTransferParamsValidatorErrors.ErrorInvalidAmount!.message)
       }
     })
@@ -111,7 +109,6 @@ describe("Unit tests user", () => {
         await addCurrency("22ef5564-0234-11ed-b939-0242ac120002", "fake_currency_type" as moneyTypes, amountToAdd)
         chai.assert.fail("Unexpected success - Should never happen")
       } catch (err: any) {
-        // logger.debug(err)
         chai.assert.isNotNull(err, "Should get an error")
       }
     })
@@ -124,11 +121,9 @@ describe("Unit tests user", () => {
     it("should retrieve all the users from DB", async () => {
       try {
         const response = await getAllUsers()
-        // logger.debug(JSON.stringify(response))
 
         chai.assert.isArray(response, "Should get the list in an array format")
       } catch (err: any) {
-        // logger.debug(`Error occurred in src > v1 > application > services > user > index > getAllUsers: ${err}`)
         chai.assert.fail("Fail - Should retreive all users")
       }
     })
@@ -143,12 +138,9 @@ describe("Unit tests user", () => {
 
       try {
         const response = await getUserWalletInfo(userToFetch)
-        // logger.debug(JSON.stringify(response))
-
         chai.assert.exists(response, "Should get a valid response from DB")
         chai.assert.equal(response.userId, userToFetch, "Should get a valid response with a userId")
       } catch (err: any) {
-        // logger.debug(`Error occurred in src > v1 > application > services > user > index > getUserById: ${err}`)
         chai.assert.fail("Fail - should retreive a user")
       }
     })
@@ -158,11 +150,9 @@ describe("Unit tests user", () => {
 
       try {
         const user = await getUserWalletInfo(userToFetch)
-        // logger.debug(JSON.stringify(user))
         chai.assert.fail("Should never happen")
       } catch (err: any) {
         const errorInfo = JSON.parse(err.message)
-        // logger.debug(err)
         chai.assert.exists(err, "Should get an err from DB")
         chai.assert.equal(errorInfo.message, userFunctionsErrors.ErrorFetchingUserInfo!.message)
       }
@@ -181,14 +171,10 @@ describe("Unit tests user", () => {
 
       try {
         const response = await deleteUserById(userToFetch)
-        // logger.debug(JSON.stringify(response))
-
         chai.assert.exists(response, "Should get a valid response from DB")
         chai.assert.isTrue(response, "Should get true response from DB")
         chai.assert.isTrue(mockDeleteUserByIdDB.calledOnce)
-        // chai.assert.isTrue(mockDeleteWalletByIdDB.calledOnce)
       } catch (err: any) {
-        // logger.debug(`Error occurred in src > v1 > application > services > user > index > deleteUserById: ${err}`)
         chai.assert.fail("Fail - Unable to delete the user")
       }
     })

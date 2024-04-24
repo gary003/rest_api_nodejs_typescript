@@ -3,7 +3,7 @@ import { deleteUserById, getAllUsers, getUserWalletInfo, saveNewUser } from "../
 
 import { errorAPIUSER } from "./error.dto"
 
-import logger from "../../../infrastructure/logger"
+import logger from "../../../helpers/logger"
 import { validateUserIdParams } from "./validation"
 
 const userRouter = Router()

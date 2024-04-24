@@ -4,7 +4,7 @@ import { updateWalletByWalletIdDB, updateWalletByWalletIdTransaction } from "../
 import { moneyTypes } from "../../../domain"
 import { userWalletDTO } from "./dto"
 import { transferMoneyErrors, userFunctionsErrors, moneyTransferParamsValidatorErrors, transferMoneyWithRetryErrors, errorType } from "./error.dto"
-import logger from "../../../infrastructure/logger"
+import logger from "../../../helpers/logger"
 import { userInfo } from "../../../infrastructure/persistance/user/dto"
 
 export const getAllUsers = async (): Promise<userWalletDTO[]> => {

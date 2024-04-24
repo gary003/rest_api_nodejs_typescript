@@ -25,8 +25,8 @@ export const decryptData = async (encryptedData: string): Promise<string> => {
 // test functions
 // ;(async () => {
 //   const encryptedPassword = await encryptData("azerty_pwd!")
-//   console.log({ secretKey }, encryptedPassword)
-//   console.log({ secretKey }, await decryptData(encryptedPassword))
+//   logger.info({ secretKey }, encryptedPassword)
+//   logger.info({ secretKey }, await decryptData(encryptedPassword))
 // })()
 
 // import * as crypto from "crypto"

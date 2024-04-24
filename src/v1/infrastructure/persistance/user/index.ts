@@ -3,7 +3,7 @@ import { connectionDB } from "../connection/connectionFile"
 import { User } from "./entity"
 import { createNewWalletDB, deleteWalletByIdDB } from "../wallet"
 import { userInfo } from "./dto"
-import logger from "../../../infrastructure/logger"
+import logger from "../../../helpers/logger"
 
 export const getAllUsersDB = async (): Promise<userInfo[]> => {
   const connection = await connectionDB()
