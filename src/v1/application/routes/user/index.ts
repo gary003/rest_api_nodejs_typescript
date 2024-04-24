@@ -18,7 +18,7 @@ userRouter
 
     if (!results) return res.status(500).json(errorAPIUSER.errorAPIGetAllUsers)
 
-    return res.status(200).json(results)
+    return res.status(200).json({ data: results })
   })
   .post(async (req: Request, res: Response) => {
     const { userId, firstname, lastname } = req.body
@@ -30,7 +30,7 @@ userRouter
 
     if (!result) return res.status(500).json(errorAPIUSER.errorAPIUserCreation)
 
-    return res.status(200).json(result)
+    return res.status(200).json({ data: result })
   })
 
 userRouter
@@ -52,7 +52,7 @@ userRouter
 
     if (!result) return res.status(500).json(errorAPIUSER.errorAPIGetUser)
 
-    return res.status(200).json(result)
+    return res.status(200).json({ data: result })
   })
   .delete(async (req: Request, res: Response) => {
     const userId = await validateUserIdParams(req.params.userId).catch((err) => {
@@ -71,7 +71,7 @@ userRouter
 
     if (!result) return res.status(500).json(errorAPIUSER.errorAPIDeleteUser)
 
-    return res.status(200).json(result)
+    return res.status(200).json({ data: result })
   })
 
 export default userRouter

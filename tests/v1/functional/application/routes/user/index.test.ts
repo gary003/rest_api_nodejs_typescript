@@ -24,8 +24,8 @@ describe("Functional Tests API", () => {
           .expect("Content-Type", /json/)
 
         expect(response.status).to.be.within(200, 299)
-        expect(response.body).to.not.be.empty
-        expect(response.body.userId).to.equal(testUserId)
+        expect(response.body.data).to.not.be.empty
+        expect(response.body.data.userId).to.equal(testUserId)
       } catch (error) {
         chai.assert.fail("unexpected error found in route route > user > POST")
       }
@@ -38,10 +38,10 @@ describe("Functional Tests API", () => {
         const response = await request(app).get(`${urlBase}/user`).set("Accept", "application/json").expect("Content-Type", /json/)
 
         expect(response.status).to.be.within(200, 299)
-        expect(response.body).to.be.an("array")
+        expect(response.body.data).to.be.an("array")
 
-        if (response.body.length > 0) {
-          expect(response.body[0]).to.have.property("userId")
+        if (response.body.data.length > 0) {
+          expect(response.body.data[0]).to.have.property("userId")
         }
       } catch (error) {
         chai.assert.fail("unexpected error found in route route > user > GET (all users)")
@@ -55,7 +55,7 @@ describe("Functional Tests API", () => {
         const response = await request(app).get(`${urlBase}/user/${testUserId}`).set("Accept", "application/json").expect("Content-Type", /json/)
 
         expect(response.status).to.be.within(200, 299)
-        expect(response.body).to.have.property("userId")
+        expect(response.body.data).to.have.property("userId")
       } catch (error) {
         chai.assert.fail("unexpected error found in route route > user > GET (single user)")
       }
@@ -68,7 +68,7 @@ describe("Functional Tests API", () => {
         const response = await request(app).delete(`${urlBase}/user/${testUserId}`).set("Accept", "application/json").expect("Content-Type", /json/)
 
         expect(response.status).to.be.within(200, 299)
-        expect(response.body).to.not.be.null
+        expect(response.body.data).to.not.be.null
       } catch (error) {
         chai.assert.fail("unexpected error found in route route > user > DELETE")
       }
