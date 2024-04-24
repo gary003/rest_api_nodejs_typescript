@@ -5,7 +5,7 @@ import { createNewWalletDB, deleteWalletByIdDB } from "../wallet"
 import { userInfo } from "./dto"
 import logger from "../../../infrastructure/logger"
 
-export const getAllDBUsers = async (): Promise<userInfo[]> => {
+export const getAllUsersDB = async (): Promise<userInfo[]> => {
   const connection = await connectionDB()
 
   const UserRepository = connection.getRepository(User)

@@ -1,5 +1,5 @@
 import { acquireLockOnWallet, commitAndQuitTransactionRunner, createAndStartTransaction, rollBackAndQuitTransactionRunner } from "../../../infrastructure/persistance/connection/connectionFile"
-import { getAllDBUsers, getUserWalletInfoDB, saveNewUserDB, deleteUserByIdDB } from "../../../infrastructure/persistance/user"
+import { getAllUsersDB, getUserWalletInfoDB, saveNewUserDB, deleteUserByIdDB } from "../../../infrastructure/persistance/user"
 import { updateWalletByWalletIdDB, updateWalletByWalletIdTransaction } from "../../../infrastructure/persistance/wallet"
 import { moneyTypes } from "../../../domain"
 import { userWalletDTO } from "./dto"
@@ -8,7 +8,7 @@ import logger from "../../../infrastructure/logger"
 import { userInfo } from "../../../infrastructure/persistance/user/dto"
 
 export const getAllUsers = async (): Promise<userWalletDTO[]> => {
-  const allUsers = await getAllDBUsers().catch((err) => {
+  const allUsers = await getAllUsersDB().catch((err) => {
     logger.error(err)
     return null
   })
