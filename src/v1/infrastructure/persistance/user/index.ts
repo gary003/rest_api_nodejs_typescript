@@ -1,7 +1,7 @@
 import { Wallet } from "../wallet/entity"
 import { connectionDB } from "../connection/connectionFile"
 import { User } from "./entity"
-import { createNewWalletDB } from "../wallet"
+import { createNewWalletDB, deleteWalletByIdDB } from "../wallet"
 import { userInfo } from "./dto"
 import logger from "../../../infrastructure/logger"
 
@@ -15,7 +15,7 @@ export const getAllDBUsers = async (): Promise<userInfo[]> => {
     .getMany()
     .catch((err) => {
       logger.error(err.sqlMessage)
-      return err
+      return null
     })
 
   await connection.destroy()
@@ -46,33 +46,36 @@ export const saveNewUserDB = async (userId: string, firstname: string, lastname:
 export const deleteUserByIdDB = async (userId: string): Promise<boolean> => {
   const connection = await connectionDB()
 
-  const userToDeleteInfo = await getUserWalletInfoDB(userId)
+  const userToDeleteInfo = await getUserWalletInfoDB(userId).catch((err) => {
+    logger.error(err)
+    return null
+  })
 
+  if (!userToDeleteInfo) {
+    await connection.destroy()
+    throw new Error("Impossible to delete the user in DB, no user information available (step : 0)")
+  }
   // logger.debug(JSON.stringify(userToDeleteInfo))
 
-  const WalletRepository = connection.getRepository(Wallet)
-
   if (!!userToDeleteInfo.Wallet) {
-    const deletedWallet = await WalletRepository.delete(userToDeleteInfo.Wallet.walletId).catch((err) => {
+    const walletDeletion = await deleteWalletByIdDB(String(userToDeleteInfo.Wallet.walletId)).catch((err) => {
       logger.error(err)
-      return err
+      return null
     })
 
-    // logger.debug(JSON.stringify(deletedWallet))
-
-    if (!deletedWallet || deletedWallet.affected === 0) {
+    if (!walletDeletion) {
       await connection.destroy()
       throw new Error("Impossible to delete the user in DB (step : 1)")
     }
   }
   // Let the db some time to handle the previous request
-  await new Promise((resolve) => setTimeout(resolve, 209))
+  await new Promise((resolve) => setTimeout(resolve, 709))
 
   const UserRepository = connection.getRepository(User)
 
   const deletedUser = await UserRepository.delete(userId).catch((err) => {
     logger.error(err)
-    return err
+    return null
   })
 
   if (!deletedUser || deletedUser.affected === 0) {

@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from "uuid"
 import { QueryRunner } from "typeorm"
 import { User } from "../user/entity"
 import { moneyTypes } from "../../../domain"
-// import logger from "../../../helpers/logger"
+import logger from "../../logger"
 
 export const getWalletByIdDB = async (walletId: string) => {
   const connection = await connectionDB()
@@ -66,24 +66,21 @@ export const createNewWalletDB = async (user: User): Promise<Wallet> => {
   return newWallet
 }
 
-// export const deleteWalletByIdDB = async (walletId: string): Promise<boolean> => {
-//   const connection = await connectionDB()
+export const deleteWalletByIdDB = async (walletId: string): Promise<boolean> => {
+  const connection = await connectionDB()
 
-//   const WalletsRepository = connection.getRepository(Wallet)
+  const WalletsRepository = connection.getRepository(Wallet)
 
-//   try {
-//     const result = await WalletsRepository.delete({ walletId })
+  const result = await WalletsRepository.delete({ walletId }).catch((err) => {
+    logger.error(err)
+    return null
+  })
 
-//     await connection.destroy()
+  await connection.destroy()
 
-//     if (result.affected === 0) {
-//       throw new Error("Impossible to delete the wallet") // Use a custom error message
-//     }
+  if (!result || result.affected === 0) {
+    throw new Error("Impossible to delete the wallet") // Use a custom error message
+  }
 
-//     return true
-//   } catch (err) {
-//     console.error(err) // Consider using a proper logger
-//     await connection.destroy() // Close the connection even on error
-//     throw err // Re-throw the error for further handling
-//   }
-// }
+  return true
+}
