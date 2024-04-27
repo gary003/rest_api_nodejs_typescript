@@ -5,6 +5,7 @@ import { errorAPIUSER } from "./error.dto"
 
 import logger from "../../../helpers/logger"
 import { validateUserIdParams } from "./validation"
+import { apiResponseGetAllUserType, apiResponseGetUserType, apiResponseCreateUserType, apiResponseDeleteUserType } from "./apiResponse.dto"
 
 const userRouter = Router()
 
@@ -16,9 +17,11 @@ userRouter
       return null
     })
 
-    if (!results) return res.status(500).json(errorAPIUSER.errorAPIGetAllUsers)
+    if (results === null) return res.status(500).json(errorAPIUSER.errorAPIGetAllUsers)
 
-    return res.status(200).json({ data: results })
+    const apiRes: apiResponseGetAllUserType = { data: results }
+
+    return res.status(200).json(apiRes)
   })
   .post(async (req: Request, res: Response) => {
     const { userId, firstname, lastname } = req.body
@@ -28,9 +31,11 @@ userRouter
       return null
     })
 
-    if (!result) return res.status(500).json(errorAPIUSER.errorAPIUserCreation)
+    if (result === null) return res.status(500).json(errorAPIUSER.errorAPIUserCreation)
 
-    return res.status(200).json({ data: result })
+    const response: apiResponseCreateUserType = { data: result }
+
+    return res.status(200).json(response)
   })
 
 userRouter
@@ -41,7 +46,7 @@ userRouter
       return null
     })
 
-    if (!userId) {
+    if (userId === null) {
       return res.status(400).json(errorAPIUSER.errorAPIInvalidUserId)
     }
 
@@ -50,9 +55,9 @@ userRouter
       return null
     })
 
-    if (!result) return res.status(500).json(errorAPIUSER.errorAPIGetUser)
+    if (result === null) return res.status(500).json(errorAPIUSER.errorAPIGetUser)
 
-    return res.status(200).json({ data: result })
+    return res.status(200).json({ data: result } as apiResponseGetUserType)
   })
   .delete(async (req: Request, res: Response) => {
     const userId = await validateUserIdParams(req.params.userId).catch((err) => {
@@ -60,7 +65,7 @@ userRouter
       return null
     })
 
-    if (!userId) {
+    if (userId === null) {
       return res.status(400).json(errorAPIUSER.errorAPIInvalidUserId)
     }
 
@@ -69,9 +74,9 @@ userRouter
       return null
     })
 
-    if (!result) return res.status(500).json(errorAPIUSER.errorAPIDeleteUser)
+    if (result === null) return res.status(500).json(errorAPIUSER.errorAPIDeleteUser)
 
-    return res.status(200).json({ data: result })
+    return res.status(200).json({ data: result } as apiResponseDeleteUserType)
   })
 
 export default userRouter
