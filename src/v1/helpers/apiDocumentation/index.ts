@@ -2,7 +2,7 @@ import ip from "ip"
 
 const localIp = ip.address()
 
-const swaggerJson = {
+const apiDocumentation = {
   swagger: "2.0",
   host: `${localIp}:${process.env.API_PORT || 8080}`,
   basePath: "/api/v1",
@@ -112,4 +112,4 @@ const swaggerJson = {
   },
 }
 
-export default swaggerJson
+export default apiDocumentation
