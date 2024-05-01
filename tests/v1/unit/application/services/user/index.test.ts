@@ -110,6 +110,8 @@ describe("Unit tests user", () => {
         chai.assert.fail("Unexpected success - Should never happen")
       } catch (err: any) {
         chai.assert.isNotNull(err, "Should get an error")
+        const errInfo = JSON.parse(err.message)
+        chai.assert.equal(errInfo.message, moneyTransferParamsValidatorErrors.ErrorCurrencyType!.message)
       }
     })
   })

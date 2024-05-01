@@ -31,7 +31,7 @@ export const saveNewUser = async (userId: string, firstname: string, lastname: s
 
 export const addCurrency = async (userId: string, currencyType: moneyTypes, amount: number): Promise<boolean> => {
   if (amount <= 0) throw new Error(JSON.stringify(moneyTransferParamsValidatorErrors.ErrorInvalidAmount))
-  if (!Object.values(moneyTypes).includes(currencyType)) throw new Error(JSON.stringify(moneyTransferParamsValidatorErrors.currencyTypeError))
+  if (!Object.values(moneyTypes).includes(currencyType)) throw new Error(JSON.stringify(moneyTransferParamsValidatorErrors.ErrorCurrencyType))
 
   const currentUserWalletInfo = (await getUserWalletInfo(userId).catch((err) => {
     logger.error(err)
