@@ -12,9 +12,9 @@
     "dev": "npx nodemon ./src/bin/server.ts",
     "dev-pm2": "npx pm2 start ./dist/bin/server.js --name app-dev --watch",
     "test:v1": "npx  mocha -r ts-node/register './tests/v1/**/*.test.ts'",
-    "test:unit:v1": "npx mocha -r ts-node/register './tests/v1/unit/**/*.test.ts'",
-    "test:functional:v1": "npx mocha -r ts-node/register './tests/v1/functional/**/*.test.ts'",
-    "test:coverage:v1": "npx c8 npm run test:v1"
+    "test:v1:unit": "npx mocha -r ts-node/register './tests/v1/unit/**/*.test.ts'",
+    "test:v1:functional": "npx mocha -r ts-node/register './tests/v1/functional/**/*.test.ts'",
+    "test:v1:coverage": "npx c8 npm run test:v1"
   },
   "dependencies": {
     "cors": "^2.8.5",
