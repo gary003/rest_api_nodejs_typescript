@@ -20,22 +20,16 @@ app.use(express.json())
 
 app.use("/api/v1/user", userRoute)
 
-// Not found handler
-app.use(handleNotFound)
-
-// Error handler middleware
-app.use(handleError)
-
-function handleNotFound(req: express.Request, res: express.Response, next: express.NextFunction) {
+const handleNotFound = (req: express.Request, res: express.Response, next: express.NextFunction) => {
   // Check if any route handler has already handled the request
   if (res.headersSent) {
     return next() // Let other error handlers handle it if already responded to
   }
 
-  res.status(404).json({ message: "Not Found" })
+  return res.status(404).json({ message: "Not Found" })
 }
 
-function handleError(err: Error, req: express.Request, res: express.Response, next: express.NextFunction) {
+const handleError = (err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
   logger.error(err.stack) // Log the error for debugging
 
   // Set default status code to 500 (Internal Server Error)
@@ -62,5 +56,12 @@ function handleError(err: Error, req: express.Request, res: express.Response, ne
 
   res.status(statusCode).json(errorResponse)
 }
+
+// Not found handler
+app.use(handleNotFound)
+
+// Error handler middleware
+app.use(handleError)
+
 
 export default app
