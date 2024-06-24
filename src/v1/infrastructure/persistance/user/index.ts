@@ -57,7 +57,7 @@ export const deleteUserByIdDB = async (userId: string): Promise<boolean> => {
   }
   // logger.debug(JSON.stringify(userToDeleteInfo))
 
-  if (!!userToDeleteInfo.Wallet) {
+  if (userToDeleteInfo.Wallet) {
     const walletDeletion = await deleteWalletByIdDB(String(userToDeleteInfo.Wallet.walletId)).catch((err) => {
       logger.error(err)
       return null

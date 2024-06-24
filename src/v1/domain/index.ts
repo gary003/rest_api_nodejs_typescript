@@ -1,8 +1,12 @@
-export enum moneyTypes {
-  "hard_currency" = "hardCurrency",
-  "soft_currency" = "softCurrency",
-}
+export const moneyTypesO = {
+  "hard_currency" : "hardCurrency",
+  "soft_currency" : "softCurrency",
+} as const
 
-export type wallet = Record<moneyTypes, string> & {
+type moneyT = keyof typeof moneyTypesO
+
+export type moneyTypes =(typeof moneyTypesO)[moneyT]
+
+export type wallet = moneyTypes & {
   walletId: string
 }

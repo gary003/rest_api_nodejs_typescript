@@ -87,3 +87,5 @@ export const deleteWalletByIdDB = async (walletId: string): Promise<boolean> => 
 
   return true
 }
+
+

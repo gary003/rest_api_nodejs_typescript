@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 require("dotenv").config()
 
 import express from "express"
@@ -29,7 +30,7 @@ const handleNotFound = (req: express.Request, res: express.Response, next: expre
   return res.status(404).json({ message: "Not Found" })
 }
 
-const handleError = (err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+const handleError = (err: Error, req: express.Request, res: express.Response) => {
   logger.error(err.stack) // Log the error for debugging
 
   // Set default status code to 500 (Internal Server Error)

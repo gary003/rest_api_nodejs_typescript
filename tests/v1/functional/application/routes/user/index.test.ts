@@ -6,7 +6,7 @@ import { describe, it } from "mocha"
 
 const urlBase = "/api/v1"
 
-let testUserId: string = "cc2c990b6-029c-11ed-b939-0242ac120002"
+const testUserId: string = "cc2c990b6-029c-11ed-b939-0242ac120002"
 
 describe("Functional Tests API", () => {
   describe("src > v1 > application > route > user > POST", () => {
@@ -73,4 +73,20 @@ describe("Functional Tests API", () => {
       }
     })
   })
+
+  // describe('DB cleaning', () => {
+  //   it("should be no remaining of tests in DB", async () => {
+
+  //   })
+  // })
+
 })
+
+/*
+// DB query to clean in case of problems
+DELETE FROM `wallet`
+WHERE `userId` in (SELECT userId FROM `user` WHERE firstname LIKE '%test%');
+
+DELETE FROM `user`
+WHERE firstname LIKE '%test%';
+*/

@@ -6,6 +6,7 @@ import { errorAPIUSER } from "./error.dto"
 import logger from "../../../helpers/logger"
 import { validateUserIdParams } from "./validation"
 import { apiResponseGetAllUserType, apiResponseGetUserType, apiResponseCreateUserType, apiResponseDeleteUserType } from "./apiResponse.dto"
+import { userInfo } from "../../../infrastructure/persistance/user/dto"
 
 const userRouter = Router()
 
@@ -19,7 +20,7 @@ userRouter
 
     if (results === null) return res.status(500).json(errorAPIUSER.errorAPIGetAllUsers)
 
-    const apiRes: apiResponseGetAllUserType = { data: results }
+    const apiRes: apiResponseGetAllUserType = { data: results as userInfo[]}
 
     return res.status(200).json(apiRes)
   })
