@@ -1,8 +1,4 @@
-export type errorType = {
-  name: string
-  message: string
-  httpCode: number
-}
+import { errorType } from "../../../domain/error";
 
 export const errorAPIUSER: Record<string, errorType> = {
   errorAPIGetAllUsers: {

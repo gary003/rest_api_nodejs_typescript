@@ -1,4 +1,4 @@
-#  api template using typescript sinon typeorm
+#  back-end api portfolio using typescript sinon typeorm
 
 ## Skills description
 
@@ -11,34 +11,32 @@
 - Persistance with typeorm
     * Entities handling
     * Table join
-    * Transaction (rollback and commit)
+    * Table lock
+    * Transaction (rollback a nd commit)
 - Documentation with Swagger
 - Docker
-- Logging with Winston 
+- Logging with Winston
 - Typescript
 
-## Installation
+## Installation & Start
 
-### If you are using Github:
-
-- Clone the project : 
+- Clone the project :
     `git clone https://github.com/gary003/api_typeorm_sinon.git`
 
 - Go into the project directory:
     `cd api_typeorm_sinon`
 
-- Install thee depedences:
+- Install the dependences:
     `npm install`
 
 - Launch the app:
     `npm run start`
 
-- The app should be running with a log message
+- Check the log in terminal, for the urls (docs and app index)
 
-## Start
+## Docker Installation
 
-- After installation check the url with a valid github username as a parameter
-    `localhost:8080/apiDoc`
+- Coming soon ...
 
 ## Developer
 

@@ -10,10 +10,11 @@ import { createSandbox, SinonSandbox } from "sinon"
 import { describe, it } from "mocha"
 import chai from "chai"
 import { addCurrency, deleteUserById, getAllUsers, getUserWalletInfo, saveNewUser, transferMoney, transferMoneyParamsValidator, transferMoneyWithRetry } from "../../../../../../src/v1/application/services/user/index"
-import { moneyTransferParamsValidatorErrors, transferMoneyErrors, userFunctionsErrors, transferMoneyWithRetryErrors, errorType } from "../../../../../../src/v1/application/services/user/error.dto"
+import { moneyTransferParamsValidatorErrors, transferMoneyErrors, userFunctionsErrors, transferMoneyWithRetryErrors } from "../../../../../../src/v1/application/services/user/error.dto"
 import { transactionQueryRunnerType } from "../../../../../../src/v1/infrastructure/persistance/connection/connectionFile"
 import { userInfo } from "../../../../../../src/v1/infrastructure/persistance/user/dto"
 import logger from "../../../../../../src/v1/helpers/logger"
+import { errorType } from "../../../../../../src/v1/domain/error"
 
 describe("Unit tests user", () => {
   const sandbox: SinonSandbox = createSandbox()

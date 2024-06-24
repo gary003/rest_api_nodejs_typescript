@@ -3,9 +3,10 @@ import { getAllUsersDB, getUserWalletInfoDB, saveNewUserDB, deleteUserByIdDB } f
 import { updateWalletByWalletIdDB, updateWalletByWalletIdTransaction } from "../../../infrastructure/persistance/wallet"
 import { moneyTypes, moneyTypesO } from "../../../domain"
 import { userWalletDTO } from "./dto"
-import { transferMoneyErrors, userFunctionsErrors, moneyTransferParamsValidatorErrors, transferMoneyWithRetryErrors, errorType } from "./error.dto"
+import { transferMoneyErrors, userFunctionsErrors, moneyTransferParamsValidatorErrors, transferMoneyWithRetryErrors } from "./error.dto"
 import logger from "../../../helpers/logger"
 import { userInfo } from "../../../infrastructure/persistance/user/dto"
+import { errorType } from "../../../domain/error"
 
 export const getAllUsers = async (): Promise<userWalletDTO[]> => {
   const allUsers = await getAllUsersDB().catch((err) => {
@@ -47,8 +48,7 @@ export const addCurrency = async (userId: string, currencyType: moneyTypes, amou
     logger.error(userFunctionsErrors.ErrorNoWalletUser)
     throw new Error(JSON.stringify(userFunctionsErrors.ErrorNoWalletUser))
   }
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-expect-error
+
   const resultUpdate = await updateWalletByWalletIdDB(String(currentUserWalletInfo.Wallet?.walletId), currencyType, Number(currentUserWalletInfo.Wallet[currencyType]) + amount).catch((err) => {
     logger.error(err)
     return null
@@ -92,8 +92,12 @@ export const transferMoneyParamsValidator = async (currency: moneyTypes, giverId
     throw new Error(JSON.stringify(moneyTransferParamsValidatorErrors.ErrorUserInfo))
   }
 
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-expect-error
+  if (!giverUserInfo.Wallet) {
+    const error = { ...userFunctionsErrors.ErrorNoWalletUser, ...{ giverUserInfo }}
+    logger.error(error)
+    throw new Error(JSON.stringify(error))
+  }
+
   const giverNewBalance = Number(giverUserInfo.Wallet[currency]) - amount
 
   if (giverNewBalance < 0) throw new Error(JSON.stringify(moneyTransferParamsValidatorErrors.ErrorInsufficientFunds))
@@ -104,6 +108,12 @@ export const transferMoneyParamsValidator = async (currency: moneyTypes, giverId
 
   if (!recipientUserInfo) {
     throw new Error(JSON.stringify(moneyTransferParamsValidatorErrors.ErrorUserInfo))
+  }
+
+  if (!recipientUserInfo.Wallet) {
+    const error = { ...userFunctionsErrors.ErrorNoWalletUser, ...{ recipientUserInfo } }
+    logger.error(error)
+    throw new Error(JSON.stringify(error))
   }
 
   // logger.debug(JSON.stringify({ giverUserInfo, giverNewBalance }))
@@ -122,7 +132,7 @@ export const transferMoney = async (currency: moneyTypes, giverId: string, recip
     throw new Error(JSON.stringify(transferMoneyErrors.ErrorParamsValidator)) // Use pre-defined error
   }
 
-  const [giverUserInfo, recipientUserInfo] = res 
+  const [giverUserInfo, recipientUserInfo] : userInfo[] = res 
 
   if (!giverUserInfo || !recipientUserInfo) {
     logger.error(transferMoneyErrors.ErrorParamsValidator)
@@ -140,8 +150,8 @@ export const transferMoney = async (currency: moneyTypes, giverId: string, recip
   }
 
   // Acquire locks on giver and recipient wallets (pessimistic locking)
-  const lockResultGiver = await acquireLockOnWallet(transacRunner, String(giverUserInfo.Wallet?.walletId))
-  const lockResultRecipient = await acquireLockOnWallet(transacRunner, String(recipientUserInfo.Wallet?.walletId))
+  const lockResultGiver: boolean = await acquireLockOnWallet(transacRunner, String(giverUserInfo.Wallet?.walletId))
+  const lockResultRecipient: boolean = await acquireLockOnWallet(transacRunner, String(recipientUserInfo.Wallet?.walletId))
 
   if (!lockResultGiver || !lockResultRecipient) {
     const errorLock = transferMoneyErrors.ErrorLockAcquisition
@@ -149,9 +159,7 @@ export const transferMoney = async (currency: moneyTypes, giverId: string, recip
     throw new Error(JSON.stringify(errorLock))
   }
 
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-expect-error
-  const giverNewBalance: number = Number(giverUserInfo.Wallet[currency]) - amount
+  const giverNewBalance: number = Number(giverUserInfo.Wallet![currency]) - amount
 
   const updateWalletGiverResult = await updateWalletByWalletIdTransaction(transacRunner, String(giverUserInfo.Wallet?.walletId), currency, giverNewBalance).catch((err) => {
     logger.error(err)
@@ -164,9 +172,7 @@ export const transferMoney = async (currency: moneyTypes, giverId: string, recip
     throw new Error(JSON.stringify(transferMoneyErrors.ErrorUpdateGiverWallet))
   }
 
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-expect-error
-  const recipientNewBalance: number = recipientUserInfo.Wallet[currency] + amount
+  const recipientNewBalance: number = +(recipientUserInfo.Wallet![currency]) + amount
 
   const updateWalletRecipientResult = await updateWalletByWalletIdTransaction(transacRunner, String(recipientUserInfo.Wallet?.walletId), currency, recipientNewBalance).catch((err) => {
     logger.error(err)

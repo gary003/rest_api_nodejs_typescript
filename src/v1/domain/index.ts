@@ -3,10 +3,4 @@ export const moneyTypesO = {
   "soft_currency" : "softCurrency",
 } as const
 
-type moneyT = keyof typeof moneyTypesO
-
-export type moneyTypes =(typeof moneyTypesO)[moneyT]
-
-export type wallet = moneyTypes & {
-  walletId: string
-}
+export type moneyTypes = (typeof moneyTypesO)[keyof typeof moneyTypesO]

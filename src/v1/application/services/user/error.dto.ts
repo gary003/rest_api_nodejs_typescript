@@ -1,3 +1,5 @@
+import { errorType } from "../../../domain/error"
+
 export const transferMoneyErrors: Record<string, errorType> = {
   ErrorParamsValidator: {
     name: "ErrorParamsValidator",
@@ -95,8 +97,3 @@ export const transferMoneyWithRetryErrors: Record<string, errorType> = {
   },
 } as const
 
-export type errorType = {
-  name: string
-  message: string
-  httpCode: number
-}
