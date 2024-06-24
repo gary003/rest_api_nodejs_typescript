@@ -1,4 +1,16 @@
 {
   "semi": false,
-  "printWidth": 400
+  "printWidth": 400,
+  "singleQuote": true,
+  "arrowParens": "always",
+  "tabWidth": 2,
+  "bracketSpacing": true,
+  "endOfLine": "lf",
+  "parser": "babel",
+  "requirePragma": false,
+  "plugins": [
+    "./node_modules/prettier-plugin-eslint"
+  ],
+  "eslintConfig": ".eslintrc.json"
+
 }
