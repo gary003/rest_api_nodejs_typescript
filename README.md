@@ -12,7 +12,7 @@
     * Entities handling
     * Table join
     * Table lock
-    * Transaction (rollback a nd commit)
+    * Transaction (rollback and commit)
 - Documentation with Swagger
 - Docker
 - Logging with Winston
@@ -40,7 +40,7 @@
 
 ## Developer
 
-Gary Johnson <gary.johnson.freelance@gmail.com>
+ - Gary Johnson <gary.johnson.freelance@gmail.com>
 
 ## License
 
