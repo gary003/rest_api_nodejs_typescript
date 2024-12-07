@@ -41,17 +41,8 @@ userRouter
 
 userRouter
   .route("/:userId")
-  .get(async (req: Request, res: Response) => {
-    const userId = await validateUserIdParams(req.params.userId).catch((err) => {
-      logger.error(err)
-      return null
-    })
-
-    if (userId === null) {
-      return res.status(400).json(errorAPIUSER.errorAPIInvalidUserId)
-    }
-
-    const result = await getUserWalletInfo(userId).catch((err) => {
+  .get(validateUserIdParams, async (req: Request, res: Response) => {
+    const result = await getUserWalletInfo(String(req.params.userId)).catch((err) => {
       logger.error(err)
       return null
     })
@@ -60,17 +51,8 @@ userRouter
 
     return res.status(200).json({ data: result } as apiResponseGetUserType)
   })
-  .delete(async (req: Request, res: Response) => {
-    const userId = await validateUserIdParams(req.params.userId).catch((err) => {
-      logger.error(err)
-      return null
-    })
-
-    if (userId === null) {
-      return res.status(400).json(errorAPIUSER.errorAPIInvalidUserId)
-    }
-
-    const result = await deleteUserById(userId).catch((err) => {
+  .delete(validateUserIdParams, async (req: Request, res: Response) => {
+    const result = await deleteUserById(String(req.params.userId)).catch((err) => {
       logger.error(err)
       return null
     })

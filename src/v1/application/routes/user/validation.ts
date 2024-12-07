@@ -1,5 +1,19 @@
-export const validateUserIdParams = async (userId: unknown) => {
-  if (typeof userId !== "string") throw new Error("userId params is not a string ")
-  if (userId.length < 10) throw new Error("wrong length for ID string ")
-  return String(userId)
+import { z } from "zod";
+import { Request, Response, NextFunction } from 'express'
+import { errorValidationUser } from "./error.dto";
+
+export const validateUserIdParams = async (req: Request, res: Response, next: NextFunction) => {
+  const { userId } = req.params
+
+  const UserIdScheme = z.string().length(36)
+    
+  try {
+    UserIdScheme.parse(userId)
+    next()
+    return;
+  } catch (err) {
+    // console.log(err)
+
+    return res.status(404).send(errorValidationUser)
+  }
 }

@@ -16,6 +16,7 @@
 - Documentation with Swagger
 - Docker
 - Logging with Winston
+- Validation using Zod
 - Typescript
 
 ## Installation & Start

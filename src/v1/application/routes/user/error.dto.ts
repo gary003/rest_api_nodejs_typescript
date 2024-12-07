@@ -27,3 +27,11 @@ export const errorAPIUSER: Record<string, errorType> = {
     httpCode: 500,
   },
 } as const
+
+export const errorValidationUser: Record<string, errorType> = {
+  errorParamUserId: {
+    name: "errorValidationUser",
+    message: "Error - Wrong userId info in route - middleware error",
+    httpCode: 404,
+  }
+} as const

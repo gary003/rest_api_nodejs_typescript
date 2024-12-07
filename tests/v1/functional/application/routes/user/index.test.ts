@@ -3,10 +3,11 @@ import request from "supertest"
 import app from "../../../../../../src/app"
 import { expect } from "chai"
 import { describe, it } from "mocha"
+import { errorValidationUser } from "../../../../../../src/v1/application/routes/user/error.dto"
 
 const urlBase = "/api/v1"
 
-const testUserId: string = "cc2c990b6-029c-11ed-b939-0242ac120002"
+const testUserId: string = "cc2c990b6-029c-11ed-b939-0242ac12002"
 
 describe("Functional Tests API", () => {
   describe("src > v1 > application > route > user > POST", () => {
@@ -58,6 +59,19 @@ describe("Functional Tests API", () => {
       } catch (error) {
         chai.assert.fail("unexpected error found in route route > user > GET (single user)")
       }
+    }),
+    it("should fail returning a single user ( wrong parameter in route )", async () => {
+      try {
+        const wrongUserId = 123
+
+        const response = await request(app).get(`${urlBase}/user/${wrongUserId}`).set("Accept", "application/json").expect("Content-Type", /json/)
+        
+        expect(response.status).to.be.equal(errorValidationUser.errorParamUserId!.httpCode)
+        expect(response.text).to.include(errorValidationUser.errorParamUserId!.message)
+      } catch (error) {
+        // console.log({error})
+        chai.assert.fail("Unexpected error- Should not found that userId")
+      }
     })
   })
 
@@ -73,13 +87,6 @@ describe("Functional Tests API", () => {
       }
     })
   })
-
-  // describe('DB cleaning', () => {
-  //   it("should be no remaining of tests in DB", async () => {
-
-  //   })
-  // })
-
 })
 
 /*

@@ -35,14 +35,14 @@ describe("Unit tests user", () => {
         },
       }
 
-      const fakeSaveNewUserDB = sandbox.stub(modUserDB, "saveNewUserDB").returns(Promise.resolve(fakeUser))
+      const mockSaveNewUserDB = sandbox.stub(modUserDB, "saveNewUserDB").returns(Promise.resolve(fakeUser))
 
       try {
         const response = await saveNewUser(fakeUser.userId, fakeUser.firstname, fakeUser.lastname)
 
         chai.assert.exists(response, "Should get the correct response")
         chai.assert.strictEqual(response.userId, fakeUser.userId, "Should get the correct userId")
-        chai.assert.isTrue(fakeSaveNewUserDB.calledOnce)
+        chai.assert.isTrue(mockSaveNewUserDB.calledOnce)
       } catch (err) {
         chai.assert.fail("Should not happen - no error in catch expected")
       }
@@ -59,7 +59,7 @@ describe("Unit tests user", () => {
         },
       }
 
-      const fakeSaveNewUserDB = sandbox.stub(modUserDB, "saveNewUserDB").rejects(null)
+      const mockSaveNewUserDB = sandbox.stub(modUserDB, "saveNewUserDB").rejects(null)
       const mockErrorLogger = sandbox.stub(logger, "error")
 
       try {
@@ -71,7 +71,7 @@ describe("Unit tests user", () => {
         } else {
           const errInfo = JSON.parse(err?.message)
           chai.assert.equal(errInfo.message, userFunctionsErrors.ErrorCreatingUser!.message)
-          sandbox.assert.calledOnce(fakeSaveNewUserDB)
+          sandbox.assert.calledOnce(mockSaveNewUserDB)
           sandbox.assert.calledOnce(mockErrorLogger)
         }
       }
@@ -655,7 +655,6 @@ describe("Unit tests user", () => {
       }
     })
   })
-  
 })
 
 
