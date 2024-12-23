@@ -1,4 +1,4 @@
-FROM node:16-alpine
+FROM node:22-alpine
 
 WORKDIR /app
 
@@ -12,4 +12,4 @@ EXPOSE 8080
 
 RUN ["npm", "run", "build"]
 
-CMD npm run start-docker
+CMD [ "npm", "run", "launch-app"]

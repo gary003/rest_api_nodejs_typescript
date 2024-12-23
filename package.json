@@ -8,6 +8,7 @@
     "build": "npx tsc -p .",
     "start": "npx tsc -p . && npx node ./dist/bin/server.js",
     "start-pm2": "npx tsc -p . && npx pm2 start ./dist/bin/server.js -i 0",
+    "launch-app": "npx node ./dist/bin/server.js",
     "stop-pm2": "npx pm2 stop all",
     "dev": "npx nodemon ./src/bin/server.ts",
     "dev-pm2": "npx pm2 start ./dist/bin/server.js --name app-dev --watch",
