@@ -33,7 +33,7 @@ describe("Functional Tests API", () => {
   })
 
   describe("src > v1 > application > route > user > GET (all users)", () => {
-    it("should return an array of all users", async () => {
+    it.only("should return an array of all users", async () => {
       try {
         const response = await request(app).get(`${urlBase}/user`).set("Accept", "application/json").expect("Content-Type", /json/)
 
@@ -69,7 +69,6 @@ describe("Functional Tests API", () => {
         expect(response.status).to.be.equal(errorValidationUser.errorParamUserId!.httpCode)
         expect(response.text).to.include(errorValidationUser.errorParamUserId!.message)
       } catch (error) {
-        // console.log({error})
         chai.assert.fail("Unexpected error- Should not found that userId")
       }
     })

@@ -1,6 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-require("dotenv").config()
-
 import * as http from "http"
 import ip from "ip"
 import app from "../app"

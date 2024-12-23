@@ -1,32 +1,49 @@
 version: "3.8"
 
 services:
-  app3:
+  app:
     build: .
     ports:
       - "8080:8080"
     depends_on:
-      - db3
+      - db
     environment:
-      - DB_DRIVER=postgres
-      - DB_HOST=db3
-      - DB_USERNAME=postgres
-      - DB_PASSWORD=mysecretpassword
+      - DB_DRIVER=mysql
+      - DB_HOST=db
+      - DB_USERNAME=root
+      - DB_PASSWORD=mypass
       - DB_DATABASE_NAME=mydbuser
-      - DB_PORT=5432
+      - DB_PORT=3306
+      - CRYPTO_SECRET_KEY=secret!!0
+      - API_PORT=8080
+      - LOGLEVEL=debug
     restart: always
 
-  db3: 
+  db:
     image: mysql:latest
-    environment:
-      - POSTGRES_USERNAME=postgres
-      - POSTGRES_PASSWORD=mysecretpassword
-      - POSTGRES_DATABASE_NAME=mydbuser
-    ports:
-      - "5432:5432"
-    volumes:
-      - ./src/v1/infrastructure/docker/scripts:/tmp
-      - ./src/v1/infrastructure/docker/db_storage/:/var/lib/postgresql/data
-      - ./src/v1/infrastructure/docker/data/:/docker-entrypoint-initdb.d/
     restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=mypass
+      - MYSQL_DATABASE=mydbuser
+    volumes:
+      - ./src/v1/infrastructure/docker/scripts/:/docker-entrypoint-initdb.d/
+      - ./src/v1/infrastructure/docker/mysql_data:/var/lib/mysql
+    # MySQL needs some time to initialize, so we add a health check
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
 
+  # db: 
+  #   image: postgres:latest
+  #   environment:
+  #     - POSTGRES_USERNAME=postgres
+  #     - POSTGRES_PASSWORD=mysecretpassword
+  #     - POSTGRES_DATABASE_NAME=mydbuser
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - ./src/v1/infrastructure/docker/scripts:/tmp
+  #     - ./src/v1/infrastructure/docker/db_storage/:/var/lib/postgresql/data
+  #     - ./src/v1/infrastructure/docker/data/:/docker-entrypoint-initdb.d/
+  #   restart: always

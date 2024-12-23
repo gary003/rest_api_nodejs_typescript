@@ -6,12 +6,12 @@ export type transactionQueryRunnerType = QueryRunner
 export const connectionDB = async (): Promise<DataSource> => {
   const connectionOptions: DataSourceOptions = {
     name: uuidv4(),
-    type: process.env.DB_DRIVER || "mysql",
-    host: process.env.DB_HOST || "bzmqbcwtzfw3c72gak7p-mysql.services.clever-cloud.com",
-    port: Number(process.env.DB_PORT) || 3306,
-    username: process.env.DB_USERNAME || "uwtdyhp9aghocmgm",
-    password: process.env.DB_PASSWORD || "0XLGKtr9sj6ZkVlPcWy3",
-    database: process.env.DB_DATABASE_NAME || "bzmqbcwtzfw3c72gak7p",
+    type: process.env.DB_DRIVER,
+    host: process.env.DB_HOST,
+    port: Number(process.env.DB_PORT),
+    username: process.env.DB_USERNAME,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_DATABASE_NAME,
     entities: [__dirname + "/../**/entity.*s"],
     synchronize: false,
   } as DataSourceOptions

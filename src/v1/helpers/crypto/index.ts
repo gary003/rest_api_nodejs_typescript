@@ -1,6 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-require("dotenv").config()
-
 import crypto from "crypto-js"
 
 const secretKey: string = process.env.CRYPTO_SECRET_KEY || ""

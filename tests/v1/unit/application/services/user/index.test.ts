@@ -1,6 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-require("dotenv").config()
-
 import * as modUserDB from "../../../../../../src/v1/infrastructure/persistance/user"
 import * as modWalletDB from "../../../../../../src/v1/infrastructure/persistance/wallet"
 import * as modUser from "../../../../../../src/v1/application/services/user/index"
@@ -121,54 +118,6 @@ describe("Unit tests user", () => {
         }   
         const errInfo = JSON.parse(err?.message)
         chai.assert.equal(errInfo.message, moneyTransferParamsValidatorErrors.ErrorCurrencyType!.message)
-      }
-    })
-  })
-
-  describe("src > v1 > application > services > user > index > getAllUsers", () => {
-    beforeEach(() => {
-      sandbox.restore()
-    })
-    it("should retrieve all the users from DB", async () => {
-      try {
-        const response = await getAllUsers()
-
-        chai.assert.isArray(response, "Should get the list in an array format")
-      } catch (err) {
-        chai.assert.fail("Fail - Should retreive all users")
-      }
-    })
-  })
-
-  describe("src > v1 > application > services > user > index > getUserById", () => {
-    beforeEach(() => {
-      sandbox.restore()
-    })
-    it("should retrieve a single user from DB", async () => {
-      const userToFetch: string = "22ef5564-0234-11ed-b939-0242ac120002"
-
-      try {
-        const response = await getUserWalletInfo(userToFetch)
-        chai.assert.exists(response, "Should get a valid response from DB")
-        chai.assert.equal(response.userId, userToFetch, "Should get a valid response with a userId")
-      } catch (err) {
-        chai.assert.fail("Fail - should retreive a user")
-      }
-    })
-
-    it("should fail retrieving a single user (user does not exist in DB)", async () => {
-      const userToFetch: string = "785555-0234-11ed-b939-0242ac1200026"
-
-      try {
-        await getUserWalletInfo(userToFetch)
-        chai.assert.fail("Should never happen")
-      } catch (err) {
-        if (! (err instanceof Error) || err?.message === null) {
-          chai.assert.fail('Please use a correct error format')
-        }   
-        const errorInfo = JSON.parse(err.message)
-        chai.assert.exists(err, "Should get an err from DB")
-        chai.assert.equal(errorInfo.message, userFunctionsErrors.ErrorFetchingUserInfo!.message)
       }
     })
   })

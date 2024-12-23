@@ -19,7 +19,7 @@
 - Validation using Zod
 - Typescript
 
-## Installation & Start
+## Git Installation
 
 - Clone the project :
     `git clone https://github.com/gary003/api_typeorm_sinon.git`
@@ -30,14 +30,20 @@
 - Install the dependences:
     `npm install`
 
+## Docker Installation
+
+- Prerequisites
+    Having docker & docker-compose installed
+
+- Launch the app & DB (mysql)
+    `docker-compose up`
+
+## Start
 - Launch the app:
     `npm run start`
 
 - Check the log in terminal, for the urls (docs and app index)
-
-## Docker Installation
-
-- Coming soon ...
+    http://localhost/apiDoc
 
 ## Developer
 
