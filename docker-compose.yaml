@@ -26,8 +26,8 @@ services:
       - MYSQL_ROOT_PASSWORD=mypass
       - MYSQL_DATABASE=mydbuser
     volumes:
+      - ./src/v1/infrastructure/docker/db_volume:/var/lib/mysql
       - ./src/v1/infrastructure/docker/scripts/:/docker-entrypoint-initdb.d/
-      - ./src/v1/infrastructure/docker/mysql_data:/var/lib/mysql
     # MySQL needs some time to initialize, so we add a health check
     healthcheck:
       test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
