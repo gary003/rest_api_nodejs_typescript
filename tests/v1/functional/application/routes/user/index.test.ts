@@ -7,7 +7,7 @@ import app from "../../../../../../src/app"
 import { DockerComposeEnvironment, StartedDockerComposeEnvironment } from 'testcontainers'
 import logger from "../../../../../../src/v1/helpers/logger"
 
-import request from "supertest";
+import request from "supertest"
 
 import { StartedGenericContainer } from "testcontainers/build/generic-container/started-generic-container"
 
@@ -31,7 +31,7 @@ describe("Functional tests for user", () => {
     // logger.info("starting test env for user (db) from docker-compose")
 
     environment = await new DockerComposeEnvironment(composeFilePath, composeFile)
-      .up(["app", "db"])
+      .up(["db"])
       .catch(err => {
         logger.debug(JSON.stringify(err))
         return null
@@ -48,9 +48,11 @@ describe("Functional tests for user", () => {
     const dbPort = Number(process.env.DB_PORT) || 3306
 
     // Using MySQL protocol and default MySQL port
-    dbUri = `${process.env.DB_DRIVER}://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${dbContainer.getHost()}:${dbContainer.getMappedPort(dbPort)}/${process.env.DB_DATABASE_NAME}`;
+    dbUri = `${process.env.DB_DRIVER}://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${dbContainer.getHost()}:${dbContainer.getMappedPort(dbPort)}/${process.env.DB_DATABASE_NAME}`
     
     process.env.DB_URI = dbUri
+
+    logger.info(`uri: ${dbUri}`)
 
     return true
   })
@@ -59,7 +61,7 @@ describe("Functional tests for user", () => {
     await environment.down()
 
     // Cancel the modification of the env variable
-    process.env.DB_URI = original_uri
+    // process.env.DB_URI = original_uri
 
     // logger.info("Docker Compose test environment stopped for functional tests on user/.")
 

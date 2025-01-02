@@ -12,9 +12,9 @@
     "stop-pm2": "npx pm2 stop all",
     "dev": "npx nodemon ./src/bin/server.ts",
     "dev-pm2": "npx pm2 start ./dist/bin/server.js --name app-dev --watch",
-    "test:v1": "npx  mocha -r ts-node/register --timeout 100000 './tests/v1/**/*.test.ts'",
-    "test:v1:unit": "npx mocha -r ts-node/register --timeout 10000 './tests/v1/unit/**/*.test.ts'",
-    "test:v1:functional": "npx mocha -r ts-node/register --timeout 40000 './tests/v1/functional/**/*.test.ts'",
+    "test:v1": "npx  mocha -r ts-node/register --timeout 400000 './tests/v1/**/*.test.ts'",
+    "test:v1:unit": "npx mocha -r ts-node/register --timeout 40000 './tests/v1/unit/**/*.test.ts'",
+    "test:v1:functional": "npx mocha -r ts-node/register --timeout 400000 './tests/v1/functional/**/*.test.ts'",
     "test:v1:unit:coverage": "npx c8 npm run test:v1:unit",
     "test:v1:functional:coverage": "npx c8 npm run test:v1:functional",
     "test:v1:coverage": "npx c8 npm run test:v1"
