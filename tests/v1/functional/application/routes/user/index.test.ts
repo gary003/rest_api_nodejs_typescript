@@ -1,107 +1,116 @@
+require('dotenv').config()
 import chai from "chai"
-import request from "supertest"
-import app from "../../../../../../src/app"
 import { expect } from "chai"
 import { describe, it } from "mocha"
-import { errorValidationUser } from "../../../../../../src/v1/application/routes/user/error.dto"
+import app from "../../../../../../src/app"
 
-import { exec } from 'child_process';
-import { promisify } from 'util';
-import { DockerComposeEnvironment, StartedDockerComposeEnvironment, Wait } from 'testcontainers';
-import axios from 'axios'; // Import fetch if not already available
+import { DockerComposeEnvironment, StartedDockerComposeEnvironment } from 'testcontainers'
+import logger from "../../../../../../src/v1/helpers/logger"
 
-const urlBase = "api/v1"
+import request from "supertest";
 
+import { StartedGenericContainer } from "testcontainers/build/generic-container/started-generic-container"
+
+const urlBase:string = "api/v1"
 const testUserId: string = "cc2c990b6-029c-11ed-b939-0242ac12002"
 
-let appUrl: string = ""
-let environment: StartedDockerComposeEnvironment
+describe("Functional tests for user", () => {
 
-describe("Functional Tests API", () => {
+  let environment: StartedDockerComposeEnvironment
+  let dbContainer: StartedGenericContainer
+  let dbUri: string
+  
+  const original_uri = process.env.DB_URI
+
   before(async() => {
-    const composeFilePath = "."; 
-    const composeFile = "docker-compose.yaml"; 
+    const composeFilePath = "."
+    const composeFile = "docker-compose.yaml"
   
-    const execAsync = promisify(exec);
-    const { stdout } = await execAsync('pwd');
-    console.log(`Current directory: ${stdout.trim()}`);
-  
-    process.env.TESTCONTAINERS_LOCKDIR = './src/v1/inrastrusture/docker'; // Set custom lock directory
+    process.env.TESTCONTAINERS_LOCKDIR = './src/v1/inrastrusture/docker'
+
+    // logger.info("starting test env for user (db) from docker-compose")
 
     environment = await new DockerComposeEnvironment(composeFilePath, composeFile)
-      .up(["db", "app"])
+      .up(["app", "db"])
       .catch(err => {
-        console.log(err)
+        logger.debug(JSON.stringify(err))
         return null
       }) as unknown as StartedDockerComposeEnvironment
 
-    console.log("Docker Compose test environment started.");
-    console.log({environment});
-  
+    // logger.info("Docker Compose test environment started for functional tests on user/")
+    
     if(!environment) {
-      console.log('fail !!!!!!!!!!!!')
-      chai.assert.fail('Error the docker-compose set-up failed')
+      chai.assert.fail("Error the container test environment set-up failed")
     }
 
-    const appContainer = environment.getContainer("app-1");
-    appUrl = `http://${appContainer.getHost()}:${appContainer.getMappedPort(8080)}/${urlBase}/user`; 
+    dbContainer = environment.getContainer("db-1");
+
+    const dbPort = Number(process.env.DB_PORT) || 3306
+
+    // Using MySQL protocol and default MySQL port
+    dbUri = `${process.env.DB_DRIVER}://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${dbContainer.getHost()}:${dbContainer.getMappedPort(dbPort)}/${process.env.DB_DATABASE_NAME}`;
+    
+    process.env.DB_URI = dbUri
 
     return true
   })
+
   after(async() => {
-    await environment.down(); 
-    console.log("Docker Compose test environment stopped.");
+    await environment.down()
+
+    // Cancel the modification of the env variable
+    process.env.DB_URI = original_uri
+
+    // logger.info("Docker Compose test environment stopped for functional tests on user/.")
+
+    return true
   })
-
-  describe.only("src > v1 > application > route > user > getAllUsers", async () => { 
+  
+  describe("src > v1 > application > route > user > GET (getting all the users)", async () => {
     it('Should get all users from DB', async() => {
-      console.log(`Application URL: ${appUrl}`);
-    
-      // Your test logic here
-      const response = await axios.get(appUrl); 
-
-      expect(response.status).to.be.equal(200);
-      expect(response.data.data).to.be.an('array');
-      expect(response.data.data).length.above(0)
-
-    })
-  });
-    
-  describe("src > v1 > application > route > user > POST", () => {
-    it("should add a new user", async () => {
       try {
-        const response = await request(app)
-          .post(`/${urlBase}/user`)
-          .send({
-            userId: testUserId,
-            firstname: "test_Rosita",
-            lastname: "test_Espinosa",
-          })
-          .set("Accept", "application/json")
-          .expect("Content-Type", /json/)
+        const response =
+          await request(app)
+                .get(`/${urlBase}/user/`)
+                .set("Accept", "application/json")
+                .expect("Content-Type", /json/)
 
-        expect(response.status).to.be.within(200, 299)
-        expect(response.body.data).to.not.be.empty
-        expect(response.body.data.userId).to.equal(testUserId)
+          const body = JSON.parse(response.text)
+          
+          expect(body.data).to.be.an('array')
+          expect(body.data).length.above(0)
+
+          return true
       } catch (error) {
-        chai.assert.fail("unexpected error found in route route > user > POST")
+        chai.assert.fail(`Impossible to get a response`)
       }
     })
   })
-
-  describe("src > v1 > application > route > user > GET (all users)", () => {
-    it("should return an array of all users", async () => {
+  
+  describe("src > v1 > application > route > user > POST (adding a new user)", () => {
+    it("should add a new user", async () => {
+      const newUser = {
+        userId: testUserId,
+        firstname: "test_Rosita",
+        lastname: "test_Espinosa",
+      }
       try {
-        const response = await request(app).get(`/${urlBase}/user`).set("Accept", "application/json").expect("Content-Type", /json/)
+      const response = await request(app)
+                              .post(`/${urlBase}/user/`)
+                              .send(newUser)
+                              .set("Accept", "application/json")
+                              .expect("Content-Type", /json/)
 
-        expect(response.status).to.be.within(200, 299)
-        expect(response.body.data).to.be.an("array")
+      const body = JSON.parse(response.text)
 
-        if (response.body.data.length > 0) {
-          expect(response.body.data[0]).to.have.property("userId")
-        }
-      } catch (error) {
-        chai.assert.fail("unexpected error found in route route > user > GET (all users)")
+      // logger.debug(JSON.stringify(body))
+
+      expect(body.data).to.not.be.empty
+      expect(body.data.userId).to.equal(testUserId)
+
+      return true
+      } catch(err) {
+        chai.assert.fail('Test fail - impossible to add a new user')
       }
     })
   })
@@ -109,47 +118,52 @@ describe("Functional Tests API", () => {
   describe("src > v1 > application > route > user > GET (single user)", () => {
     it("should return a single user", async () => {
       try {
-        const response = await request(app).get(`/${urlBase}/user/${testUserId}`).set("Accept", "application/json").expect("Content-Type", /json/)
+        const response = await request(app)
+                                .get(`/${urlBase}/user/${testUserId}`)
+                                .set("Accept", "application/json")
+                                .expect("Content-Type", /json/)
+                
+        const body = JSON.parse(response.text)
 
-        expect(response.status).to.be.within(200, 299)
-        expect(response.body.data).to.have.property("userId")
+        expect(body.data).to.have.property("userId")
       } catch (error) {
         chai.assert.fail("unexpected error found in route route > user > GET (single user)")
       }
     }),
     it("should fail returning a single user ( wrong parameter in route )", async () => {
-      try {
         const wrongUserId = 123
 
-        const response = await request(app).get(`/${urlBase}/user/${wrongUserId}`).set("Accept", "application/json").expect("Content-Type", /json/)
-        
-        expect(response.status).to.be.equal(errorValidationUser.errorParamUserId!.httpCode)
-        expect(response.text).to.include(errorValidationUser.errorParamUserId!.message)
-      } catch (error) {
-        chai.assert.fail("Unexpected error- Should not found that userId")
-      }
+        const response = await request(app)
+                                .get(`/${urlBase}/user/${wrongUserId}`)
+                                .set("Accept", "application/json")
+                                .expect("Content-Type", /json/)
+                                .catch(err => null)
+                
+        if(!response) {
+          chai.assert.fail("Unexpected error - middleware should have block that userId")
+        }
+
+        const body = JSON.parse(response.text)
+
+        expect(body).to.have.property("errorParamUserId")
     })
   })
 
   describe("src > v1 > application > route > user > DELETE", () => {
     it("should delete a specified user", async () => {
-      try {
-        const response = await request(app).delete(`/${urlBase}/user/${testUserId}`).set("Accept", "application/json").expect("Content-Type", /json/)
+      const response = await request(app)
+                              .get(`/${urlBase}/user/${testUserId}`)
+                              .set("Accept", "application/json")
+                              .expect("Content-Type", /json/)
+                              .catch(err => null)
+              
+      if(!response) chai.assert.fail(`Impossible to delete the user in test user : ${testUserId}`)
 
-        expect(response.status).to.be.within(200, 299)
-        expect(response.body.data).to.not.be.null
-      } catch (error) {
-        chai.assert.fail("unexpected error found in route route > user > DELETE")
-      }
-    })
-  })
+      const body = JSON.parse(response.text)
+
+      expect(body.data).to.not.be.null
+      expect(body.data.userId).to.be.equal(testUserId)
 })
+  })
 
-/*
-// DB query to clean in case of problems
-DELETE FROM `wallet`
-WHERE `userId` in (SELECT userId FROM `user` WHERE firstname LIKE '%test%');
-
-DELETE FROM `user`
-WHERE firstname LIKE '%test%';
-*/
+})

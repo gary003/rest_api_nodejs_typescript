@@ -7,7 +7,8 @@ export const connectionDB = async (): Promise<DataSource> => {
   const connectionOptions: DataSourceOptions = {
     name: uuidv4(),
     type: process.env.DB_DRIVER,
-    host: process.env.DB_HOST,
+    // host: process.env.DB_HOST,
+    url: process.env.DB_URI,
     port: Number(process.env.DB_PORT),
     username: process.env.DB_USERNAME,
     password: process.env.DB_PASSWORD,
@@ -17,6 +18,8 @@ export const connectionDB = async (): Promise<DataSource> => {
   } as DataSourceOptions
 
   const connection: DataSource = new DataSource(connectionOptions)
+
+  // console.log(connection )
 
   await connection.initialize()
 

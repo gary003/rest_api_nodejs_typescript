@@ -4,35 +4,44 @@ services:
   app:
     build: .
     ports:
-      - "8080:8080"
+      - "${API_PORT}:8080"
     depends_on:
       - db
     environment:
-      - DB_DRIVER=mysql
+      - DB_DRIVER=${DB_DRIVER}
       - DB_HOST=db
-      - DB_USERNAME=root
-      - DB_PASSWORD=mypass
-      - DB_DATABASE_NAME=mydbuser
-      - DB_PORT=3306
-      - CRYPTO_SECRET_KEY=secret!!0
-      - API_PORT=8080
-      - LOGLEVEL=debug
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_DATABASE_NAME=${DB_DATABASE_NAME}
+      - DB_PORT=${DB_PORT}
+      - CRYPTO_SECRET_KEY=${CRYPTO_SECRET_KEY}
+      - API_PORT=${API_PORT}
+      - LOGLEVEL=${LOGLEVEL}
     restart: always
+    networks:
+      - ${DOCKER_APP_NETWORK}
 
   db:
     image: mysql:latest
     restart: always
     environment:
-      - MYSQL_ROOT_PASSWORD=mypass
-      - MYSQL_DATABASE=mydbuser
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+      - MYSQL_DATABASE=${DB_DATABASE_NAME}
     volumes:
       - ./src/v1/infrastructure/docker/db_volume:/var/lib/mysql
       - ./src/v1/infrastructure/docker/scripts/:/docker-entrypoint-initdb.d/
-    # MySQL needs some time to initialize, so we add a health check
+    ports:
+      - "${DB_PORT}:${DB_PORT}"  # Binding the MySQL port to the host using the env variable
     healthcheck:
       test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
       timeout: 20s
       retries: 10
+    networks:
+      - ${DOCKER_APP_NETWORK}
+
+networks:
+  my_app_network:
+    driver: bridge
 
   # db: 
   #   image: postgres:latest
@@ -47,3 +56,4 @@ services:
   #     - ./src/v1/infrastructure/docker/db_storage/:/var/lib/postgresql/data
   #     - ./src/v1/infrastructure/docker/data/:/docker-entrypoint-initdb.d/
   #   restart: always
+  
