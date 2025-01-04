@@ -1,21 +1,21 @@
-import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from "typeorm"
-import { User } from "../user/entity"
+import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm'
+import { User } from '../user/entity'
 
 @Entity()
 export class Wallet {
-  @PrimaryColumn({ name: "walletId" })
+  @PrimaryColumn({ name: 'walletId' })
   walletId!: string
 
-  @Column("int")
+  @Column('int')
   hardCurrency!: number
 
-  @Column("int")
+  @Column('int')
   softCurrency!: number
 
-  @OneToOne(() => User, { cascade: true, onDelete: "CASCADE" })
+  @OneToOne(() => User, { cascade: true, onDelete: 'CASCADE' })
   @JoinColumn({
-    name: "userId",
-    referencedColumnName: "userId",
+    name: 'userId',
+    referencedColumnName: 'userId'
   })
   user!: User
 }

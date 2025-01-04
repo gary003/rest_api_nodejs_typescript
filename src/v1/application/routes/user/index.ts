@@ -1,17 +1,17 @@
-import { Router, Request, Response } from "express"
-import { deleteUserById, getAllUsers, getUserWalletInfo, saveNewUser } from "../../services/user/index"
+import { Router, Request, Response } from 'express'
+import { deleteUserById, getAllUsers, getUserWalletInfo, saveNewUser } from '../../services/user/index'
 
-import { errorAPIUSER } from "./error.dto"
+import { errorAPIUSER } from './error.dto'
 
-import logger from "../../../helpers/logger"
-import { validateUserIdParams } from "./validation"
-import { apiResponseGetAllUserType, apiResponseGetUserType, apiResponseCreateUserType, apiResponseDeleteUserType } from "./apiResponse.dto"
-import { userInfo } from "../../../infrastructure/persistance/user/dto"
+import logger from '../../../helpers/logger'
+import { validateUserIdParams } from './validation'
+import { apiResponseGetAllUserType, apiResponseGetUserType, apiResponseCreateUserType, apiResponseDeleteUserType } from './apiResponse.dto'
+import { userInfo } from '../../../infrastructure/persistance/user/dto'
 
 const userRouter = Router()
 
 userRouter
-  .route("/")
+  .route('/')
   .get(async (_: Request, res: Response) => {
     const results = await getAllUsers().catch((err) => {
       logger.error(err)
@@ -20,7 +20,7 @@ userRouter
 
     if (results === null) return res.status(500).json(errorAPIUSER.errorAPIGetAllUsers)
 
-    const apiRes: apiResponseGetAllUserType = { data: results as userInfo[]}
+    const apiRes: apiResponseGetAllUserType = { data: results as userInfo[] }
 
     return res.status(200).json(apiRes)
   })
@@ -40,7 +40,7 @@ userRouter
   })
 
 userRouter
-  .route("/:userId")
+  .route('/:userId')
   .get(validateUserIdParams, async (req: Request, res: Response) => {
     const result = await getUserWalletInfo(String(req.params.userId)).catch((err) => {
       logger.error(err)

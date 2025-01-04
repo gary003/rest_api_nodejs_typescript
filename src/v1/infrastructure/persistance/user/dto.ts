@@ -1,9 +1,9 @@
-import { walletDBInfo } from "../wallet/dto"
+import { walletDBInfo } from '../wallet/dto'
 
 export enum userAttributes {
-  USERID = "userId",
-  FIRSTNAME = "firstname",
-  LASTNAME = "lastname",
+  USERID = 'userId',
+  FIRSTNAME = 'firstname',
+  LASTNAME = 'lastname'
 }
 
 export type userInfo = Record<userAttributes, string> & {

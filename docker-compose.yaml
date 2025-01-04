@@ -4,7 +4,7 @@ services:
   app:
     build: .
     ports:
-      - "${API_PORT}:8080"
+      - "${API_PORT}:${API_PORT}"
     depends_on:
       - db
     environment:
@@ -19,7 +19,7 @@ services:
       - LOGLEVEL=${LOGLEVEL}
     restart: always
     networks:
-      - ${DOCKER_APP_NETWORK}
+      - my_app_network
 
   db:
     image: mysql:latest
@@ -31,29 +31,14 @@ services:
       - ./src/v1/infrastructure/docker/db_volume:/var/lib/mysql
       - ./src/v1/infrastructure/docker/scripts/:/docker-entrypoint-initdb.d/
     ports:
-      - "${DB_PORT}:${DB_PORT}"  # Binding the MySQL port to the host using the env variable
+      - "${DB_PORT}:${DB_PORT}"
     healthcheck:
       test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
       timeout: 20s
       retries: 10
     networks:
-      - ${DOCKER_APP_NETWORK}
+      - my_app_network
 
 networks:
   my_app_network:
     driver: bridge
-
-  # db: 
-  #   image: postgres:latest
-  #   environment:
-  #     - POSTGRES_USERNAME=postgres
-  #     - POSTGRES_PASSWORD=mysecretpassword
-  #     - POSTGRES_DATABASE_NAME=mydbuser
-  #   ports:
-  #     - "5432:5432"
-  #   volumes:
-  #     - ./src/v1/infrastructure/docker/scripts:/tmp
-  #     - ./src/v1/infrastructure/docker/db_storage/:/var/lib/postgresql/data
-  #     - ./src/v1/infrastructure/docker/data/:/docker-entrypoint-initdb.d/
-  #   restart: always
-  

@@ -1,115 +1,115 @@
-import ip from "ip"
+import ip from 'ip'
 
 const localIp = ip.address()
 
 const apiDocumentation = {
-  swagger: "2.0",
+  swagger: '2.0',
   host: `${localIp}:${process.env.API_PORT || 8080}`,
-  basePath: "/api/v1",
+  basePath: '/api/v1',
   info: {
-    title: "api_backend_template",
-    version: "1",
+    title: 'api_backend_template',
+    version: '1'
   },
-  schemes: ["http"],
+  schemes: ['http'],
   // use for model definition
   definitions: {
     User: {
-      type: "object",
+      type: 'object',
       properties: {
         userId: {
-          description: "id of user",
-          type: "string",
+          description: 'id of user',
+          type: 'string'
         },
         walletId: {
-          description: "Each user have a wallet",
-          type: "string",
+          description: 'Each user have a wallet',
+          type: 'string'
         },
         firstname: {
-          description: "firstname of the user",
-          type: "string",
+          description: 'firstname of the user',
+          type: 'string'
         },
         lastname: {
           description: "user's lastname",
-          type: "string",
-        },
+          type: 'string'
+        }
       },
-      required: ["userId"],
-    },
+      required: ['userId']
+    }
   },
   paths: {
-    "/user": {
+    '/user': {
       get: {
-        tags: ["user"],
-        summary: "get all users",
-        description: "all users will be retreive from DB",
+        tags: ['user'],
+        summary: 'get all users',
+        description: 'all users will be retreive from DB',
         responses: {
-          "200": {
-            description: "Successfuly get all users ",
-          },
-        },
+          '200': {
+            description: 'Successfuly get all users '
+          }
+        }
       },
       post: {
-        tags: ["user"],
-        summary: "Save a new user in database",
-        description: "Save a new user in database",
+        tags: ['user'],
+        summary: 'Save a new user in database',
+        description: 'Save a new user in database',
         parameters: [
           {
-            in: "body",
-            name: "body",
-            description: "registered users",
+            in: 'body',
+            name: 'body',
+            description: 'registered users',
             schema: {
-              $ref: "#/definitions/User",
-            },
-          },
+              $ref: '#/definitions/User'
+            }
+          }
         ],
         responses: {
-          "200": {
-            description: "Successfully save new user",
-          },
-        },
-      },
+          '200': {
+            description: 'Successfully save new user'
+          }
+        }
+      }
     },
-    "/user/{userId}": {
+    '/user/{userId}': {
       get: {
-        tags: ["user"],
-        summary: "Get a single user",
-        description: "Get a user from DB by its id",
+        tags: ['user'],
+        summary: 'Get a single user',
+        description: 'Get a user from DB by its id',
         parameters: [
           {
-            name: "userId",
-            in: "path",
+            name: 'userId',
+            in: 'path',
             required: true,
-            type: "string",
-            description: "Id of a user (user_id)",
-          },
+            type: 'string',
+            description: 'Id of a user (user_id)'
+          }
         ],
         responses: {
-          "200": {
-            description: "Successfully get the requestesd user",
-          },
-        },
+          '200': {
+            description: 'Successfully get the requestesd user'
+          }
+        }
       },
       delete: {
-        tags: ["user"],
-        summary: "delete a user by id",
-        description: "Delete a user by id",
+        tags: ['user'],
+        summary: 'delete a user by id',
+        description: 'Delete a user by id',
         parameters: [
           {
-            name: "userId",
-            in: "path",
+            name: 'userId',
+            in: 'path',
             required: true,
-            type: "string",
-            description: "Id of a user (user_id)",
-          },
+            type: 'string',
+            description: 'Id of a user (user_id)'
+          }
         ],
         responses: {
-          "200": {
-            description: "Successfully delete the requested user",
-          },
-        },
-      },
-    },
-  },
+          '200': {
+            description: 'Successfully delete the requested user'
+          }
+        }
+      }
+    }
+  }
 }
 
 export default apiDocumentation

@@ -1,4 +1,4 @@
-import { userInfo } from "../../../infrastructure/persistance/user/dto"
+import { userInfo } from '../../../infrastructure/persistance/user/dto'
 
 export type apiResponseGetAllUserType = {
   data: userInfo[]

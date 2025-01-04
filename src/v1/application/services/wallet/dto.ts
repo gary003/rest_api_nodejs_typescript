@@ -1,6 +1,5 @@
 export type wallet = {
-    walletId: string,
-    hardCurrency?: number,
-    softCurrency?: number
-  }
-  
+  walletId: string
+  hardCurrency?: number
+  softCurrency?: number
+}

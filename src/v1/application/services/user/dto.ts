@@ -1,4 +1,4 @@
-import { wallet } from "../wallet/dto"
+import { wallet } from '../wallet/dto'
 
 export type userWalletDTO = {
   userId: string

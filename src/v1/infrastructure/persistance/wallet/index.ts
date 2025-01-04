@@ -1,10 +1,10 @@
-import { connectionDB } from "../connection/connectionFile"
-import { Wallet } from "./entity"
-import { v4 as uuidv4 } from "uuid"
-import { QueryRunner } from "typeorm"
-import { User } from "../user/entity"
-import { moneyTypes } from "../../../domain"
-import logger from "../../../helpers/logger"
+import { connectionDB } from '../connection/connectionFile'
+import { Wallet } from './entity'
+import { v4 as uuidv4 } from 'uuid'
+import { QueryRunner } from 'typeorm'
+import { User } from '../user/entity'
+import { moneyTypes } from '../../../domain'
+import logger from '../../../helpers/logger'
 
 export const getWalletByIdDB = async (walletId: string) => {
   const connection = await connectionDB()
@@ -18,7 +18,7 @@ export const getWalletByIdDB = async (walletId: string) => {
 
   await connection.destroy()
 
-  if (!wallet) throw new Error("Impossible to found the requested wallet")
+  if (!wallet) throw new Error('Impossible to found the requested wallet')
 
   return wallet
 }
@@ -32,7 +32,7 @@ export const updateWalletByWalletIdDB = async (walletId: string, currencyType: m
 
   await connection.destroy()
 
-  if (result.affected === 0) throw new Error("Impossible to found the requested wallet")
+  if (result.affected === 0) throw new Error('Impossible to found the requested wallet')
 
   return true
 }
@@ -44,7 +44,7 @@ export const updateWalletByWalletIdTransaction = async (transactionRunner: Query
 
   const result = await WalletsRepository.update(walletId, { [currencyType]: newBalance })
 
-  if (result.affected === 0) throw new Error("Impossible to found the requested wallet")
+  if (result.affected === 0) throw new Error('Impossible to found the requested wallet')
 
   return true
 }
@@ -64,7 +64,7 @@ export const createNewWalletDB = async (user: User): Promise<Wallet> => {
 
   await connection.destroy()
 
-  if (!newWallet) throw new Error("Impossible to save the new wallet")
+  if (!newWallet) throw new Error('Impossible to save the new wallet')
 
   return newWallet
 }
@@ -82,10 +82,8 @@ export const deleteWalletByIdDB = async (walletId: string): Promise<boolean> => 
   await connection.destroy()
 
   if (!result || result.affected === 0) {
-    throw new Error("Impossible to delete the wallet") // Use a custom error message
+    throw new Error('Impossible to delete the wallet') // Use a custom error message
   }
 
   return true
 }
-
-

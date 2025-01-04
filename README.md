@@ -1,13 +1,13 @@
-#  back-end api portfolio using typescript sinon typeorm
+#  Backend API template using typescript sinon typeorm
 
 ## Skills description
 
-- Clean architecture
+- Clean architecture (onion architechture)
 - Testing using sinon
     * Mocks
     * Coverage
     * Unit tests
-    * Functional tests
+    * Functional tests with testcontainers and supertest
 - Persistance with typeorm
     * Entities handling
     * Table join
@@ -15,9 +15,14 @@
     * Transaction (rollback and commit)
 - Documentation with Swagger
 - Docker
+    * Docker-compose
 - Logging with Winston
 - Validation using Zod
 - Typescript
+
+## Prerequisites
+- Having docker & docker-compose installed
+- Ask for the .env file
 
 ## Git Installation
 
@@ -30,24 +35,14 @@
 - Install the dependences:
     `npm install`
 
-## Docker Installation
-
-- Prerequisites
-    Having docker & docker-compose installed
+## Start app
 
 - Launch the app & DB (mysql)
     `docker-compose up`
 
-## Start
-- Launch the app:
-    `npm run start`
-
-- Check the log in terminal, for the urls (docs and app index)
-    http://localhost/apiDoc
-
 ## Developer
 
- - Gary Johnson <gary.johnson.freelance@gmail.com>
+- Gary Johnson <gary.johnson.freelance@gmail.com>
 
 ## License
 

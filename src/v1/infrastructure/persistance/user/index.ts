@@ -1,17 +1,17 @@
-import { Wallet } from "../wallet/entity"
-import { connectionDB } from "../connection/connectionFile"
-import { User } from "./entity"
-import { createNewWalletDB, deleteWalletByIdDB } from "../wallet"
-import { userInfo } from "./dto"
-import logger from "../../../helpers/logger"
+import { Wallet } from '../wallet/entity'
+import { connectionDB } from '../connection/connectionFile'
+import { User } from './entity'
+import { createNewWalletDB, deleteWalletByIdDB } from '../wallet'
+import { userInfo } from './dto'
+import logger from '../../../helpers/logger'
 
 export const getAllUsersDB = async (): Promise<userInfo[]> => {
   const connection = await connectionDB()
 
   const UserRepository = connection.getRepository(User)
 
-  const result = await UserRepository.createQueryBuilder("user")
-    .innerJoinAndMapOne("user.Wallet", Wallet, "wallet", "wallet.userId = user.userId")
+  const result = await UserRepository.createQueryBuilder('user')
+    .innerJoinAndMapOne('user.Wallet', Wallet, 'wallet', 'wallet.userId = user.userId')
     .getMany()
     .catch((err) => {
       logger.error(err.sqlMessage)
@@ -20,7 +20,7 @@ export const getAllUsersDB = async (): Promise<userInfo[]> => {
 
   await connection.destroy()
 
-  if (!result) throw new Error("Impossible to retreive any user")
+  if (!result) throw new Error('Impossible to retreive any user')
 
   // logger.debug(JSON.stringify(result))
 
@@ -38,7 +38,7 @@ export const saveNewUserDB = async (userId: string, firstname: string, lastname:
     return null
   })
 
-  if (!walletCreation) throw new Error("Impossible to create a new wallet or user")
+  if (!walletCreation) throw new Error('Impossible to create a new wallet or user')
 
   return newUser
 }
@@ -53,7 +53,7 @@ export const deleteUserByIdDB = async (userId: string): Promise<boolean> => {
 
   if (!userToDeleteInfo) {
     await connection.destroy()
-    throw new Error("Impossible to delete the user in DB, no user information available (step : 0)")
+    throw new Error('Impossible to delete the user in DB, no user information available (step : 0)')
   }
   // logger.debug(JSON.stringify(userToDeleteInfo))
 
@@ -65,7 +65,7 @@ export const deleteUserByIdDB = async (userId: string): Promise<boolean> => {
 
     if (!walletDeletion) {
       await connection.destroy()
-      throw new Error("Impossible to delete the user in DB (step : 1)")
+      throw new Error('Impossible to delete the user in DB (step : 1)')
     }
   }
   // Let the db some time to handle the previous request
@@ -80,7 +80,7 @@ export const deleteUserByIdDB = async (userId: string): Promise<boolean> => {
 
   if (!deletedUser || deletedUser.affected === 0) {
     await connection.destroy()
-    throw new Error("Impossible to delete the user in DB (step : 2)")
+    throw new Error('Impossible to delete the user in DB (step : 2)')
   }
 
   await connection.destroy()
@@ -93,9 +93,9 @@ export const getUserWalletInfoDB = async (userId: string): Promise<userInfo> => 
 
   const UserRepository = connection.getRepository(User)
 
-  const userWalletInfo = await UserRepository.createQueryBuilder("user")
-    .innerJoinAndMapOne("user.Wallet", Wallet, "wallets", "wallets.userId = user.userId")
-    .where("user.userId = :userId", { userId: userId })
+  const userWalletInfo = await UserRepository.createQueryBuilder('user')
+    .innerJoinAndMapOne('user.Wallet', Wallet, 'wallets', 'wallets.userId = user.userId')
+    .where('user.userId = :userId', { userId: userId })
     .getOne()
     .catch((err) => err)
 

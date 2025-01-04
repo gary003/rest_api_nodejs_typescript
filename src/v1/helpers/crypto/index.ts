@@ -1,8 +1,8 @@
-import crypto from "crypto-js"
+import crypto from 'crypto-js'
 
-const secretKey: string = process.env.CRYPTO_SECRET_KEY || ""
+const secretKey: string = process.env.CRYPTO_SECRET_KEY || ''
 
-if (!secretKey) throw new Error("Please specify a secretKey for encryption")
+if (!secretKey) throw new Error('Please specify a secretKey for encryption')
 
 export const encryptData = async (str: string): Promise<string> => {
   const cipher = crypto.AES.encrypt(str, secretKey)
