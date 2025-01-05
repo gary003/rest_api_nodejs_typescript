@@ -54,10 +54,12 @@ export const rollBackAndQuitTransactionRunner = async (queryRunner: QueryRunner)
 
 // Added function for acquiring lock on a wallet (using MySQL syntax)
 export const acquireLockOnWallet = async (queryRunner: QueryRunner, walletId: string): Promise<boolean> => {
-  try {
-    const lockResult = await queryRunner.query('SELECT * FROM wallet WHERE walletId = ? FOR UPDATE', [walletId])
-    return lockResult.length > 0 // Check if a row was returned (indicating successful lock)
-  } catch (err) {
-    return false
-  }
+  const lockResult = await queryRunner.query('SELECT * FROM wallet WHERE walletId = ? FOR UPDATE', [walletId]).catch((err) => {
+    logger.error(err)
+    return null
+  })
+
+  if (!lockResult) return false
+
+  return lockResult.length > 0 // Check if a row was returned (indicating successful lock)
 }

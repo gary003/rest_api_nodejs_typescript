@@ -4,7 +4,7 @@ import { expect } from 'chai'
 import { describe, it } from 'mocha'
 import app from '../../../../../../src/app'
 import { DockerComposeEnvironment, StartedDockerComposeEnvironment } from 'testcontainers'
-import logger from '../../../../../../src/v1/helpers/logger'
+// import logger from '../../../../../../src/v1/helpers/logger'
 
 import request from 'supertest'
 
@@ -28,14 +28,13 @@ describe('Functional tests for user', () => {
 
     // logger.info("starting test env for user (db) from docker-compose")
 
-    environment = (await new DockerComposeEnvironment(composeFilePath, composeFile).up(['db']).catch((err) => {
-      logger.debug(JSON.stringify(err))
-      return null
+    environment = (await new DockerComposeEnvironment(composeFilePath, composeFile).up(['app', 'db']).catch((err) => {
+      return err
     })) as unknown as StartedDockerComposeEnvironment
 
     // logger.info("Docker Compose test environment started for functional tests on user/")
 
-    if (!environment) {
+    if (environment instanceof String) {
       chai.assert.fail('Error the container test environment set-up failed')
     }
 
@@ -76,7 +75,7 @@ describe('Functional tests for user', () => {
 
         return true
       } catch (error) {
-        chai.assert.fail(`Impossible to get a response`)
+        chai.assert.fail(`Impossible to get a response - ${error}`)
       }
     })
   })
@@ -100,7 +99,7 @@ describe('Functional tests for user', () => {
 
         return true
       } catch (err) {
-        chai.assert.fail('Test fail - impossible to add a new user')
+        chai.assert.fail(`Test fail - impossible to add a new user - ${err}`)
       }
     })
   })
@@ -114,26 +113,26 @@ describe('Functional tests for user', () => {
 
         expect(body.data).to.have.property('userId')
       } catch (error) {
-        chai.assert.fail('unexpected error found in route route > user > GET (single user)')
+        chai.assert.fail(`unexpected error found in route route > user > GET (single user) - ${error}`)
       }
-    }),
-      it('should fail returning a single user ( wrong parameter in route )', async () => {
-        const wrongUserId = 123
+    })
+    it('should fail returning a single user ( wrong parameter in route )', async () => {
+      const wrongUserId = 123
 
-        const response = await request(app)
-          .get(`/${urlBase}/user/${wrongUserId}`)
-          .set('Accept', 'application/json')
-          .expect('Content-Type', /json/)
-          .catch((err) => null)
+      const response = await request(app)
+        .get(`/${urlBase}/user/${wrongUserId}`)
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .catch(() => null)
 
-        if (!response) {
-          chai.assert.fail('Unexpected error - middleware should have block that userId')
-        }
+      if (!response) {
+        chai.assert.fail('Unexpected error - middleware should have block that userId')
+      }
 
-        const body = JSON.parse(response.text)
+      const body = JSON.parse(response.text)
 
-        expect(body).to.have.property('errorParamUserId')
-      })
+      expect(body).to.have.property('errorParamUserId')
+    })
   })
 
   describe('src > v1 > application > route > user > DELETE', () => {
@@ -142,7 +141,7 @@ describe('Functional tests for user', () => {
         .get(`/${urlBase}/user/${testUserId}`)
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
-        .catch((err) => null)
+        .catch(() => null)
 
       if (!response) chai.assert.fail(`Impossible to delete the user in test user : ${testUserId}`)
 

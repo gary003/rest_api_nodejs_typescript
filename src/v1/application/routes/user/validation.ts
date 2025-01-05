@@ -12,6 +12,6 @@ export const validateUserIdParams = async (req: Request, res: Response, next: Ne
     next()
     return
   } catch (err) {
-    return res.status(404).send(errorValidationUser)
+    return res.status(404).send({ ...errorValidationUser, ...{ err: err } })
   }
 }

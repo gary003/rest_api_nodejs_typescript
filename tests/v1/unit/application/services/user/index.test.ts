@@ -41,7 +41,7 @@ describe('Unit tests user', () => {
         chai.assert.strictEqual(response.userId, fakeUser.userId, 'Should get the correct userId')
         chai.assert.isTrue(mockSaveNewUserDB.calledOnce)
       } catch (err) {
-        chai.assert.fail('Should not happen - no error in catch expected')
+        chai.assert.fail(`Should not happen - no error in catch expected - ${err}`)
       }
     })
     it('should fail creating a new user', async () => {
@@ -90,7 +90,7 @@ describe('Unit tests user', () => {
         sandbox.assert.calledOnce(mockGetUserWalletInfo)
         sandbox.assert.calledOnce(mockUpdateWalletByWalletIdDB)
       } catch (err) {
-        chai.assert.fail('Should not get an error')
+        chai.assert.fail(`Should not get an error - ${err}`)
       }
     })
     it('should fail (negative amount)', async () => {
@@ -138,7 +138,7 @@ describe('Unit tests user', () => {
         chai.assert.isTrue(response, 'Should get true response from DB')
         chai.assert.isTrue(mockDeleteUserByIdDB.calledOnce)
       } catch (err) {
-        chai.assert.fail('Fail - Unable to delete the user')
+        chai.assert.fail(`Fail - Unable to delete the user - ${err}`)
       }
     })
   })

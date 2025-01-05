@@ -1,24 +1,14 @@
 import { walletDBInfo } from '../wallet/dto'
 
-export enum userAttributes {
-  USERID = 'userId',
-  FIRSTNAME = 'firstname',
-  LASTNAME = 'lastname'
-}
+export const userAttributes = {
+  USERID: 'userId',
+  FIRSTNAME: 'firstname',
+  LASTNAME: 'lastname'
+} as const
 
-export type userInfo = Record<userAttributes, string> & {
+// Create a type from the values
+export type UserAttributeValues = (typeof userAttributes)[keyof typeof userAttributes]
+
+export type userInfo = Record<UserAttributeValues, string> & {
   Wallet?: walletDBInfo
 }
-
-// Ex
-// const us = {
-//   userId: "14523564-0234-11ed-b939-0242ac120002",
-//   firstname: "Glen",
-//   lastname: "Rhee",
-//   Wallet: {
-//     walletId: "412cddd2-027d-11ed-b939-0242ac120002",
-//     hardCurrency: 220,
-//     softCurrency: 750,
-//     coconut: 12,
-//   },
-// } as userInfo
