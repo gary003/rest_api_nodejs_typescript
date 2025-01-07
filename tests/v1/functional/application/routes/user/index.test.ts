@@ -3,22 +3,17 @@ import chai from 'chai'
 import { expect } from 'chai'
 import { describe, it } from 'mocha'
 import app from '../../../../../../src/app'
-import { DockerComposeEnvironment, StartedDockerComposeEnvironment } from 'testcontainers'
-// import logger from '../../../../../../src/v1/helpers/logger'
-
+import { DockerComposeEnvironment, StartedDockerComposeEnvironment, Wait } from 'testcontainers'
 import request from 'supertest'
-
-import { StartedGenericContainer } from 'testcontainers/build/generic-container/started-generic-container'
-
-const urlBase: string = 'api/v1'
-const testUserId: string = 'cc2c990b6-029c-11ed-b939-0242ac12002'
+// import logger from '../../../../../../src/v1/helpers/logger'
 
 describe('Functional tests for user', () => {
   let environment: StartedDockerComposeEnvironment
-  let dbContainer: StartedGenericContainer
-  let dbUri: string
 
   const original_uri = process.env.DB_URI
+
+  const testUserId: string = 'cc2c990b6-029c-11ed-b939-0242ac12002'
+  const urlBase: string = 'api/v1'
 
   before(async () => {
     const composeFilePath = '.'
@@ -28,28 +23,30 @@ describe('Functional tests for user', () => {
 
     // logger.info("starting test env for user (db) from docker-compose")
 
-    environment = (await new DockerComposeEnvironment(composeFilePath, composeFile).up(['app', 'db']).catch((err) => {
-      return err
-    })) as unknown as StartedDockerComposeEnvironment
+    try {
+      environment = await new DockerComposeEnvironment(composeFilePath, composeFile)
+        .withWaitStrategy('app-1', Wait.forLogMessage('app running on'))
+        .withWaitStrategy('db-1', Wait.forLogMessage('ready for connections')) // Common MySQL ready message
+        .up(['app', 'db'])
+    } catch (error) {
+      chai.assert.fail(`Error the container test environment set-up failed - ${error}`)
+    }
 
     // logger.info("Docker Compose test environment started for functional tests on user/")
 
-    if (environment instanceof String) {
-      chai.assert.fail('Error the container test environment set-up failed')
-    }
-
-    dbContainer = environment.getContainer('db-1')
+    const dbContainer = environment.getContainer('db-1')
 
     const dbPort = Number(process.env.DB_PORT) || 3306
 
     // Using MySQL protocol and default MySQL port
-    dbUri = `${process.env.DB_DRIVER}://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${dbContainer.getHost()}:${dbContainer.getMappedPort(dbPort)}/${process.env.DB_DATABASE_NAME}`
+    const dbUri = `${process.env.DB_DRIVER}://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${dbContainer.getHost()}:${dbContainer.getMappedPort(dbPort)}/${process.env.DB_DATABASE_NAME}`
 
     process.env.DB_URI = dbUri
 
-    // logger.info(`uri: ${dbUri}`)
+    // Add a small delay to ensure DB is really ready
+    await new Promise((resolve) => setTimeout(resolve, 2000))
 
-    return true
+    // logger.info(`uri: ${dbUri}`)
   })
 
   after(async () => {
@@ -65,18 +62,12 @@ describe('Functional tests for user', () => {
 
   describe('src > v1 > application > route > user > GET (getting all the users)', () => {
     it('Should get all users from DB', async () => {
-      try {
-        const response = await request(app).get(`/${urlBase}/user/`).set('Accept', 'application/json').expect('Content-Type', /json/)
+      const response = await request(app).get(`/${urlBase}/user/`).set('Accept', 'application/json').expect('Content-Type', /json/)
 
-        const body = JSON.parse(response.text)
+      const body = JSON.parse(response.text)
 
-        expect(body.data).to.be.an('array')
-        expect(body.data).length.above(0)
-
-        return true
-      } catch (error) {
-        chai.assert.fail(`Impossible to get a response - ${error}`)
-      }
+      expect(body.data).to.be.an('array')
+      expect(body.data).length.above(0)
     })
   })
 
@@ -87,47 +78,30 @@ describe('Functional tests for user', () => {
         firstname: 'test_Rosita',
         lastname: 'test_Espinosa'
       }
-      try {
-        const response = await request(app).post(`/${urlBase}/user/`).send(newUser).set('Accept', 'application/json').expect('Content-Type', /json/)
 
-        const body = JSON.parse(response.text)
+      const response = await request(app).post(`/${urlBase}/user/`).send(newUser).set('Accept', 'application/json').expect('Content-Type', /json/)
 
-        // logger.debug(JSON.stringify(body))
+      const body = JSON.parse(response.text)
 
-        expect(body.data).to.not.be.empty
-        expect(body.data.userId).to.equal(testUserId)
+      // logger.debug(JSON.stringify(body))
 
-        return true
-      } catch (err) {
-        chai.assert.fail(`Test fail - impossible to add a new user - ${err}`)
-      }
+      expect(body.data).to.not.be.empty
+      expect(body.data.userId).to.equal(testUserId)
     })
   })
 
   describe('src > v1 > application > route > user > GET (single user)', () => {
     it('should return a single user', async () => {
-      try {
-        const response = await request(app).get(`/${urlBase}/user/${testUserId}`).set('Accept', 'application/json').expect('Content-Type', /json/)
+      const response = await request(app).get(`/${urlBase}/user/${testUserId}`).set('Accept', 'application/json').expect('Content-Type', /json/)
 
-        const body = JSON.parse(response.text)
+      const body = JSON.parse(response.text)
 
-        expect(body.data).to.have.property('userId')
-      } catch (error) {
-        chai.assert.fail(`unexpected error found in route route > user > GET (single user) - ${error}`)
-      }
+      expect(body.data).to.have.property('userId')
     })
     it('should fail returning a single user ( wrong parameter in route )', async () => {
       const wrongUserId = 123
 
-      const response = await request(app)
-        .get(`/${urlBase}/user/${wrongUserId}`)
-        .set('Accept', 'application/json')
-        .expect('Content-Type', /json/)
-        .catch(() => null)
-
-      if (!response) {
-        chai.assert.fail('Unexpected error - middleware should have block that userId')
-      }
+      const response = await request(app).get(`/${urlBase}/user/${wrongUserId}`).set('Accept', 'application/json').expect('Content-Type', /json/)
 
       const body = JSON.parse(response.text)
 
@@ -137,13 +111,7 @@ describe('Functional tests for user', () => {
 
   describe('src > v1 > application > route > user > DELETE', () => {
     it('should delete a specified user', async () => {
-      const response = await request(app)
-        .get(`/${urlBase}/user/${testUserId}`)
-        .set('Accept', 'application/json')
-        .expect('Content-Type', /json/)
-        .catch(() => null)
-
-      if (!response) chai.assert.fail(`Impossible to delete the user in test user : ${testUserId}`)
+      const response = await request(app).get(`/${urlBase}/user/${testUserId}`).set('Accept', 'application/json').expect('Content-Type', /json/)
 
       const body = JSON.parse(response.text)
 
