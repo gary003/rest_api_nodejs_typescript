@@ -4,6 +4,8 @@ import { User } from './entity'
 import { createNewWalletDB, deleteWalletByIdDB } from '../wallet'
 import { userInfo } from './dto'
 import logger from '../../../helpers/logger'
+import { Readable } from 'stream'
+import { ReadStream } from 'typeorm/platform/PlatformTools'
 
 export const getAllUsersDB = async (): Promise<userInfo[]> => {
   const connection = await connectionDB()
@@ -25,6 +27,44 @@ export const getAllUsersDB = async (): Promise<userInfo[]> => {
   // logger.debug(JSON.stringify(result))
 
   return result as userInfo[]
+}
+
+export const userStreamAdaptor = async function* (source: ReadStream): AsyncGenerator<string> {
+  try {
+    for await (const chunk of source) {
+      const adaptedData: userInfo = {
+        userId: chunk.user_userId,
+        firstname: chunk.user_firstname,
+        lastname: chunk.user_lastname,
+        Wallet: {
+          walletId: chunk.wallet_walletId,
+          hardCurrency: chunk.wallet_hardCurrency,
+          softCurrency: chunk.wallet_softCurrency
+        }
+      }
+
+      yield JSON.stringify(adaptedData) + '\n'
+    }
+  } catch (err) {
+    throw err instanceof Error ? err : new Error('Adaptor error')
+  }
+}
+
+export const getAllUsersStreamDB = async (): Promise<Readable> => {
+  const connection = await connectionDB()
+
+  const UserRepository = connection.getRepository(User)
+
+  const userStream = await UserRepository.createQueryBuilder('user').innerJoinAndMapOne('user.Wallet', Wallet, 'wallet', 'wallet.userId = user.userId').stream()
+
+  userStream.on('end', () => connection.destroy())
+
+  // Convert the generator to a readable stream
+  const readableStream = Readable.from(userStreamAdaptor(userStream), {
+    objectMode: true
+  })
+
+  return readableStream
 }
 
 export const saveNewUserDB = async (userId: string, firstname: string, lastname: string): Promise<User> => {
@@ -68,6 +108,7 @@ export const deleteUserByIdDB = async (userId: string): Promise<boolean> => {
       throw new Error('Impossible to delete the user in DB (step : 1)')
     }
   }
+
   // Let the db some time to handle the previous request
   await new Promise((resolve) => setTimeout(resolve, 709))
 
@@ -103,3 +144,43 @@ export const getUserWalletInfoDB = async (userId: string): Promise<userInfo> => 
 
   return userWalletInfo as userInfo
 }
+
+// // Create a transform stream from your generator
+// const createAdaptorStream = () => {
+//   return new Transform({
+//     objectMode: true,
+//     transform(chunk, _, callback) {
+//       try {
+//         const structuredData = {
+//           userId: chunk.user_userId,
+//           firstname: chunk.user_firstname,
+//           lastname: chunk.user_lastname,
+//           wallet: {
+//             walletId: chunk.wallet_walletId,
+//             hardCurrency: chunk.wallet_hardCurrency,
+//             softCurrency: chunk.wallet_softCurrency,
+//             userId: chunk.wallet_userId
+//           }
+//         }
+//         callback(null, JSON.stringify(structuredData) + '\n')
+//       } catch (err) {
+//         callback(err instanceof Error ? err : new Error('Transform error'))
+//       }
+//     }
+//   })
+// }
+
+// export const getAllUsersStreamDB = async (): Promise<any> => {
+//   const connection = await connectionDB()
+
+//   const UserRepository = connection.getRepository(User)
+
+//   const userStream = await UserRepository.createQueryBuilder('user').innerJoinAndMapOne('user.Wallet', Wallet, 'wallet', 'wallet.userId = user.userId').stream()
+
+//   // userStream.on('data', (d) => console.log(d))
+
+//   // !! Nevere do this ! because the stream will be destroy before the end of the process and make everything fail !!
+//   // userStream.on('end', () => userStream.close())
+
+//   return userStream.pipe(createAdaptorStream())
+// }

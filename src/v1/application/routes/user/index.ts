@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express'
-import { deleteUserById, getAllUsers, getUserWalletInfo, saveNewUser } from '../../services/user/index'
+import { deleteUserById, getAllUsers, getAllUsersStream, getUserWalletInfo, saveNewUser } from '../../services/user/index'
 
 import { errorAPIUSER } from './error.dto'
 
@@ -38,6 +38,18 @@ userRouter
 
     return res.status(200).json(response)
   })
+
+userRouter.route('/stream').get(async (_: Request, res: Response) => {
+  const usersStream = await getAllUsersStream().catch((err) => {
+    logger.error(err)
+    return null
+  })
+
+  if (usersStream === null) return res.status(500).json(errorAPIUSER.errorAPIGetAllUsers)
+
+  // usersStream.on('data', (d: any) => console.log(d))
+  return usersStream.pipe(res)
+})
 
 userRouter
   .route('/:userId')

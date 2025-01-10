@@ -71,6 +71,28 @@ describe('Functional tests for user', () => {
     })
   })
 
+  describe('src > v1 > application > route > user > stream > GET (getting all the users - stream)', () => {
+    it('Should get all users from DB from a stream', async () => {
+      const resp = await request(app).get(`/${urlBase}/user/stream`)
+
+      if (!resp) chai.assert.fail('Error - Impossible to get the data stream from route')
+
+      const users = resp.text.split('\n').slice(0, -1)
+
+      // console.log(users)
+
+      expect(users).to.be.an('array')
+
+      for (const chunk of users) {
+        const user = JSON.parse(chunk)
+        // console.log(user)
+        expect(user).to.have.property('userId')
+        expect(user).to.have.property('firstname')
+        expect(user).to.have.property('Wallet')
+      }
+    })
+  })
+
   describe('src > v1 > application > route > user > POST (adding a new user)', () => {
     it('should add a new user', async () => {
       const newUser = {
@@ -111,12 +133,12 @@ describe('Functional tests for user', () => {
 
   describe('src > v1 > application > route > user > DELETE', () => {
     it('should delete a specified user', async () => {
-      const response = await request(app).get(`/${urlBase}/user/${testUserId}`).set('Accept', 'application/json').expect('Content-Type', /json/)
+      const response = await request(app).delete(`/${urlBase}/user/${testUserId}`).set('Accept', 'application/json').expect('Content-Type', /json/)
 
       const body = JSON.parse(response.text)
 
       expect(body.data).to.not.be.null
-      expect(body.data.userId).to.be.equal(testUserId)
+      expect(body.data).to.be.equal(true)
     })
   })
 })

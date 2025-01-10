@@ -1,5 +1,5 @@
 import { acquireLockOnWallet, commitAndQuitTransactionRunner, createAndStartTransaction, rollBackAndQuitTransactionRunner } from '../../../infrastructure/persistance/connection/connectionFile'
-import { getAllUsersDB, getUserWalletInfoDB, saveNewUserDB, deleteUserByIdDB } from '../../../infrastructure/persistance/user'
+import { getAllUsersDB, getUserWalletInfoDB, saveNewUserDB, deleteUserByIdDB, getAllUsersStreamDB } from '../../../infrastructure/persistance/user'
 import { updateWalletByWalletIdDB, updateWalletByWalletIdTransaction } from '../../../infrastructure/persistance/wallet'
 import { moneyTypes, moneyTypesO } from '../../../domain'
 import { userWalletDTO } from './dto'
@@ -17,6 +17,19 @@ export const getAllUsers = async (): Promise<userWalletDTO[]> => {
   if (!allUsers) throw new Error(JSON.stringify(userFunctionsErrors.ErrorRetrievingUsers))
 
   return allUsers as unknown as userWalletDTO[]
+}
+
+export const getAllUsersStream = async () => {
+  const streamUsers = await getAllUsersStreamDB().catch((err) => {
+    logger.error(err)
+    return null
+  })
+
+  if (!streamUsers) throw new Error(JSON.stringify(userFunctionsErrors.ErrorRetrievingUsers))
+
+  // console.log(streamUsers)
+
+  return streamUsers
 }
 
 export const saveNewUser = async (userId: string, firstname: string, lastname: string): Promise<userInfo> => {
