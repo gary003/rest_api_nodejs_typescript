@@ -10,12 +10,11 @@ import logger from './v1/helpers/logger'
 
 const app = express()
 
-app.use('/apiDoc', swaggerUi.serve, swaggerUi.setup(apiDocumentation))
-
 app.use(helmet())
 app.use(cors())
 app.use(express.json())
 
+app.use('/apiDoc', swaggerUi.serve, swaggerUi.setup(apiDocumentation))
 app.use('/api/v1/user', userRoute)
 
 const handleNotFound = (req: express.Request, res: express.Response, next: express.NextFunction) => {

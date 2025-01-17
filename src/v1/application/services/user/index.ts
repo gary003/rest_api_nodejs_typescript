@@ -9,36 +9,37 @@ import { userInfo } from '../../../infrastructure/persistance/user/dto'
 import { errorType } from '../../../domain/error'
 
 export const getAllUsers = async (): Promise<userWalletDTO[]> => {
-  const allUsers = await getAllUsersDB().catch((err) => {
-    logger.error(err)
-    return null
-  })
+  const allUsers = await getAllUsersDB().catch((err) => err)
 
-  if (!allUsers) throw new Error(JSON.stringify(userFunctionsErrors.ErrorRetrievingUsers))
-
+  if (allUsers instanceof Error) {
+    const allUsersError = JSON.stringify({ ...userFunctionsErrors.ErrorRetrievingUser, rawError: allUsers })
+    logger.error(allUsersError)
+    throw new Error(allUsersError)
+  }
   return allUsers as unknown as userWalletDTO[]
 }
 
 export const getAllUsersStream = async () => {
-  const streamUsers = await getAllUsersStreamDB().catch((err) => {
-    logger.error(err)
-    return null
-  })
+  const streamUsers = await getAllUsersStreamDB().catch((err) => err)
 
-  if (!streamUsers) throw new Error(JSON.stringify(userFunctionsErrors.ErrorRetrievingUsers))
-
+  if (streamUsers instanceof Error) {
+    const errorStream = JSON.stringify({ ...userFunctionsErrors.ErrorRetrievingUsers, rawError: streamUsers })
+    logger.error(errorStream)
+    throw new Error(errorStream)
+  }
   // console.log(streamUsers)
 
   return streamUsers
 }
 
 export const saveNewUser = async (userId: string, firstname: string, lastname: string): Promise<userInfo> => {
-  const newUser = await saveNewUserDB(userId, firstname, lastname).catch((err) => {
-    logger.error(err)
-    return null
-  })
+  const newUser = await saveNewUserDB(userId, firstname, lastname).catch((err) => err)
 
-  if (!newUser) throw new Error(JSON.stringify(userFunctionsErrors.ErrorCreatingUser))
+  if (newUser instanceof Error) {
+    const saveError = JSON.stringify({ ...userFunctionsErrors.ErrorCreatingUser, rawError: newUser })
+    logger.error(saveError)
+    throw new Error(saveError)
+  }
 
   return newUser as unknown as userInfo
 }
@@ -47,14 +48,12 @@ export const addCurrency = async (userId: string, currencyType: moneyTypes, amou
   if (amount <= 0) throw new Error(JSON.stringify(moneyTransferParamsValidatorErrors.ErrorInvalidAmount))
   if (!Object.values(moneyTypesO).includes(currencyType)) throw new Error(JSON.stringify(moneyTransferParamsValidatorErrors.ErrorCurrencyType))
 
-  const currentUserWalletInfo = (await getUserWalletInfo(userId).catch((err) => {
-    logger.error(err)
-    return null
-  })) as unknown as userWalletDTO
+  const currentUserWalletInfo = await getUserWalletInfo(userId).catch((err) => err)
 
-  if (!currentUserWalletInfo) {
-    logger.error(userFunctionsErrors.ErrorGettingWalletInfo)
-    throw new Error(JSON.stringify(userFunctionsErrors.ErrorGettingWalletInfo))
+  if (currentUserWalletInfo instanceof Error) {
+    const userInfoError = JSON.stringify({ ...userFunctionsErrors.ErrorGettingWalletInfo, rawError: currentUserWalletInfo })
+    logger.error(userInfoError)
+    throw new Error(userInfoError)
   }
 
   if (!currentUserWalletInfo.Wallet) {
@@ -62,34 +61,37 @@ export const addCurrency = async (userId: string, currencyType: moneyTypes, amou
     throw new Error(JSON.stringify(userFunctionsErrors.ErrorNoWalletUser))
   }
 
-  const resultUpdate = await updateWalletByWalletIdDB(String(currentUserWalletInfo.Wallet?.walletId), currencyType, Number(currentUserWalletInfo.Wallet[currencyType]) + amount).catch((err) => {
-    logger.error(err)
-    return null
-  })
+  const resultUpdate = await updateWalletByWalletIdDB(String(currentUserWalletInfo.Wallet?.walletId), currencyType, Number(currentUserWalletInfo.Wallet[currencyType]) + amount).catch((err) => err)
 
-  if (!resultUpdate) throw new Error(JSON.stringify(userFunctionsErrors.ErrorUpdatingWallet))
+  if (resultUpdate instanceof Error) {
+    const updateError = { ...userFunctionsErrors.ErrorUpdating, rawError: resultUpdate }
+    logger.error(updateError)
+    throw new Error(JSON.stringify(updateError))
+  }
 
   return true
 }
 
 export const deleteUserById = async (userId: string): Promise<boolean> => {
-  const deletedUser: boolean | null = await deleteUserByIdDB(userId).catch((err) => {
-    logger.error(err)
-    return null
-  })
+  const deletedUser = await deleteUserByIdDB(userId).catch((err) => err)
 
-  if (!deletedUser) throw new Error(JSON.stringify(userFunctionsErrors.ErrorDeletingUser))
+  if (deletedUser instanceof Error) {
+    const deleteError = JSON.stringify({ ...userFunctionsErrors.ErrorDeletingUser, rawError: deletedUser })
+    logger.error(deleteError)
+    throw new Error(deleteError)
+  }
 
   return deletedUser
 }
 
 export const getUserWalletInfo = async (userId: string): Promise<userInfo> => {
-  const userWalletI = await getUserWalletInfoDB(userId).catch((err) => {
-    logger.error(err)
-    return null
-  })
+  const userWalletI = await getUserWalletInfoDB(userId).catch((err) => err)
 
-  if (!userWalletI) throw new Error(JSON.stringify(userFunctionsErrors.ErrorFetchingUserInfo))
+  if (userWalletI instanceof Error) {
+    const fetchError = JSON.stringify({ ...userFunctionsErrors.ErrorFetchingUserInfo, rawError: userWalletI })
+    logger.error(fetchError)
+    throw new Error(fetchError)
+  }
 
   return userWalletI
 }
@@ -97,36 +99,34 @@ export const getUserWalletInfo = async (userId: string): Promise<userInfo> => {
 export const transferMoneyParamsValidator = async (currency: moneyTypes, giverId: string, recipientId: string, amount: number): Promise<userInfo[]> => {
   if (!Object.values(moneyTypesO).includes(currency)) throw new Error(JSON.stringify(moneyTransferParamsValidatorErrors.ErrorCurrencyType))
 
-  const giverUserInfo = await getUserWalletInfoDB(giverId).catch(() => {
-    return null
-  })
+  const giverUserInfo = await getUserWalletInfoDB(giverId).catch((error) => error)
 
-  if (!giverUserInfo) {
+  if (giverUserInfo instanceof Error) {
     throw new Error(JSON.stringify(moneyTransferParamsValidatorErrors.ErrorUserInfo))
   }
 
   if (!giverUserInfo.Wallet) {
-    const error = { ...userFunctionsErrors.ErrorNoWalletUser, ...{ giverUserInfo } }
+    const error = JSON.stringify({ ...userFunctionsErrors.ErrorNoWalletUser, rawError: giverUserInfo })
     logger.error(error)
-    throw new Error(JSON.stringify(error))
+    throw new Error(error)
   }
 
   const giverNewBalance = Number(giverUserInfo.Wallet[currency]) - amount
 
   if (giverNewBalance < 0) throw new Error(JSON.stringify(moneyTransferParamsValidatorErrors.ErrorInsufficientFunds))
 
-  const recipientUserInfo = await getUserWalletInfoDB(recipientId).catch(() => {
-    return null
-  })
+  const recipientUserInfo = await getUserWalletInfoDB(recipientId).catch((error) => error)
 
-  if (!recipientUserInfo) {
-    throw new Error(JSON.stringify(moneyTransferParamsValidatorErrors.ErrorUserInfo))
+  if (recipientUserInfo instanceof Error) {
+    const recipientUserInfoError = JSON.stringify({ ...moneyTransferParamsValidatorErrors.ErrorUserInfo, rawError: recipientUserInfo })
+    logger.error(recipientUserInfo)
+    throw new Error(recipientUserInfoError)
   }
 
   if (!recipientUserInfo.Wallet) {
-    const error = { ...userFunctionsErrors.ErrorNoWalletUser, ...{ recipientUserInfo } }
+    const error = JSON.stringify({ ...userFunctionsErrors.ErrorNoWalletUser, ...{ recipientUserInfo } })
     logger.error(error)
-    throw new Error(JSON.stringify(error))
+    throw new Error(error)
   }
 
   // logger.debug(JSON.stringify({ giverUserInfo, giverNewBalance }))
@@ -135,14 +135,12 @@ export const transferMoneyParamsValidator = async (currency: moneyTypes, giverId
 }
 
 export const transferMoney = async (currency: moneyTypes, giverId: string, recipientId: string, amount: number): Promise<boolean> => {
-  const res = await transferMoneyParamsValidator(currency, giverId, recipientId, amount).catch((err) => {
-    logger.error(err)
-    return null
-  })
+  const res = await transferMoneyParamsValidator(currency, giverId, recipientId, amount).catch((err) => err)
 
-  if (!res) {
-    logger.error(transferMoneyErrors.ErrorParamsValidator)
-    throw new Error(JSON.stringify(transferMoneyErrors.ErrorParamsValidator)) // Use pre-defined error
+  if (res instanceof Error) {
+    const paramError = JSON.stringify({ ...transferMoneyErrors.ErrorParamsValidator, rawError: res })
+    logger.error(paramError)
+    throw new Error(paramError) // Use pre-defined error
   }
 
   const [giverUserInfo, recipientUserInfo]: userInfo[] = res
@@ -152,14 +150,12 @@ export const transferMoney = async (currency: moneyTypes, giverId: string, recip
     throw new Error(JSON.stringify(transferMoneyErrors.ErrorParamsValidator)) // Use pre-defined error
   }
 
-  const transacRunner = await createAndStartTransaction().catch((err) => {
-    logger.error(err)
-    return null
-  })
+  const transacRunner = await createAndStartTransaction().catch((err) => err)
 
-  if (!transacRunner) {
-    logger.error(transferMoneyErrors.ErrorTransactionCreation)
-    throw new Error(JSON.stringify(transferMoneyErrors.ErrorTransactionCreation)) // Use pre-defined error
+  if (transacRunner instanceof Error) {
+    const transacRunnerError = JSON.stringify({ ...transferMoneyErrors.ErrorTransactionCreation, rawError: transacRunner })
+    logger.error(transacRunnerError)
+    throw new Error(transacRunnerError) // Use pre-defined error
   }
 
   // Acquire locks on giver and recipient wallets (pessimistic locking)
@@ -167,35 +163,31 @@ export const transferMoney = async (currency: moneyTypes, giverId: string, recip
   const lockResultRecipient: boolean = await acquireLockOnWallet(transacRunner, String(recipientUserInfo.Wallet?.walletId))
 
   if (!lockResultGiver || !lockResultRecipient) {
-    const errorLock = transferMoneyErrors.ErrorLockAcquisition
+    const errorLock = JSON.stringify(transferMoneyErrors.ErrorLockAcquisition)
     logger.error(errorLock)
-    throw new Error(JSON.stringify(errorLock))
+    throw new Error(errorLock)
   }
 
   const giverNewBalance: number = Number(giverUserInfo.Wallet![currency]) - amount
 
-  const updateWalletGiverResult = await updateWalletByWalletIdTransaction(transacRunner, String(giverUserInfo.Wallet?.walletId), currency, giverNewBalance).catch((err) => {
-    logger.error(err)
-    return null
-  })
+  const updateWalletGiverResult = await updateWalletByWalletIdTransaction(transacRunner, String(giverUserInfo.Wallet?.walletId), currency, giverNewBalance).catch((err) => err)
 
-  if (!updateWalletGiverResult) {
-    logger.error(transferMoneyErrors.ErrorUpdateGiverWallet)
+  if (updateWalletGiverResult instanceof Error) {
+    const updateError = JSON.stringify({ ...transferMoneyErrors.ErrorUpdateGiverWallet, rawError: updateWalletGiverResult })
+    logger.error(updateError)
     rollBackAndQuitTransactionRunner(transacRunner)
-    throw new Error(JSON.stringify(transferMoneyErrors.ErrorUpdateGiverWallet))
+    throw new Error(updateError)
   }
 
   const recipientNewBalance: number = +recipientUserInfo.Wallet![currency] + amount
 
-  const updateWalletRecipientResult = await updateWalletByWalletIdTransaction(transacRunner, String(recipientUserInfo.Wallet?.walletId), currency, recipientNewBalance).catch((err) => {
-    logger.error(err)
-    return null
-  })
+  const updateWalletRecipientResult = await updateWalletByWalletIdTransaction(transacRunner, String(recipientUserInfo.Wallet?.walletId), currency, recipientNewBalance).catch((err) => err)
 
-  if (!updateWalletRecipientResult) {
-    logger.error(transferMoneyErrors.ErrorUpdateRecipientWallet)
+  if (updateWalletRecipientResult instanceof Error) {
+    const updateWalletRecipientError = JSON.stringify({ ...transferMoneyErrors.ErrorUpdateRecipientWallet, rawError: updateWalletRecipientResult })
+    logger.error(updateWalletRecipientError)
     rollBackAndQuitTransactionRunner(transacRunner)
-    throw new Error(JSON.stringify(transferMoneyErrors.ErrorUpdateRecipientWallet))
+    throw new Error(updateWalletRecipientError)
   }
 
   commitAndQuitTransactionRunner(transacRunner)
