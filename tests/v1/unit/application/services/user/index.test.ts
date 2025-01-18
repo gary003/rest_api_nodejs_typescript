@@ -267,6 +267,8 @@ describe('Unit tests user', () => {
       }
     })
     it('Should throw an error if retrieving giver user info fails', async () => {
+      const mockErrorLogger = sandbox.stub(logger, 'error')
+
       const validCurrency = moneyTypesO.soft_currency
       const fakeUserRecipient = {
         userId: 'fake_22ef5564-0234-11ed-b939-0242ac120002',
@@ -280,7 +282,7 @@ describe('Unit tests user', () => {
       }
 
       const mockFetchUserDB = sandbox.stub(modUserDB, 'getUserWalletInfoDB')
-      mockFetchUserDB.onFirstCall().rejects(null)
+      mockFetchUserDB.onFirstCall().rejects(new Error('test - 1'))
       mockFetchUserDB.onSecondCall().rejects(null)
 
       const amount = 100
@@ -295,9 +297,12 @@ describe('Unit tests user', () => {
         const errInfo = JSON.parse(err.message)
         chai.assert.equal(errInfo.message, moneyTransferParamsValidatorErrors.ErrorUserInfo!.message) // Verify specific error message
         sandbox.assert.calledOnce(mockFetchUserDB)
+        sandbox.assert.called(mockErrorLogger)
       }
     })
     it('Should throw an error if retrieving receiver user info fails', async () => {
+      const mockErrorLogger = sandbox.stub(logger, 'error')
+
       const validCurrency = moneyTypesO.soft_currency
       const fakeUserRecipient = {
         userId: 'fake_22ef5564-0234-11ed-b939-0242ac120002',
@@ -338,6 +343,7 @@ describe('Unit tests user', () => {
         const errInfo = JSON.parse(err.message)
         chai.assert.equal(errInfo.message, moneyTransferParamsValidatorErrors.ErrorUserInfo!.message) // Verify specific error message
         sandbox.assert.calledTwice(mockFetchUserDB)
+        sandbox.assert.called(mockErrorLogger)
       }
     })
   })

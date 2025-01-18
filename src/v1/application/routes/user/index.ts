@@ -13,12 +13,11 @@ const userRouter = Router()
 userRouter
   .route('/')
   .get(async (_: Request, res: Response) => {
-    const results = await getAllUsers().catch((err) => {
-      logger.error(err)
-      return null
-    })
+    const results = await getAllUsers().catch((err) => err)
 
-    if (results === null) return res.status(500).json(errorAPIUSER.errorAPIGetAllUsers)
+    if (results instanceof Error) {
+      return res.status(500).json(errorAPIUSER.errorAPIGetAllUsers)
+    }
 
     const apiRes: apiResponseGetAllUserType = { data: results as userInfo[] }
 
@@ -40,12 +39,9 @@ userRouter
   })
 
 userRouter.route('/stream').get(async (_: Request, res: Response) => {
-  const usersStream = await getAllUsersStream().catch((err) => {
-    logger.error(err)
-    return null
-  })
+  const usersStream = await getAllUsersStream().catch((err) => err)
 
-  if (usersStream === null) return res.status(500).json(errorAPIUSER.errorAPIGetAllUsers)
+  if (usersStream instanceof Error) return res.status(500).json(errorAPIUSER.errorAPIGetAllUsers)
 
   // usersStream.on('data', (d: any) => console.log(d))
   return usersStream.pipe(res)
@@ -54,22 +50,19 @@ userRouter.route('/stream').get(async (_: Request, res: Response) => {
 userRouter
   .route('/:userId')
   .get(validateUserIdParams, async (req: Request, res: Response) => {
-    const result = await getUserWalletInfo(String(req.params.userId)).catch((err) => {
-      logger.error(err)
-      return null
-    })
+    const result = await getUserWalletInfo(String(req.params.userId)).catch((err) => err)
 
-    if (result === null) return res.status(500).json(errorAPIUSER.errorAPIGetUser)
+    if (result instanceof Error) {
+      const errorMessage = JSON.parse(result.message)
+      return res.status(500).json(errorMessage)
+    }
 
     return res.status(200).json({ data: result } as apiResponseGetUserType)
   })
   .delete(validateUserIdParams, async (req: Request, res: Response) => {
-    const result = await deleteUserById(String(req.params.userId)).catch((err) => {
-      logger.error(err)
-      return null
-    })
+    const result = await deleteUserById(String(req.params.userId)).catch((err) => err)
 
-    if (result === null) return res.status(500).json(errorAPIUSER.errorAPIDeleteUser)
+    if (result instanceof Error) return res.status(500).json(errorAPIUSER.errorAPIDeleteUser)
 
     return res.status(200).json({ data: result } as apiResponseDeleteUserType)
   })

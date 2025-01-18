@@ -5,12 +5,17 @@ import { describe, it } from 'mocha'
 import app from '../../../../../../src/app'
 import { DockerComposeEnvironment, StartedDockerComposeEnvironment, Wait } from 'testcontainers'
 import request from 'supertest'
-// import logger from '../../../../../../src/v1/helpers/logger'
+import { createSandbox, SinonSandbox } from 'sinon'
+import logger from '../../../../../../src/v1/helpers/logger'
 
 describe('Functional tests for user', () => {
+  const sandbox: SinonSandbox = createSandbox()
+
   let environment: StartedDockerComposeEnvironment
 
-  const original_uri = process.env.DB_URI
+  let original_uri = process.env.DB_URI
+
+  let dbUri: string = ''
 
   const testUserId: string = 'cc2c990b6-029c-11ed-b939-0242ac12002'
   const urlBase: string = 'api/v1'
@@ -39,12 +44,12 @@ describe('Functional tests for user', () => {
     const dbPort = Number(process.env.DB_PORT) || 3306
 
     // Using MySQL protocol and default MySQL port
-    const dbUri = `${process.env.DB_DRIVER}://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${dbContainer.getHost()}:${dbContainer.getMappedPort(dbPort)}/${process.env.DB_DATABASE_NAME}`
+    dbUri = `${process.env.DB_DRIVER}://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${dbContainer.getHost()}:${dbContainer.getMappedPort(dbPort)}/${process.env.DB_DATABASE_NAME}`
 
     process.env.DB_URI = dbUri
 
     // Add a small delay to ensure DB is really ready
-    await new Promise((resolve) => setTimeout(resolve, 2000))
+    await new Promise((resolve) => setTimeout(resolve, 10000))
 
     // logger.info(`uri: ${dbUri}`)
   })
@@ -61,13 +66,33 @@ describe('Functional tests for user', () => {
   })
 
   describe('src > v1 > application > route > user > GET (getting all the users)', () => {
+    beforeEach(() => {
+      sandbox.restore()
+    })
     it('Should get all users from DB', async () => {
       const response = await request(app).get(`/${urlBase}/user/`).set('Accept', 'application/json').expect('Content-Type', /json/)
 
       const body = JSON.parse(response.text)
 
+      expect(response.statusCode).to.be.within(200, 299)
       expect(body.data).to.be.an('array')
       expect(body.data).length.above(0)
+    })
+    it('Should fail getting all users from DB', async () => {
+      const mockErrorLogger = sandbox.stub(logger, 'error')
+
+      process.env.DB_URI = ''
+
+      const response = await request(app).get(`/${urlBase}/user/`).set('Accept', 'application/json').expect('Content-Type', /json/)
+
+      process.env.DB_URI = dbUri
+
+      const body = JSON.parse(response.text)
+
+      expect(response.statusCode).to.equal(500)
+      expect(body.message).to.include('Error - ')
+
+      sandbox.assert.called(mockErrorLogger)
     })
   })
 
@@ -75,12 +100,13 @@ describe('Functional tests for user', () => {
     it('Should get all users from DB from a stream', async () => {
       const resp = await request(app).get(`/${urlBase}/user/stream`)
 
-      if (!resp) chai.assert.fail('Error - Impossible to get the data stream from route')
+      if (resp instanceof Error) chai.assert.fail('Error - Impossible to get the data stream from route')
 
       const users = resp.text.split('\n').slice(0, -1)
 
       // console.log(users)
 
+      expect(resp.statusCode).to.be.within(200, 299)
       expect(users).to.be.an('array')
 
       for (const chunk of users) {
@@ -106,6 +132,7 @@ describe('Functional tests for user', () => {
       const body = JSON.parse(response.text)
 
       // logger.debug(JSON.stringify(body))
+      expect(response.statusCode).to.be.within(200, 299)
 
       expect(body.data).to.not.be.empty
       expect(body.data.userId).to.equal(testUserId)
@@ -113,12 +140,33 @@ describe('Functional tests for user', () => {
   })
 
   describe('src > v1 > application > route > user > GET (single user)', () => {
+    beforeEach(() => {
+      sandbox.restore()
+    })
+
     it('should return a single user', async () => {
       const response = await request(app).get(`/${urlBase}/user/${testUserId}`).set('Accept', 'application/json').expect('Content-Type', /json/)
 
       const body = JSON.parse(response.text)
 
+      expect(response.statusCode).to.be.within(200, 299)
       expect(body.data).to.have.property('userId')
+    })
+    it('should fail returning a single user (DB not available)', async () => {
+      const mockErrorLogger = sandbox.stub(logger, 'error')
+
+      process.env.DB_URI = ''
+
+      const response = await request(app).get(`/${urlBase}/user/${testUserId}`).set('Accept', 'application/json').expect('Content-Type', /json/)
+
+      process.env.DB_URI = dbUri
+
+      const body = JSON.parse(response.text)
+
+      expect(response.statusCode).to.equal(500)
+      expect(body.message).to.include('Error - ')
+
+      sandbox.assert.called(mockErrorLogger)
     })
     it('should fail returning a single user ( wrong parameter in route )', async () => {
       const wrongUserId = 123
@@ -127,6 +175,7 @@ describe('Functional tests for user', () => {
 
       const body = JSON.parse(response.text)
 
+      expect(response.statusCode).to.be.within(400, 499)
       expect(body).to.have.property('errorParamUserId')
     })
   })
@@ -137,6 +186,7 @@ describe('Functional tests for user', () => {
 
       const body = JSON.parse(response.text)
 
+      expect(response.statusCode).to.be.within(200, 299)
       expect(body.data).to.not.be.null
       expect(body.data).to.be.equal(true)
     })
