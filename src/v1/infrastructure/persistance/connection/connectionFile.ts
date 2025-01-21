@@ -4,9 +4,11 @@ import logger from '../../../helpers/logger'
 
 export type transactionQueryRunnerType = QueryRunner
 
+let connection: DataSource | null = null
+
 export const connectionDB = async (): Promise<DataSource> => {
   const connectionOptions: DataSourceOptions = {
-    name: uuidv4(),
+    name: 'db_connection',
     type: process.env.DB_DRIVER,
     host: process.env.DB_HOST,
     url: process.env.DB_URI,
@@ -24,6 +26,20 @@ export const connectionDB = async (): Promise<DataSource> => {
 
   await connection.initialize()
 
+  return connection
+}
+
+// Get or create connection
+export const getConnection = async (): Promise<DataSource> => {
+  if (!connection || !connection.isInitialized) {
+    try {
+      connection = await connectionDB()
+      // logger.info('Database connection established successfully')
+    } catch (error) {
+      // logger.error('Failed to establish database connection:', error)
+      throw error
+    }
+  }
   return connection
 }
 

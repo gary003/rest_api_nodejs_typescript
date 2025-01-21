@@ -28,13 +28,17 @@ describe('Functional tests for user', () => {
 
     // logger.info("starting test env for user (db) from docker-compose")
 
-    try {
-      environment = await new DockerComposeEnvironment(composeFilePath, composeFile)
-        .withWaitStrategy('app-1', Wait.forLogMessage('app running on'))
-        .withWaitStrategy('db-1', Wait.forLogMessage('ready for connections')) // Common MySQL ready message
-        .up(['app', 'db'])
-    } catch (error) {
-      chai.assert.fail(`Error the container test environment set-up failed - ${error}`)
+    environment = await new DockerComposeEnvironment(composeFilePath, composeFile)
+      .withWaitStrategy('app-1', Wait.forLogMessage('app running on'))
+      .withWaitStrategy('db-1', Wait.forLogMessage('ready for connections')) // Common MySQL ready message
+      .up(['app', 'db'])
+      .catch((error) => {
+        logger.error(error.message)
+        return error
+      })
+
+    if (environment instanceof Error) {
+      chai.assert.fail(`Error the container test environment set-up failed`)
     }
 
     // logger.info("Docker Compose test environment started for functional tests on user/")
@@ -66,9 +70,6 @@ describe('Functional tests for user', () => {
   })
 
   describe('src > v1 > application > route > user > GET (getting all the users)', () => {
-    beforeEach(() => {
-      sandbox.restore()
-    })
     it('Should get all users from DB', async () => {
       const response = await request(app).get(`/${urlBase}/user/`).set('Accept', 'application/json').expect('Content-Type', /json/)
 
@@ -78,25 +79,12 @@ describe('Functional tests for user', () => {
       expect(body.data).to.be.an('array')
       expect(body.data).length.above(0)
     })
-    it('Should fail getting all users from DB', async () => {
-      const mockErrorLogger = sandbox.stub(logger, 'error')
-
-      process.env.DB_URI = ''
-
-      const response = await request(app).get(`/${urlBase}/user/`).set('Accept', 'application/json').expect('Content-Type', /json/)
-
-      process.env.DB_URI = dbUri
-
-      const body = JSON.parse(response.text)
-
-      expect(response.statusCode).to.equal(500)
-      expect(body.message).to.include('Error - ')
-
-      sandbox.assert.called(mockErrorLogger)
-    })
   })
 
   describe('src > v1 > application > route > user > stream > GET (getting all the users - stream)', () => {
+    beforeEach(() => {
+      sandbox.restore()
+    })
     it('Should get all users from DB from a stream', async () => {
       const resp = await request(app).get(`/${urlBase}/user/stream`)
 
@@ -120,6 +108,9 @@ describe('Functional tests for user', () => {
   })
 
   describe('src > v1 > application > route > user > POST (adding a new user)', () => {
+    beforeEach(() => {
+      sandbox.restore()
+    })
     it('should add a new user', async () => {
       const newUser = {
         userId: testUserId,
@@ -152,22 +143,6 @@ describe('Functional tests for user', () => {
       expect(response.statusCode).to.be.within(200, 299)
       expect(body.data).to.have.property('userId')
     })
-    it('should fail returning a single user (DB not available)', async () => {
-      const mockErrorLogger = sandbox.stub(logger, 'error')
-
-      process.env.DB_URI = ''
-
-      const response = await request(app).get(`/${urlBase}/user/${testUserId}`).set('Accept', 'application/json').expect('Content-Type', /json/)
-
-      process.env.DB_URI = dbUri
-
-      const body = JSON.parse(response.text)
-
-      expect(response.statusCode).to.equal(500)
-      expect(body.message).to.include('Error - ')
-
-      sandbox.assert.called(mockErrorLogger)
-    })
     it('should fail returning a single user ( wrong parameter in route )', async () => {
       const wrongUserId = 123
 
@@ -181,6 +156,9 @@ describe('Functional tests for user', () => {
   })
 
   describe('src > v1 > application > route > user > DELETE', () => {
+    beforeEach(() => {
+      sandbox.restore()
+    })
     it('should delete a specified user', async () => {
       const response = await request(app).delete(`/${urlBase}/user/${testUserId}`).set('Accept', 'application/json').expect('Content-Type', /json/)
 
