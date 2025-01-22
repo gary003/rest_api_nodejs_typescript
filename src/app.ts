@@ -1,3 +1,4 @@
+require('dotenv').config()
 import express from 'express'
 import userRoute from './v1/application/routes/user/index'
 

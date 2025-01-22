@@ -11,21 +11,6 @@ const port: number = Number(process.env.API_PORT) || 8080
 
 const server: http.Server = http.createServer(app)
 
-// Initialize database connection
-const initializeDatabase = async () => {
-  try {
-    await getConnection()
-    logger.info('Database connection initialization is ok !')
-  } catch (error) {
-    if (error instanceof Error) {
-      logger.error('Database initialization failed, error message: ', error)
-    } else {
-      logger.error('Database initialization failed:', error)
-    }
-    process.exit(1)
-  }
-}
-
 // Graceful shutdown
 const shutdown = async () => {
   try {
@@ -44,9 +29,7 @@ server.on('error', async (error) => {
   process.exit(1)
 })
 
-server.on('listening', () => {
-  initializeDatabase()
-
+server.on('listening', async () => {
   logger.info(`app running on http://${localIp}:${port}`)
   logger.info(`api documentation on http://${localIp}:${port}/apiDoc`)
 })
