@@ -1,5 +1,4 @@
 import { DataSourceOptions, QueryRunner, DataSource } from 'typeorm'
-import { v4 as uuidv4 } from 'uuid'
 import logger from '../../../helpers/logger'
 
 export type transactionQueryRunnerType = QueryRunner
@@ -41,6 +40,20 @@ export const getConnection = async (): Promise<DataSource> => {
     }
   }
   return connection
+}
+
+// Close connection
+export const closeConnection = async (): Promise<void> => {
+  if (connection && connection.isInitialized) {
+    try {
+      await connection.destroy()
+      connection = null
+      logger.info('Database connection closed successfully')
+    } catch (error) {
+      logger.error('Error closing database connection:', error)
+      throw error
+    }
+  }
 }
 
 export const createAndStartTransaction = async (): Promise<QueryRunner> => {
