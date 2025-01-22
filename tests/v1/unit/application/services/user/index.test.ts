@@ -90,7 +90,7 @@ describe('Unit tests user', () => {
         sandbox.assert.calledOnce(mockGetUserWalletInfo)
         sandbox.assert.calledOnce(mockUpdateWalletByWalletIdDB)
       } catch (err) {
-        chai.assert.fail(`Should not get an error - ${err}`)
+        chai.assert.fail(`Should not get an error - ${String(err)}`)
       }
     })
     it('should fail (negative amount)', async () => {

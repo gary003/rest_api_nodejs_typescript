@@ -11,12 +11,12 @@ export const getWalletByIdDB = async (walletId: string) => {
 
   const WalletsRepository = connection.getRepository(Wallet)
 
-  const wallet: Wallet | void | null = await WalletsRepository.findOne({ where: { walletId } }).catch((err) => {
-    logger.error(err)
-    return null
-  })
+  const wallet = await WalletsRepository.findOne({ where: { walletId } }).catch((err) => err)
 
-  if (!wallet) throw new Error('Impossible to found the requested wallet')
+  if (wallet instanceof Error) {
+    logger.error(wallet)
+    throw new Error(`Impossible to found the requested wallet - ${wallet.message}`)
+  }
 
   return wallet
 }
@@ -26,9 +26,12 @@ export const updateWalletByWalletIdDB = async (walletId: string, currencyType: m
 
   const WalletsRepository = connection.getRepository(Wallet)
 
-  const result = await WalletsRepository.update(walletId, { [currencyType]: newBalance })
+  const result = await WalletsRepository.update(walletId, { [currencyType]: newBalance }).catch((err) => err)
 
-  if (result.affected === 0) throw new Error('Impossible to found the requested wallet')
+  if (!(result instanceof Object)) {
+    logger.error(result)
+    throw new Error(`Impossible to found the requested wallet - ${result.message}`)
+  }
 
   return true
 }
@@ -38,7 +41,12 @@ export const updateWalletByWalletIdTransaction = async (transactionRunner: Query
 
   const WalletsRepository = transactionRunner.manager.getRepository(Wallet)
 
-  const result = await WalletsRepository.update(walletId, { [currencyType]: newBalance })
+  const result = await WalletsRepository.update(walletId, { [currencyType]: newBalance }).catch((err) => err)
+
+  if (!(result instanceof Object)) {
+    logger.error(result)
+    throw new Error(`Error while updating wallet - ${result.message}`)
+  }
 
   if (result.affected === 0) throw new Error('Impossible to found the requested wallet')
 
@@ -56,9 +64,12 @@ export const createNewWalletDB = async (user: User): Promise<Wallet> => {
   newWalletToSave.hardCurrency = Math.floor(Math.random() * 95) + 5
   newWalletToSave.softCurrency = Math.floor(Math.random() * 990) + 10
 
-  const newWallet = await WalletsRepository.save(newWalletToSave)
+  const newWallet = await WalletsRepository.save(newWalletToSave).catch((err) => err)
 
-  if (!newWallet) throw new Error('Impossible to save the new wallet')
+  if (newWallet instanceof Error) {
+    logger.error(newWallet)
+    throw new Error(`Impossible to save the new wallet - ${newWallet.message}`)
+  }
 
   return newWallet
 }
@@ -68,13 +79,11 @@ export const deleteWalletByIdDB = async (walletId: string): Promise<boolean> => 
 
   const WalletsRepository = connection.getRepository(Wallet)
 
-  const result = await WalletsRepository.delete({ walletId }).catch((err) => {
-    logger.error(err)
-    return null
-  })
+  const result = await WalletsRepository.delete({ walletId }).catch((err) => err)
 
-  if (!result || result.affected === 0) {
-    throw new Error('Impossible to delete the wallet') // Use a custom error message
+  if (result instanceof Error || result.affected === 0) {
+    logger.error(result)
+    throw new Error(`Impossible to delete the wallet - ${result.message}`) // Use a custom error message
   }
 
   return true

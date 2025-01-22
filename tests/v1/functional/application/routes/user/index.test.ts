@@ -33,7 +33,7 @@ describe('Functional tests for user', () => {
       .withWaitStrategy('db-1', Wait.forLogMessage('ready for connections')) // Common MySQL ready message
       .up(['app', 'db'])
       .catch((error) => {
-        logger.error(error.message)
+        logger.error(error)
         return error
       })
 
@@ -53,7 +53,7 @@ describe('Functional tests for user', () => {
     process.env.DB_URI = dbUri
 
     // Add a small delay to ensure DB is really ready
-    await new Promise((resolve) => setTimeout(resolve, 10000))
+    await new Promise((resolve) => setTimeout(resolve, 1000))
 
     // logger.info(`uri: ${dbUri}`)
   })
@@ -91,8 +91,6 @@ describe('Functional tests for user', () => {
       if (resp instanceof Error) chai.assert.fail('Error - Impossible to get the data stream from route')
 
       const users = resp.text.split('\n').slice(0, -1)
-
-      // console.log(users)
 
       expect(resp.statusCode).to.be.within(200, 299)
       expect(users).to.be.an('array')
@@ -152,6 +150,20 @@ describe('Functional tests for user', () => {
 
       expect(response.statusCode).to.be.within(400, 499)
       expect(body).to.have.property('errorParamUserId')
+    })
+    it('should fail returning a single user ( user dont exists )', async () => {
+      const mockErrorLogger = sandbox.stub(logger, 'error')
+
+      const wrongUserId = 'zz2c990b6-029c-11ed-b939-0242ac12002'
+
+      const response = await request(app).get(`/${urlBase}/user/${wrongUserId}`).set('Accept', 'application/json').expect('Content-Type', /json/)
+
+      const body = JSON.parse(response.text)
+
+      expect(response.statusCode).to.be.within(500, 599)
+      expect(body.rawError).includes(' Impossible to get any user with that id')
+
+      sandbox.assert.called(mockErrorLogger)
     })
   })
 

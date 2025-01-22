@@ -1,4 +1,4 @@
-import { createLogger, format, transports } from 'winston'
+import winston, { createLogger, format, transports } from 'winston'
 const { combine, timestamp, printf } = format
 
 const myFormat = printf(({ level, message, timestamp }) => {
@@ -6,7 +6,11 @@ const myFormat = printf(({ level, message, timestamp }) => {
 })
 
 const logger = createLogger({
-  format: combine(timestamp(), myFormat),
+  format: winston.format.combine(
+    winston.format.errors({ stack: true }), // Important for error handling
+    winston.format.timestamp(),
+    winston.format.json()
+  ),
   exceptionHandlers: [new transports.File({ filename: 'exceptions.log' })]
 })
 

@@ -7,6 +7,7 @@ import { transferMoneyErrors, userFunctionsErrors, moneyTransferParamsValidatorE
 import logger from '../../../helpers/logger'
 import { userInfo } from '../../../infrastructure/persistance/user/dto'
 import { errorType } from '../../../domain/error'
+import { error } from 'console'
 
 export const getAllUsers = async (): Promise<userWalletDTO[]> => {
   const allUsers = await getAllUsersDB().catch((err) => err)
@@ -64,9 +65,9 @@ export const addCurrency = async (userId: string, currencyType: moneyTypes, amou
   const resultUpdate = await updateWalletByWalletIdDB(String(currentUserWalletInfo.Wallet?.walletId), currencyType, Number(currentUserWalletInfo.Wallet[currencyType]) + amount).catch((err) => err)
 
   if (resultUpdate instanceof Error) {
-    const updateError = { ...userFunctionsErrors.ErrorUpdating, rawError: String(resultUpdate) }
-    logger.error(updateError)
-    throw new Error(JSON.stringify(updateError))
+    logger.error(userFunctionsErrors.ErrorUpdating)
+    logger.error(resultUpdate)
+    throw new Error(JSON.stringify(userFunctionsErrors.ErrorUpdating))
   }
 
   return true
