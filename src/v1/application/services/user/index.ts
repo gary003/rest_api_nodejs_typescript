@@ -7,7 +7,6 @@ import { transferMoneyErrors, userFunctionsErrors, moneyTransferParamsValidatorE
 import logger from '../../../helpers/logger'
 import { userInfo } from '../../../infrastructure/persistance/user/dto'
 import { errorType } from '../../../domain/error'
-import { error } from 'console'
 
 export const getAllUsers = async (): Promise<userWalletDTO[]> => {
   const allUsers = await getAllUsersDB().catch((err) => err)

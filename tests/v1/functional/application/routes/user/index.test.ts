@@ -3,7 +3,7 @@ import chai from 'chai'
 import { expect } from 'chai'
 import { describe, it } from 'mocha'
 import app from '../../../../../../src/app'
-import { DockerComposeEnvironment, StartedDockerComposeEnvironment, Wait } from 'testcontainers'
+import { DockerComposeEnvironment, PullPolicy, StartedDockerComposeEnvironment, Wait } from 'testcontainers'
 import request from 'supertest'
 import { createSandbox, SinonSandbox } from 'sinon'
 import logger from '../../../../../../src/v1/helpers/logger'
@@ -13,7 +13,11 @@ describe('Functional tests for user', () => {
 
   let environment: StartedDockerComposeEnvironment
 
-  let original_uri = process.env.DB_URI
+  const original_DB_HOST = process.env.DB_HOST
+  const original_DB_URI = process.env.DB_URI
+
+  delete process.env.DB_HOST
+  delete process.env.DB_URI
 
   let dbUri: string = ''
 
@@ -29,6 +33,7 @@ describe('Functional tests for user', () => {
     // logger.info("starting test env for user (db) from docker-compose")
 
     environment = await new DockerComposeEnvironment(composeFilePath, composeFile)
+      .withPullPolicy(PullPolicy.alwaysPull())
       .withWaitStrategy('app-1', Wait.forLogMessage('app running on'))
       .withWaitStrategy('db-1', Wait.forLogMessage('ready for connections')) // Common MySQL ready message
       .up(['app', 'db'])
@@ -53,7 +58,7 @@ describe('Functional tests for user', () => {
     process.env.DB_URI = dbUri
 
     // Add a small delay to ensure DB is really ready
-    await new Promise((resolve) => setTimeout(resolve, 10000))
+    await new Promise((resolve) => setTimeout(resolve, 30000))
 
     // logger.info(`uri: ${dbUri}`)
   })
@@ -62,7 +67,8 @@ describe('Functional tests for user', () => {
     await environment.down()
 
     // Cancel the modification of the env variable
-    process.env.DB_URI = original_uri
+    process.env.DB_HOST = original_DB_HOST
+    process.env.DB_URI = original_DB_URI
 
     // logger.info("Docker Compose test environment stopped for functional tests on user/.")
 

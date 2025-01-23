@@ -6,6 +6,7 @@
   "main": "./dist/bin/server.js",
   "scripts": {
     "start": "docker-compose up",
+    "stop": "docker-compose down --rmi all",
     "build": "npx tsc -p .",
     "launch-app": "npx node ./dist/bin/server.js",
     "start-pm2": "npx tsc -p . && npx pm2 start ./dist/bin/server.js -i 0",
@@ -14,9 +15,9 @@
     "dev-pm2": "npx pm2 start ./dist/bin/server.js --name app-dev --watch",
     "lint": "npx eslint .",
     "test": "npx eslint . && npm run test:v1",
-    "test:v1": "npx c8 mocha -r ts-node/register --timeout 400000 './tests/v1/**/*.test.ts'",
+    "test:v1": "npm run stop && c8 mocha -r ts-node/register --timeout 400000 './tests/v1/**/*.test.ts'",
     "test:v1:unit": "npx c8 mocha -r ts-node/register --timeout 400000 './tests/v1/unit/**/*.test.ts'",
-    "test:v1:functional": "npx c8 mocha -r ts-node/register --timeout 400000 './tests/v1/functional/**/*.test.ts'"
+    "test:v1:functional": "npm run stop && npx c8 mocha -r ts-node/register --timeout 400000 './tests/v1/functional/**/*.test.ts'"
   },
   "dependencies": {
     "@types/node-fetch": "^2.6.12",
