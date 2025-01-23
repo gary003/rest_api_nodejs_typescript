@@ -53,7 +53,7 @@ describe('Functional tests for user', () => {
     process.env.DB_URI = dbUri
 
     // Add a small delay to ensure DB is really ready
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    await new Promise((resolve) => setTimeout(resolve, 10000))
 
     // logger.info(`uri: ${dbUri}`)
   })
