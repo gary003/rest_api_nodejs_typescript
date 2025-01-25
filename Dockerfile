@@ -12,4 +12,4 @@ EXPOSE 8080
 
 RUN ["npm", "run", "build"]
 
-CMD [ "npm", "run", "launch-app"]
+CMD [ "npm", "run", "docker-launch"]
