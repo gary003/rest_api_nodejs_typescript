@@ -1,5 +1,6 @@
 import { DataSourceOptions, QueryRunner, DataSource } from 'typeorm'
 import logger from '../../../helpers/logger'
+import { v4 as uuidv4 } from 'uuid'
 
 export type transactionQueryRunnerType = QueryRunner
 
@@ -7,7 +8,7 @@ let connection: DataSource | null = null
 
 export const connectionDB = async (): Promise<DataSource> => {
   const connectionOptions: DataSourceOptions = {
-    name: 'db_connection',
+    name: `db_connection_${uuidv4()}`,
     type: process.env.DB_DRIVER,
     host: process.env.DB_HOST,
     url: process.env.DB_URI,
