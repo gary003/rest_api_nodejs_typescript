@@ -3,17 +3,19 @@ import chai from 'chai'
 import { expect } from 'chai'
 import { describe, it } from 'mocha'
 import app from '../../../../../../src/app'
-import { DockerComposeEnvironment, PullPolicy, StartedDockerComposeEnvironment, Wait } from 'testcontainers'
+import { GenericContainer, StartedTestContainer, Wait } from 'testcontainers'
 import request from 'supertest'
 import { createSandbox, SinonSandbox } from 'sinon'
 import logger from '../../../../../../src/v1/helpers/logger'
+import path from 'path'
 
 const DB_READY_WAIT_MS = 30000
 
 describe('Functional tests for user', () => {
   const sandbox: SinonSandbox = createSandbox()
 
-  let environment: StartedDockerComposeEnvironment
+  // let environment: StartedDockerComposeEnvironment
+  let mysqlContainer: StartedTestContainer
 
   const original_DB_HOST = process.env.DB_HOST
   const original_DB_URI = process.env.DB_URI
@@ -26,18 +28,46 @@ describe('Functional tests for user', () => {
   const testUserId: string = 'cc2c990b6-029c-11ed-b939-0242ac12002'
   const urlBase: string = 'api/v1'
 
-  before(async () => {
-    const composeFilePath = '.'
-    const composeFile = 'docker-compose.yaml'
+  // let container: StartedTestContainer
 
-    process.env.TESTCONTAINERS_LOCKDIR = './src/v1/inrastrusture/docker'
+  before(async () => {
+    // const composeFilePath = '.'
+    // const composeFile = 'docker-compose.yaml'
+
+    // process.env.TESTCONTAINERS_LOCKDIR = './src/v1/inrastrusture/docker'
 
     try {
-      environment = await new DockerComposeEnvironment(composeFilePath, composeFile)
-        .withPullPolicy(PullPolicy.alwaysPull())
-        .withWaitStrategy('app-1', Wait.forLogMessage('app running on'))
-        .withWaitStrategy('db-1', Wait.forLogMessage('ready for connections'))
-        .up(['app', 'db'])
+      // environment = await new DockerComposeEnvironment(composeFilePath, composeFile)
+      //   .withPullPolicy(PullPolicy.alwaysPull())
+      //   .withWaitStrategy('app-1', Wait.forLogMessage('app running on'))
+      //   .withWaitStrategy('db-1', Wait.forLogMessage('ready for connections'))
+      //   .up(['app', 'db'])
+
+      mysqlContainer = await new GenericContainer('mysql:latest')
+        .withExposedPorts(Number(process.env.DB_PORT))
+        .withEnvironment({
+          MYSQL_ROOT_PASSWORD: String(process.env.DB_PASSWORD),
+          MYSQL_DATABASE: String(process.env.DB_DATABASE_NAME)
+        })
+        .withBindMounts([
+          {
+            source: path.resolve('./src/v1/infrastructure/docker/db_volume'),
+            target: '/var/lib/mysql'
+          },
+          {
+            source: path.resolve('./src/v1/infrastructure/docker/scripts'),
+            target: '/docker-entrypoint-initdb.d'
+          }
+        ])
+        .withHealthCheck({
+          test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost'],
+          timeout: 20000,
+          retries: 10
+        })
+        .withWaitStrategy(Wait.forHealthCheck())
+        .start()
+
+      console.log(mysqlContainer)
 
       await new Promise((resolve) => setTimeout(resolve, DB_READY_WAIT_MS))
     } catch (error) {
@@ -45,17 +75,25 @@ describe('Functional tests for user', () => {
       chai.assert.fail(`Container test environment setup failed: ${error}`)
     }
 
-    const dbContainer = environment.getContainer('db-1')
+    // logger.debug(JSON.stringify(mysqlContainer))
 
     const dbPort = Number(process.env.DB_PORT) || 3306
 
-    dbUri = `${process.env.DB_DRIVER}://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${dbContainer.getHost()}:${dbContainer.getMappedPort(dbPort)}/${process.env.DB_DATABASE_NAME}`
+    dbUri = `${process.env.DB_DRIVER}://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${mysqlContainer.getHost()}:${mysqlContainer.getMappedPort(dbPort)}/${process.env.DB_DATABASE_NAME}`
+
+    logger.debug('---------!!!!!!!!!!!!!!!!!!!!!!------------')
+    logger.debug(JSON.stringify(dbUri))
+    logger.debug(typeof dbUri)
+    logger.debug(path.resolve('./src/v1/infrastructure/docker/db_volume'))
+    logger.debug('---------!!!!!!!!!!!!!!!!!!!!!!------------')
 
     process.env.DB_URI = dbUri
   })
 
   after(async () => {
-    await environment.down()
+    // await environment.down()
+    await mysqlContainer.stop()
+    // await container.stop()
 
     // Cancel the modification of the env variable
     process.env.DB_HOST = original_DB_HOST
@@ -67,9 +105,6 @@ describe('Functional tests for user', () => {
   })
 
   describe('src > v1 > application > route > user > GET (getting all the users)', () => {
-    beforeEach(() => {
-      sandbox.restore()
-    })
     it('Should get all users from DB', async () => {
       const response = await request(app).get(`/${urlBase}/user/`).set('Accept', 'application/json').expect('Content-Type', /json/)
 
