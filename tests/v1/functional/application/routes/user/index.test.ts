@@ -8,6 +8,8 @@ import request from 'supertest'
 import { createSandbox, SinonSandbox } from 'sinon'
 import logger from '../../../../../../src/v1/helpers/logger'
 
+const DB_READY_WAIT_MS = 30000
+
 describe('Functional tests for user', () => {
   const sandbox: SinonSandbox = createSandbox()
 
@@ -30,37 +32,26 @@ describe('Functional tests for user', () => {
 
     process.env.TESTCONTAINERS_LOCKDIR = './src/v1/inrastrusture/docker'
 
-    // logger.info("starting test env for user (db) from docker-compose")
+    try {
+      environment = await new DockerComposeEnvironment(composeFilePath, composeFile)
+        .withPullPolicy(PullPolicy.alwaysPull())
+        .withWaitStrategy('app-1', Wait.forLogMessage('app running on'))
+        .withWaitStrategy('db-1', Wait.forLogMessage('ready for connections'))
+        .up(['app', 'db'])
 
-    environment = await new DockerComposeEnvironment(composeFilePath, composeFile)
-      .withPullPolicy(PullPolicy.alwaysPull())
-      .withWaitStrategy('app-1', Wait.forLogMessage('app running on'))
-      .withWaitStrategy('db-1', Wait.forLogMessage('ready for connections')) // Common MySQL ready message
-      .up(['app', 'db'])
-      .catch((error) => {
-        logger.error(error)
-        return error
-      })
-
-    if (environment instanceof Error) {
-      chai.assert.fail(`Error the container test environment set-up failed`)
+      await new Promise((resolve) => setTimeout(resolve, DB_READY_WAIT_MS))
+    } catch (error) {
+      logger.error('Docker Compose environment setup failed', error)
+      chai.assert.fail(`Container test environment setup failed: ${error}`)
     }
-
-    // logger.info("Docker Compose test environment started for functional tests on user/")
 
     const dbContainer = environment.getContainer('db-1')
 
     const dbPort = Number(process.env.DB_PORT) || 3306
 
-    // Using MySQL protocol and default MySQL port
     dbUri = `${process.env.DB_DRIVER}://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${dbContainer.getHost()}:${dbContainer.getMappedPort(dbPort)}/${process.env.DB_DATABASE_NAME}`
 
     process.env.DB_URI = dbUri
-
-    // Add a small delay to ensure DB is really ready
-    await new Promise((resolve) => setTimeout(resolve, 30000))
-
-    // logger.info(`uri: ${dbUri}`)
   })
 
   after(async () => {
@@ -138,7 +129,6 @@ describe('Functional tests for user', () => {
     beforeEach(() => {
       sandbox.restore()
     })
-
     it('should return a single user', async () => {
       const response = await request(app).get(`/${urlBase}/user/${testUserId}`).set('Accept', 'application/json').expect('Content-Type', /json/)
 
