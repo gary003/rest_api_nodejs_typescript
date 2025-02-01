@@ -11,7 +11,7 @@ import logger from './v1/helpers/logger'
 
 const app = express()
 
-app.use('/apiDoc', swaggerUi.serve, swaggerUi.setup(apiDocumentation))
+if (!process.env.production) app.use('/apiDoc', swaggerUi.serve, swaggerUi.setup(apiDocumentation))
 
 app.use(helmet())
 app.use(cors())

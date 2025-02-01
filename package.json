@@ -6,7 +6,7 @@
   "main": "./src/v1/bin/server.js",
   "scripts": {
     "start": "npm run clean && docker-compose up",
-    "stop": "docker-compose down --remove-orphans",
+    "stop": "docker-compose down --remove-orphans --rmi all",
     "build": "npx tsc -p .",
     "docker-launch": "npx pm2-docker start ./dist/bin/server.js -i 0",
     "clean": "npm run clean:pm2 && npm run stop",

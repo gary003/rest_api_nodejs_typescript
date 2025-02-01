@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express'
-import { deleteUserById, getAllUsers, getAllUsersStream, getUserWalletInfo, saveNewUser } from '../../services/user/index'
+import { deleteUserById, getAllUsers, getAllUsersStream, getUserWalletInfo, saveNewUser, transferMoney } from '../../services/user/index'
 
 import { errorAPIUSER } from './error.dto'
 
@@ -37,6 +37,35 @@ userRouter
 
     return res.status(200).json(response)
   })
+
+// New route for transferring money
+userRouter.route('/transfer').post(async (req: Request, res: Response) => {
+  const { senderWalletId, receiverWalletId, amount, currency } = req.body
+
+  // Validate required fields
+  if (!senderWalletId || !receiverWalletId || !amount || !currency) {
+    return res.status(400).json({ message: 'Missing required fields' })
+  }
+
+  // Validate amount is a positive number
+  if (typeof amount !== 'number' || amount <= 0) {
+    return res.status(400).json({ message: 'Amount must be a positive number' })
+  }
+
+  // Call the transferMoney service
+  const result = await transferMoney(currency, senderWalletId, receiverWalletId, amount).catch((err) => {
+    logger.error(err)
+    return null
+  })
+
+  if (result === null) {
+    return res.status(500).json({ message: 'Failed to transfer money' })
+  }
+
+  const response = { data: result }
+
+  return res.status(200).json(response)
+})
 
 userRouter.route('/stream').get(async (_: Request, res: Response) => {
   const usersStream = await getAllUsersStream().catch((err) => err)

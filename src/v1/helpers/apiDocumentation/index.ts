@@ -108,6 +108,83 @@ const apiDocumentation = {
           }
         }
       }
+    },
+    '/user/transfer': {
+      post: {
+        tags: ['user'],
+        summary: 'Transfer money between wallets',
+        description: 'Transfer a specified amount of money from one wallet to another',
+        parameters: [
+          {
+            in: 'body',
+            name: 'body',
+            description: 'Transfer details',
+            required: true,
+            schema: {
+              type: 'object',
+              required: ['senderId', 'receiverId', 'amount', 'currency'],
+              properties: {
+                senderId: {
+                  type: 'string',
+                  description: 'ID of the sender'
+                },
+                receiverId: {
+                  type: 'string',
+                  description: 'ID of the receiver'
+                },
+                amount: {
+                  type: 'number',
+                  description: 'Amount to transfer (must be positive)',
+                  minimum: 0,
+                  exclusiveMinimum: true
+                },
+                currency: {
+                  type: 'string',
+                  description: 'Currency of the transfer'
+                }
+              }
+            }
+          }
+        ],
+        responses: {
+          '200': {
+            description: 'Successfully transferred money',
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  description: 'Transfer result details'
+                }
+              }
+            }
+          },
+          '400': {
+            description: 'Bad request - Missing required fields or invalid amount',
+            schema: {
+              type: 'object',
+              properties: {
+                message: {
+                  type: 'string',
+                  example: 'Missing required fields'
+                }
+              }
+            }
+          },
+          '500': {
+            description: 'Internal server error',
+            schema: {
+              type: 'object',
+              properties: {
+                message: {
+                  type: 'string',
+                  example: 'Failed to transfer money'
+                }
+              }
+            }
+          }
+        }
+      }
     }
   }
 }
