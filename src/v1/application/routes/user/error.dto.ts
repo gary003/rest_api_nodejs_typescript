@@ -18,12 +18,27 @@ export const errorAPIUSER: Record<string, errorType> = {
   },
   errorAPIInvalidUserId: {
     name: 'errorAPIInvalidUserId',
-    message: 'Error - The userId prvided is wrong',
+    message: 'Error - The userId provided is wrong',
     httpCode: 400
   },
   errorAPIDeleteUser: {
     name: 'errorAPIDeleteUser',
     message: 'Error - Impossible to delete the user from database',
+    httpCode: 500
+  },
+  errorAPIUserTransfertWrongParams: {
+    name: 'errorAPIUserTransfertWrongParams',
+    message: 'Error - The params provided are wrong',
+    httpCode: 404
+  },
+  errorAPIUserTransferIllegalAmount: {
+    name: 'errorAPIUserTransferIllegalAmount',
+    message: 'Error - The amount for transferingmust be > 0 ',
+    httpCode: 404
+  },
+  errorAPIUserTransferNoResults: {
+    name: 'errorAPIUserTransferNoResults',
+    message: 'Error - The query returned no results',
     httpCode: 500
   }
 } as const

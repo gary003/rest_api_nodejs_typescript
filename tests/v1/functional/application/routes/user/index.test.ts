@@ -7,6 +7,8 @@ import { DockerComposeEnvironment, PullPolicy, StartedDockerComposeEnvironment, 
 import request from 'supertest'
 import { createSandbox, SinonSandbox } from 'sinon'
 import logger from '../../../../../../src/v1/helpers/logger'
+import { errorAPIUSER } from '../../../../../../src/v1/application/routes/user/error.dto'
+import { moneyTypesO } from '../../../../../../src/v1/domain'
 
 const DB_READY_WAIT_MS = 30000
 
@@ -23,7 +25,10 @@ describe('Functional tests for user', () => {
 
   let dbUri: string = ''
 
+  // This is a test user id  use through all test (as recispient for transfer tests)
   const testUserId: string = 'cc2c990b6-029c-11ed-b939-0242ac12002'
+  let givertUserIdTest: string = ''
+
   const urlBase: string = 'api/v1'
 
   before(async () => {
@@ -75,6 +80,8 @@ describe('Functional tests for user', () => {
 
       const body = JSON.parse(response.text)
 
+      givertUserIdTest = body.data[0].userId
+
       expect(response.statusCode).to.be.within(200, 299)
       expect(body.data).to.be.an('array')
       expect(body.data).length.above(0)
@@ -97,7 +104,6 @@ describe('Functional tests for user', () => {
 
       for (const chunk of users) {
         const user = JSON.parse(chunk)
-        // console.log(user)
         expect(user).to.have.property('userId')
         expect(user).to.have.property('firstname')
         expect(user).to.have.property('Wallet')
@@ -163,6 +169,63 @@ describe('Functional tests for user', () => {
       expect(body.rawError).includes(' Impossible to get any user with that id')
 
       sandbox.assert.called(mockErrorLogger)
+    })
+  })
+
+  describe('src > v1 > application > route > user > POST (transfer)', () => {
+    beforeEach(() => {
+      sandbox.restore()
+    })
+
+    it('should successfully transfer money between users', async () => {
+      const validTransferData = {
+        senderId: givertUserIdTest,
+        receiverId: testUserId,
+        amount: 7,
+        currency: moneyTypesO.hard_currency
+      }
+
+      const response = await request(app).post(`/${urlBase}/user/transfer`).send(validTransferData).set('Accept', 'application/json').expect('Content-Type', /json/)
+
+      const body = JSON.parse(response.text)
+
+      expect(response.statusCode).to.be.within(200, 299)
+      expect(body).to.have.property('data')
+    })
+
+    it('should fail transfering money (missing required fields)', async () => {
+      const invalidData = {
+        senderId: testUserId
+        // missing other required fields
+      }
+
+      const response = await request(app).post(`/${urlBase}/user/transfer`).send(invalidData).set('Accept', 'application/json').expect('Content-Type', /json/)
+
+      const body = JSON.parse(response.text)
+
+      expect(response.statusCode).to.be.within(400, 499)
+      expect(body).to.deep.equal(errorAPIUSER.errorAPIUserTransfertWrongParams)
+    })
+
+    it('should fail transfering money (illegal amount)', async () => {
+      const validTransferData = {
+        senderId: givertUserIdTest,
+        receiverId: testUserId,
+        amount: 101,
+        currency: moneyTypesO.hard_currency
+      }
+
+      const invalidData = {
+        ...validTransferData,
+        amount: -100
+      }
+
+      const response = await request(app).post(`/${urlBase}/user/transfer`).send(invalidData).set('Accept', 'application/json').expect('Content-Type', /json/)
+
+      const body = JSON.parse(response.text)
+
+      expect(response.statusCode).to.be.within(400, 499)
+      expect(body).to.deep.equal(errorAPIUSER.errorAPIUserTransferIllegalAmount)
     })
   })
 

@@ -40,26 +40,26 @@ userRouter
 
 // New route for transferring money
 userRouter.route('/transfer').post(async (req: Request, res: Response) => {
-  const { senderWalletId, receiverWalletId, amount, currency } = req.body
+  const { senderId, receiverId, amount, currency } = req.body
 
   // Validate required fields
-  if (!senderWalletId || !receiverWalletId || !amount || !currency) {
-    return res.status(400).json({ message: 'Missing required fields' })
+  if (!senderId || !receiverId || !amount || !currency) {
+    return res.status(400).json(errorAPIUSER.errorAPIUserTransfertWrongParams)
   }
 
   // Validate amount is a positive number
   if (typeof amount !== 'number' || amount <= 0) {
-    return res.status(400).json({ message: 'Amount must be a positive number' })
+    return res.status(498).json(errorAPIUSER.errorAPIUserTransferIllegalAmount)
   }
 
   // Call the transferMoney service
-  const result = await transferMoney(currency, senderWalletId, receiverWalletId, amount).catch((err) => {
+  const result = await transferMoney(currency, senderId, receiverId, amount).catch((err) => {
     logger.error(err)
     return null
   })
 
   if (result === null) {
-    return res.status(500).json({ message: 'Failed to transfer money' })
+    return res.status(500).json(errorAPIUSER.errorAPIUserTransferNoResults)
   }
 
   const response = { data: result }
@@ -72,7 +72,7 @@ userRouter.route('/stream').get(async (_: Request, res: Response) => {
 
   if (usersStream instanceof Error) return res.status(500).json(errorAPIUSER.errorAPIGetAllUsers)
 
-  // usersStream.on('data', (d: any) => console.log(d))
+  // usersStream.on('data', (d: any) => logger.debug(d))
   return usersStream.pipe(res)
 })
 

@@ -161,13 +161,13 @@ describe('Unit tests user', () => {
       }
 
       const fakeUserRecipient = {
-        userId: 'fake_22ef5564-0234-11ed-b939-0242ac120002',
-        firstname: 'fake_Eugene',
-        lastname: 'fake_Porter',
+        userId: 'fake_09lo1234-0234-45rt-n632-0242ac129997',
+        firstname: 'fake_Michael',
+        lastname: 'fake_Mercer',
         Wallet: {
-          walletId: 'fake_515f73c2-027d-11ed-b939-0242ac120002',
-          hardCurrency: 2000,
-          softCurrency: 2000
+          walletId: 'fake_888f73b6-027d-11ed-b939-0242ac120987',
+          hardCurrency: 2400,
+          softCurrency: 6700
         }
       }
 
