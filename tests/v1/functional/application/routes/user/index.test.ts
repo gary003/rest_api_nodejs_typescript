@@ -17,17 +17,13 @@ describe('Functional tests for user', () => {
 
   let environment: StartedDockerComposeEnvironment
 
-  const original_DB_HOST = process.env.DB_HOST
-  const original_DB_URI = process.env.DB_URI
-
-  delete process.env.DB_HOST
-  delete process.env.DB_URI
+  const original_env = { ...process.env }
 
   let dbUri: string = ''
 
-  // This is a test user id  use through all test (as recispient for transfer tests)
-  const testUserId: string = 'cc2c990b6-029c-11ed-b939-0242ac12002'
-  let givertUserIdTest: string = ''
+  // This is test user ids  use through all tests (as recipient and giver for money transfer tests)
+  let testUserId1: string = ''
+  let testUserId2: string = ''
 
   const urlBase: string = 'api/v1'
 
@@ -63,9 +59,7 @@ describe('Functional tests for user', () => {
     await environment.down()
 
     // Cancel the modification of the env variable
-    process.env.DB_HOST = original_DB_HOST
-    process.env.DB_URI = original_DB_URI
-
+    process.env = original_env
     // logger.info("Docker Compose test environment stopped for functional tests on user/.")
 
     return true
@@ -80,7 +74,7 @@ describe('Functional tests for user', () => {
 
       const body = JSON.parse(response.text)
 
-      givertUserIdTest = body.data[0].userId
+      testUserId2 = body.data[1].userId
 
       expect(response.statusCode).to.be.within(200, 299)
       expect(body.data).to.be.an('array')
@@ -117,7 +111,6 @@ describe('Functional tests for user', () => {
     })
     it('should add a new user', async () => {
       const newUser = {
-        userId: testUserId,
         firstname: 'test_Rosita',
         lastname: 'test_Espinosa'
       }
@@ -126,11 +119,15 @@ describe('Functional tests for user', () => {
 
       const body = JSON.parse(response.text)
 
+      testUserId1 = body.data.userId
+
       // logger.debug(JSON.stringify(body))
       expect(response.statusCode).to.be.within(200, 299)
 
       expect(body.data).to.not.be.empty
-      expect(body.data.userId).to.equal(testUserId)
+      expect(body.data.firstname).to.be.not.empty
+      expect(body.data.firstname).to.equal(newUser.firstname)
+      expect(body.data.lastname).to.equal(newUser.lastname)
     })
   })
 
@@ -139,7 +136,7 @@ describe('Functional tests for user', () => {
       sandbox.restore()
     })
     it('should return a single user', async () => {
-      const response = await request(app).get(`/${urlBase}/user/${testUserId}`).set('Accept', 'application/json').expect('Content-Type', /json/)
+      const response = await request(app).get(`/${urlBase}/user/${testUserId1}`).set('Accept', 'application/json').expect('Content-Type', /json/)
 
       const body = JSON.parse(response.text)
 
@@ -179,8 +176,8 @@ describe('Functional tests for user', () => {
 
     it('should successfully transfer money between users', async () => {
       const validTransferData = {
-        senderId: givertUserIdTest,
-        receiverId: testUserId,
+        senderId: testUserId2,
+        receiverId: testUserId1,
         amount: 7,
         currency: moneyTypesO.hard_currency
       }
@@ -193,9 +190,9 @@ describe('Functional tests for user', () => {
       expect(body).to.have.property('data')
     })
 
-    it('should fail transfering money (missing required fields)', async () => {
+    it('should fail transferring money (missing required fields)', async () => {
       const invalidData = {
-        senderId: testUserId
+        senderId: testUserId1
         // missing other required fields
       }
 
@@ -207,10 +204,10 @@ describe('Functional tests for user', () => {
       expect(body).to.deep.equal(errorAPIUSER.errorAPIUserTransfertWrongParams)
     })
 
-    it('should fail transfering money (illegal amount)', async () => {
+    it('should fail transferring money (illegal amount)', async () => {
       const validTransferData = {
-        senderId: givertUserIdTest,
-        receiverId: testUserId,
+        senderId: testUserId2,
+        receiverId: testUserId1,
         amount: 101,
         currency: moneyTypesO.hard_currency
       }
@@ -227,6 +224,22 @@ describe('Functional tests for user', () => {
       expect(response.statusCode).to.be.within(400, 499)
       expect(body).to.deep.equal(errorAPIUSER.errorAPIUserTransferIllegalAmount)
     })
+
+    it('Should fail transferring money (senderId === receiverId)', async () => {
+      const invalidTransferData = {
+        senderId: testUserId1,
+        receiverId: testUserId1,
+        amount: 10,
+        currency: moneyTypesO.hard_currency
+      }
+
+      const response = await request(app).post(`/${urlBase}/user/transfer`).send(invalidTransferData).set('Accept', 'application/json')
+
+      const body = JSON.parse(response.text)
+
+      expect(response.statusCode).to.be.within(400, 499)
+      expect(body).to.deep.equal(errorAPIUSER.errorAPIUserTransferSelf)
+    })
   })
 
   describe('src > v1 > application > route > user > DELETE', () => {
@@ -234,7 +247,7 @@ describe('Functional tests for user', () => {
       sandbox.restore()
     })
     it('should delete a specified user', async () => {
-      const response = await request(app).delete(`/${urlBase}/user/${testUserId}`).set('Accept', 'application/json').expect('Content-Type', /json/)
+      const response = await request(app).delete(`/${urlBase}/user/${testUserId1}`).set('Accept', 'application/json').expect('Content-Type', /json/)
 
       const body = JSON.parse(response.text)
 

@@ -31,8 +31,8 @@ export const getAllUsersStream = async () => {
   return streamUsers
 }
 
-export const saveNewUser = async (userId: string, firstname: string, lastname: string): Promise<userWalletDTO> => {
-  const newUser = await saveNewUserDB(userId, firstname, lastname).catch((err) => err)
+export const saveNewUser = async (firstname: string, lastname: string): Promise<userWalletDTO> => {
+  const newUser = await saveNewUserDB(firstname, lastname).catch((err) => err)
 
   if (newUser instanceof Error) {
     const saveError = JSON.stringify({ ...userFunctionsErrors.ErrorCreatingUser, rawError: String(newUser) })

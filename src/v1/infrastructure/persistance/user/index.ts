@@ -6,6 +6,7 @@ import { Readable } from 'stream'
 import { ReadStream } from 'typeorm/platform/PlatformTools'
 import logger from '../../../helpers/logger'
 import { userWalletDTO } from '../../../application/services/user/dto'
+import { v4 as uuidv4 } from 'uuid'
 
 export const getAllUsersDB = async (): Promise<userWalletDTO[]> => {
   const connection = await getConnection()
@@ -64,9 +65,9 @@ export const getAllUsersStreamDB = async (): Promise<Readable> => {
   return readableStream
 }
 
-export const saveNewUserDB = async (userId: string, firstname: string, lastname: string): Promise<User> => {
+export const saveNewUserDB = async (firstname: string, lastname: string): Promise<User> => {
   const newUser = new User()
-  newUser.userId = userId
+  newUser.userId = uuidv4()
   newUser.firstname = firstname
   newUser.lastname = lastname
 

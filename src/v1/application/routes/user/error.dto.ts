@@ -40,6 +40,11 @@ export const errorAPIUSER: Record<string, errorType> = {
     name: 'errorAPIUserTransferNoResults',
     message: 'Error - The query returned no results',
     httpCode: 500
+  },
+  errorAPIUserTransferSelf: {
+    name: 'errorAPIUserTransferSelf',
+    message: 'Error - Same id for receiver and sender',
+    httpCode: 404
   }
 } as const
 

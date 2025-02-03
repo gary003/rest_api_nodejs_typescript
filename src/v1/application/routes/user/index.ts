@@ -24,9 +24,9 @@ userRouter
     return res.status(200).json(apiRes)
   })
   .post(async (req: Request, res: Response) => {
-    const { userId, firstname, lastname } = req.body
+    const { firstname, lastname } = req.body
 
-    const result = await saveNewUser(userId, firstname, lastname).catch((err) => {
+    const result = await saveNewUser(firstname, lastname).catch((err) => {
       logger.error(err)
       return null
     })
@@ -50,6 +50,10 @@ userRouter.route('/transfer').post(async (req: Request, res: Response) => {
   // Validate amount is a positive number
   if (typeof amount !== 'number' || amount <= 0) {
     return res.status(498).json(errorAPIUSER.errorAPIUserTransferIllegalAmount)
+  }
+
+  if (senderId === receiverId) {
+    return res.status(404).json(errorAPIUSER.errorAPIUserTransferSelf)
   }
 
   // Call the transferMoney service

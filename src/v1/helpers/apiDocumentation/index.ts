@@ -56,9 +56,21 @@ const apiDocumentation = {
           {
             in: 'body',
             name: 'body',
-            description: 'registered users',
+            description: "User's first and last name",
+            required: true,
             schema: {
-              $ref: '#/definitions/User'
+              type: 'object',
+              properties: {
+                firstname: {
+                  description: 'User’s first name',
+                  type: 'string'
+                },
+                lastname: {
+                  description: 'User’s last name',
+                  type: 'string'
+                }
+              },
+              required: ['firstname', 'lastname']
             }
           }
         ],

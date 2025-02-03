@@ -61,8 +61,8 @@ export const createNewWalletDB = async (user: User): Promise<Wallet> => {
   const newWalletToSave: Wallet = new Wallet()
   newWalletToSave.walletId = uuidv4()
   newWalletToSave.user = user
-  newWalletToSave.hardCurrency = Math.floor(Math.random() * 95) + 5
-  newWalletToSave.softCurrency = Math.floor(Math.random() * 990) + 10
+  newWalletToSave.hardCurrency = Math.floor(Math.random() * 2000)
+  newWalletToSave.softCurrency = Math.floor(Math.random() * 2000)
 
   const newWallet = await WalletsRepository.save(newWalletToSave).catch((err) => err)
 

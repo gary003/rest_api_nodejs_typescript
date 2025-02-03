@@ -35,7 +35,7 @@ describe('Unit tests user', () => {
       const mockSaveNewUserDB = sandbox.stub(modUserDB, 'saveNewUserDB').returns(Promise.resolve(fakeUser))
 
       try {
-        const response = await saveNewUser(fakeUser.userId, fakeUser.firstname, fakeUser.lastname)
+        const response = await saveNewUser(fakeUser.firstname, fakeUser.lastname)
 
         chai.assert.exists(response, 'Should get the correct response')
         chai.assert.strictEqual(response.userId, fakeUser.userId, 'Should get the correct userId')
@@ -60,7 +60,7 @@ describe('Unit tests user', () => {
       const mockErrorLogger = sandbox.stub(logger, 'error')
 
       try {
-        await saveNewUser(fakeUser.userId, fakeUser.firstname, fakeUser.lastname)
+        await saveNewUser(fakeUser.firstname, fakeUser.lastname)
         chai.assert.fail('Unexpected success')
       } catch (err) {
         if (!(err instanceof Error) || err?.message === null) {
