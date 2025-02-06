@@ -114,7 +114,9 @@ export const transferMoneyParamsValidator = async (currency: moneyTypes, giverId
 
   const giverNewBalance = Number(giverUserInfo.Wallet[currency]) - amount
 
-  if (giverNewBalance < 0) throw new Error(JSON.stringify(moneyTransferParamsValidatorErrors.ErrorInsufficientFunds))
+  if (giverNewBalance < 0) {
+    throw new Error(JSON.stringify(moneyTransferParamsValidatorErrors.ErrorInsufficientFunds))
+  }
 
   const recipientUserInfo = await getUserWalletInfoDB(recipientId).catch((error) => error)
 
@@ -174,7 +176,7 @@ export const transferMoney = async (currency: moneyTypes, giverId: string, recip
   const updateWalletGiverResult = await updateWalletByWalletIdTransaction(transacRunner, String(giverUserInfo.Wallet.walletId), currency, giverNewBalance).catch((err) => err)
 
   if (updateWalletGiverResult instanceof Error) {
-    const updateError = JSON.stringify({ ...transferMoneyErrors.ErrorUpdateGiverWallet, rawError: String(updateWalletGiverResult) })
+    const updateError = JSON.stringify({ ...transferMoneyErrors.ErrorUpdateGiverWallet, rawError: JSON.parse(updateWalletGiverResult.message) })
     logger.error(updateError)
     rollBackAndQuitTransactionRunner(transacRunner)
     throw new Error(updateError)

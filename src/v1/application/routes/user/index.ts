@@ -59,11 +59,11 @@ userRouter.route('/transfer').post(async (req: Request, res: Response) => {
   // Call the transferMoney service
   const result = await transferMoney(currency, senderId, receiverId, amount).catch((err) => {
     logger.error(err)
-    return null
+    return err
   })
 
-  if (result === null) {
-    return res.status(500).json(errorAPIUSER.errorAPIUserTransferNoResults)
+  if (result instanceof Error) {
+    return res.status(500).json({ ...errorAPIUSER.errorAPIUserTransferNoResults, error: JSON.parse(result.message) })
   }
 
   const response = { data: result }
@@ -74,7 +74,9 @@ userRouter.route('/transfer').post(async (req: Request, res: Response) => {
 userRouter.route('/stream').get(async (_: Request, res: Response) => {
   const usersStream = await getAllUsersStream().catch((err) => err)
 
-  if (usersStream instanceof Error) return res.status(500).json(errorAPIUSER.errorAPIGetAllUsers)
+  if (usersStream instanceof Error) {
+    return res.status(500).json({ ...errorAPIUSER.errorAPIGetAllUsers, error: JSON.parse(usersStream.message) })
+  }
 
   // usersStream.on('data', (d: any) => logger.debug(d))
   return usersStream.pipe(res)
