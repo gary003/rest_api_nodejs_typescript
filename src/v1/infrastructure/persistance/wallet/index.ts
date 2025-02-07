@@ -1,12 +1,13 @@
 import { getConnection } from '../connection/connectionFile'
 import { Wallet } from './entity'
+import { walletDBDTO } from './walletDB.dto'
 import { v4 as uuidv4 } from 'uuid'
 import { QueryRunner } from 'typeorm'
 import { User } from '../user/entity'
 import { moneyTypes } from '../../../domain'
 import logger from '../../../helpers/logger'
 
-export const getWalletByIdDB = async (walletId: string) => {
+export const getWalletByIdDB = async (walletId: string): Promise<walletDBDTO> => {
   const connection = await getConnection()
 
   const WalletsRepository = connection.getRepository(Wallet)
@@ -18,7 +19,7 @@ export const getWalletByIdDB = async (walletId: string) => {
     throw new Error(`Impossible to found the requested wallet - ${wallet.message}`)
   }
 
-  return wallet
+  return wallet as walletDBDTO
 }
 
 export const updateWalletByWalletIdDB = async (walletId: string, currencyType: moneyTypes, newBalance: number): Promise<boolean> => {
@@ -53,7 +54,7 @@ export const updateWalletByWalletIdTransaction = async (transactionRunner: Query
   return true
 }
 
-export const createNewWalletDB = async (user: User): Promise<Wallet> => {
+export const createNewWalletDB = async (user: User): Promise<walletDBDTO> => {
   const connection = await getConnection()
 
   const WalletsRepository = connection.getRepository(Wallet)

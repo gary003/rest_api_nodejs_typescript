@@ -5,10 +5,10 @@ import { createNewWalletDB, deleteWalletByIdDB } from '../wallet'
 import { Readable } from 'stream'
 import { ReadStream } from 'typeorm/platform/PlatformTools'
 import logger from '../../../helpers/logger'
-import { userWalletDTO } from '../../../application/services/user/dto'
+import { userWalletDBDTO } from './userWalletDB.dto'
 import { v4 as uuidv4 } from 'uuid'
 
-export const getAllUsersDB = async (): Promise<userWalletDTO[]> => {
+export const getAllUsersDB = async (): Promise<userWalletDBDTO[]> => {
   const connection = await getConnection()
 
   const UserRepository = connection.getRepository(User)
@@ -25,13 +25,13 @@ export const getAllUsersDB = async (): Promise<userWalletDTO[]> => {
 
   // logger.debug(JSON.stringify(result))
 
-  return result as userWalletDTO[]
+  return result as userWalletDBDTO[]
 }
 
 export const userStreamAdaptor = async function* (source: ReadStream): AsyncGenerator<string> {
   try {
     for await (const chunk of source) {
-      const adaptedData: userWalletDTO = {
+      const adaptedData: userWalletDBDTO = {
         userId: chunk.user_userId,
         firstname: chunk.user_firstname,
         lastname: chunk.user_lastname,
@@ -116,7 +116,7 @@ export const deleteUserByIdDB = async (userId: string): Promise<boolean> => {
   return true
 }
 
-export const getUserWalletInfoDB = async (userId: string): Promise<userWalletDTO> => {
+export const getUserWalletInfoDB = async (userId: string): Promise<userWalletDBDTO> => {
   const connection = await getConnection()
 
   const UserRepository = connection.getRepository(User)
@@ -136,7 +136,7 @@ export const getUserWalletInfoDB = async (userId: string): Promise<userWalletDTO
     throw new Error(`Impossible to get any user with that id (response is null - user dont exists)`)
   }
 
-  return userWalletInfo as userWalletDTO
+  return userWalletInfo as userWalletDBDTO
 }
 
 // // Create a transform stream from your generator
