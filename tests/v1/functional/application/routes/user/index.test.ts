@@ -1,4 +1,3 @@
-require('dotenv').config()
 import chai from 'chai'
 import { expect } from 'chai'
 import { describe, it } from 'mocha'
@@ -19,6 +18,21 @@ describe('Functional tests for user', () => {
 
   const original_env = { ...process.env }
 
+  // This is a portfolio API, in a real project, use a .env !
+  const test_env = {
+    DB_DRIVER: 'mysql',
+    DB_USERNAME: 'root',
+    DB_PASSWORD: 'mypass',
+    DB_DATABASE_NAME: 'mydbuser',
+    DB_PORT: '3306',
+    DOCKER_APP_NETWORK: 'my_app_network',
+    CRYPTO_SECRET_KEY: '2345',
+    API_PORT: '8080',
+    LOGLEVEL: 'debug'
+  }
+
+  process.env = { ...process.env, ...test_env }
+
   let dbUri: string = ''
 
   // This is test user ids  use through all tests (as recipient and giver for money transfer tests)
@@ -36,6 +50,7 @@ describe('Functional tests for user', () => {
     try {
       environment = await new DockerComposeEnvironment(composeFilePath, composeFile)
         .withPullPolicy(PullPolicy.alwaysPull())
+        .withEnvironment(test_env)
         .withWaitStrategy('app-1', Wait.forLogMessage('app running on'))
         .withWaitStrategy('db-1', Wait.forLogMessage('ready for connections'))
         .up(['app', 'db'])

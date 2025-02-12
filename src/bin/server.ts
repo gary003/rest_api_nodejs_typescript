@@ -15,7 +15,6 @@ const server: http.Server = http.createServer(app)
 const shutdown = async () => {
   try {
     await closeConnection()
-    logger.info('db connection shutdown completed')
     process.exit(0)
   } catch (error) {
     logger.error('Error during shutdown:', error)
@@ -30,7 +29,7 @@ server.on('error', async (error) => {
 })
 
 server.on('listening', async () => {
-  logger.info(`app running on http://${localIp}:${port}, api documentation on http://${localIp}:${port}/apiDoc`)
+  if (!process.env.production) logger.info(`app running on http://${localIp}:${port}, api documentation on http://${localIp}:${port}/apiDoc`)
 })
 
 // Setup process handlers

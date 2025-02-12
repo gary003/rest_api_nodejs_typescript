@@ -3,7 +3,7 @@
 ## Skills description
 
 - Clean architecture (onion architecture)
-- Testing using sinon.js
+- Testing using sinon.js and mocha
   - Mocks
   - Coverage
   - Unit tests
@@ -28,7 +28,6 @@
 ## Prerequisites
 
 - Having docker & docker-compose installed
-- Ask for the .env file
 
 ## Git Installation
 
@@ -41,10 +40,13 @@
 - Install the dependences:
   `npm install`
 
-## Start app
+## Start API
 
 - Launch the app & DB (mysql)
   `docker-compose up`
+
+- OpenAPI (swagger)
+  `localhost:8080/apiDoc`
 
 ## Developer
 

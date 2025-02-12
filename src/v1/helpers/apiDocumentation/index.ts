@@ -81,6 +81,18 @@ const apiDocumentation = {
         }
       }
     },
+    '/user/stream': {
+      get: {
+        tags: ['user'],
+        summary: 'get all users from stream',
+        description: 'all users will be retreive from DB',
+        responses: {
+          '200': {
+            description: 'Successfuly get all users with a stream '
+          }
+        }
+      }
+    },
     '/user/{userId}': {
       get: {
         tags: ['user'],

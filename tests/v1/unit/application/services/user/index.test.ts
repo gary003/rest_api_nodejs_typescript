@@ -775,7 +775,7 @@ describe('Unit tests user', () => {
       } catch (err) {
         chai.assert.exists(err, 'Error should be thrown')
         if (!(err instanceof Error)) chai.assert.fail('Error should be an Error instance')
-        chai.assert.include(err.message, 'Strem Adaptor error')
+        chai.assert.include(err.message, 'Stream Adaptor error')
 
         // Verify logger was called with the error
         sandbox.assert.calledOnce(loggerErrorStub)

@@ -46,7 +46,7 @@ export const userStreamAdaptor = async function* (source: ReadStream): AsyncGene
     }
   } catch (err) {
     logger.error(err)
-    throw new Error(`Strem Adaptor error - ${String(err)}`)
+    throw new Error(`Stream Adaptor error - ${String(err)}`)
   }
 }
 
