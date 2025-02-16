@@ -18,6 +18,10 @@ import { Readable } from 'stream'
 describe('Unit tests user', () => {
   const sandbox: SinonSandbox = createSandbox()
 
+  // Dont accidently fetch real database (use of mocks in the tests) !
+  process.env.DB_URI = ''
+  process.env.DB_HOST = ''
+
   describe('src > v1 > application > services > user > index > saveNewUser', () => {
     beforeEach(() => {
       sandbox.restore()

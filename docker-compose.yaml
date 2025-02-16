@@ -10,7 +10,7 @@ services:
     environment:
       - DB_DRIVER=mysql
       - DB_HOST=db
-      - DB_USERNAME=root
+      - DB_USERNAME=mysql
       - DB_PASSWORD=mypass
       - DB_DATABASE_NAME=mydbuser
       - DB_PORT=3306
