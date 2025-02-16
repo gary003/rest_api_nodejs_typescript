@@ -14,6 +14,10 @@ const DB_READY_WAIT_MS = 30000
 describe('Functional tests for user', () => {
   const sandbox: SinonSandbox = createSandbox()
 
+  // // Dont accidently fetch the real database (use the contenerized test environment) !
+  // process.env.DB_URI = ''
+  // process.env.DB_HOST = ''
+
   let environment: StartedDockerComposeEnvironment
 
   const original_env = { ...process.env }
@@ -21,7 +25,7 @@ describe('Functional tests for user', () => {
   // This is a portfolio API, in a real project, use a .env !
   const test_env = {
     DB_DRIVER: 'mysql',
-    DB_USERNAME: 'root',
+    DB_USERNAME: 'mysql',
     DB_PASSWORD: 'mypass',
     DB_DATABASE_NAME: 'mydbuser',
     DB_PORT: '3306',
