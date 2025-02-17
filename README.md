@@ -45,7 +45,7 @@
 ## Start API
 
 - Launch the app & DB (mysql)
-  `(sudo) docker-compose up`
+  `docker-compose up`
 
 - OpenAPI (swagger)
   Copy this url in a browser (adapt the port if needed)

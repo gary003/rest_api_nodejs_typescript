@@ -49,7 +49,7 @@ describe('Functional tests for user', () => {
     const composeFilePath = '.'
     const composeFile = 'docker-compose.yaml'
 
-    process.env.TESTCONTAINERS_LOCKDIR = './src/v1/inrastrusture/docker'
+    // process.env.TESTCONTAINERS_LOCKDIR = '/tmp/testcontainers-node.lock'
 
     try {
       environment = await new DockerComposeEnvironment(composeFilePath, composeFile)

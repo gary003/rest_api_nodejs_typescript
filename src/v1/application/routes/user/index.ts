@@ -13,10 +13,15 @@ const userRouter = Router()
 userRouter
   .route('/')
   .get(async (_: Request, res: Response) => {
-    const results = await getAllUsers().catch((err) => err)
+    const results = await getAllUsers().catch((err) => {
+      logger.error(err)
+      return err
+    })
 
     if (results instanceof Error) {
-      return res.status(500).json(errorAPIUSER.errorAPIGetAllUsers)
+      const errorMessage = JSON.parse(results.message)
+      const errInfo = { ...errorAPIUSER.errorAPIGetAllUsers, rawError : errorMessage }
+      return res.status(500).json(errInfo)
     }
 
     const apiRes: apiResponseGetAllUserType = { data: results as userWalletDTO[] }
@@ -28,11 +33,15 @@ userRouter
 
     const result = await saveNewUser(firstname, lastname).catch((err) => {
       logger.error(err)
-      return null
+      return err
     })
 
-    if (result === null) return res.status(500).json(errorAPIUSER.errorAPIUserCreation)
-
+    if (result instanceof Error) {
+      const errorMessage = JSON.parse(result.message)
+      const errInfo = { ...errorAPIUSER.errorAPIUserCreation, rawError : errorMessage }
+      return res.status(500).json(errInfo)
+    }
+    
     const response: apiResponseCreateUserType = { data: result }
 
     return res.status(200).json(response)
@@ -63,7 +72,9 @@ userRouter.route('/transfer').post(async (req: Request, res: Response) => {
   })
 
   if (result instanceof Error) {
-    return res.status(500).json({ ...errorAPIUSER.errorAPIUserTransferNoResults, error: JSON.parse(result.message) })
+    const errorMessage = JSON.parse(result.message)
+    const errInfo = { ...errorAPIUSER.errorAPIUserTransferNoResults, rawError : errorMessage }
+    return res.status(500).json(errInfo)
   }
 
   const response = { data: result }
@@ -97,7 +108,11 @@ userRouter
   .delete(validateUserIdParams, async (req: Request, res: Response) => {
     const result = await deleteUserById(String(req.params.userId)).catch((err) => err)
 
-    if (result instanceof Error) return res.status(500).json(errorAPIUSER.errorAPIDeleteUser)
+    if (result instanceof Error) {
+      const errorMessage = JSON.parse(result.message)
+      const errInfo = { ...errorAPIUSER.errorAPIDeleteUser, rawError : errorMessage }
+      return res.status(500).json(errInfo)
+    }
 
     return res.status(200).json({ data: result } as apiResponseDeleteUserType)
   })
