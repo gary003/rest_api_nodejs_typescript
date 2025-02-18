@@ -204,7 +204,7 @@ export const transferMoneyWithRetry = async (currency: moneyTypes, giverId: stri
   } catch (err) {
     const errInfo = err as errorType
     if (attempt >= maxRetries) {
-      logger.warn(`Transfer failed - Max retry attempt reached: ${attempt} attempts`)
+      logger.error(`Transfer failed - Max retry attempt reached: ${attempt} attempts`)
       throw new Error(JSON.stringify({ ...transferMoneyWithRetryErrors.ErrorMaxRetry, maxRetries }))
     } else if (!!errInfo && errInfo.message.includes('Error - Lock')) {
       const delay = delayTime * 2 ** (attempt - 1)
@@ -212,6 +212,7 @@ export const transferMoneyWithRetry = async (currency: moneyTypes, giverId: stri
       await new Promise((resolve) => setTimeout(resolve, delay))
       return transferMoneyWithRetry(currency, giverId, recipientId, amount, delay, maxRetries, attempt + 1)
     } else {
+      logger.error(errInfo.message)
       throw new Error(errInfo.message) // Re-throw non-retryable errors
     }
   }

@@ -531,7 +531,7 @@ describe('Unit tests user', () => {
       chai.assert.isTrue(result)
     })
     it('Failure - Transfer fail (non-retryable error)', async () => {
-      // Mock the transferMoney function to throw a non-retryable error
+      const mockErrorLogger = sandbox.stub(logger, 'error')
 
       const fakeInsufficientFundsError: errorType = {
         name: 'fakeNetworkError',
@@ -552,6 +552,7 @@ describe('Unit tests user', () => {
         chai.assert(errInfo.message.includes('Not enough funds to do the transaction'))
         sandbox.assert.calledOnce(mockTransferMoney)
         chai.assert(mockTransferMoney.calledWithExactly(moneyTypesO.soft_currency, 'giver123', 'recipient456', 100))
+        sandbox.assert.called(mockErrorLogger)
       }
     })
     it('Failure - Transfer fail (with retryable error followed by non-retryable error)', async () => {
@@ -571,6 +572,7 @@ describe('Unit tests user', () => {
       mockTransferMoney.onSecondCall().throws(new Error(JSON.stringify(fakeNetworkError)))
       mockTransferMoney.onThirdCall().resolves(true)
       const mockWarnLogger = sandbox.stub(logger, 'warn')
+      const mockErrorLogger = sandbox.stub(logger, 'error')
 
       // Call the transferMoneyWithRetry function
       try {
@@ -584,6 +586,7 @@ describe('Unit tests user', () => {
         sandbox.assert.calledTwice(mockTransferMoney)
         sandbox.assert.calledWithExactly(mockTransferMoney, moneyTypesO.soft_currency, 'giver123', 'recipient456', 100)
         sandbox.assert.calledOnce(mockWarnLogger)
+        sandbox.assert.calledOnce(mockErrorLogger)
       }
     })
     it('Failure - Transfer fail (Maximum retries exceeded)', async () => {
@@ -596,6 +599,7 @@ describe('Unit tests user', () => {
       // mockTransferMoney.onCall(6).throws(new Error("Error - Lock - Network error"))
       // mockTransferMoney.onCall(7).resolves(true)
       const mockWarnLogger = sandbox.stub(logger, 'warn')
+      const mockErrorLogger = sandbox.stub(logger, 'error')
 
       // Call the transferMoneyWithRetry function
       const maxAttempt = 3
@@ -611,7 +615,8 @@ describe('Unit tests user', () => {
         chai.assert.isTrue(errorInfo.message === transferMoneyWithRetryErrors.ErrorMaxRetry!.message)
         sandbox.assert.callCount(mockTransferMoney, maxAttempt)
         sandbox.assert.calledWithExactly(mockTransferMoney, moneyTypesO.soft_currency, 'giver123', 'recipient456', amountToTransfer)
-        sandbox.assert.callCount(mockWarnLogger, maxAttempt)
+        sandbox.assert.called(mockWarnLogger)
+        sandbox.assert.called(mockErrorLogger)
       }
     })
   })

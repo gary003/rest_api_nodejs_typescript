@@ -20,7 +20,7 @@ userRouter
 
     if (results instanceof Error) {
       const errorMessage = JSON.parse(results.message)
-      const errInfo = { ...errorAPIUSER.errorAPIGetAllUsers, rawError : errorMessage }
+      const errInfo = { ...errorAPIUSER.errorAPIGetAllUsers, rawError: errorMessage }
       return res.status(500).json(errInfo)
     }
 
@@ -38,10 +38,10 @@ userRouter
 
     if (result instanceof Error) {
       const errorMessage = JSON.parse(result.message)
-      const errInfo = { ...errorAPIUSER.errorAPIUserCreation, rawError : errorMessage }
+      const errInfo = { ...errorAPIUSER.errorAPIUserCreation, rawError: errorMessage }
       return res.status(500).json(errInfo)
     }
-    
+
     const response: apiResponseCreateUserType = { data: result }
 
     return res.status(200).json(response)
@@ -73,7 +73,7 @@ userRouter.route('/transfer').post(async (req: Request, res: Response) => {
 
   if (result instanceof Error) {
     const errorMessage = JSON.parse(result.message)
-    const errInfo = { ...errorAPIUSER.errorAPIUserTransferNoResults, rawError : errorMessage }
+    const errInfo = { ...errorAPIUSER.errorAPIUserTransferNoResults, rawError: errorMessage }
     return res.status(500).json(errInfo)
   }
 
@@ -110,7 +110,7 @@ userRouter
 
     if (result instanceof Error) {
       const errorMessage = JSON.parse(result.message)
-      const errInfo = { ...errorAPIUSER.errorAPIDeleteUser, rawError : errorMessage }
+      const errInfo = { ...errorAPIUSER.errorAPIDeleteUser, rawError: errorMessage }
       return res.status(500).json(errInfo)
     }
 

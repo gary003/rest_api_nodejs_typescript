@@ -29,7 +29,9 @@
 
 - Having docker(v27+) & docker-compose(v2.20) installed
 
-  !! If your user is not in the sudoers group, you might need to do some steps with sudo !!
+  !! If your user is not in the sudoers group, you might get some troubles launching the tests !!
+
+- No .env needed . Since this is a portfolio, no .env was created
 
 ## Git Installation
 
@@ -54,7 +56,7 @@
 ## Tests + Coverage
 
 - Launch global tests
-  `(sudo) npm run test`
+  `npm run test`
 
 ## Developer
 
