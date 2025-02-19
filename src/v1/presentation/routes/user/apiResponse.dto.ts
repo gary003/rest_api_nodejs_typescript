@@ -1,4 +1,4 @@
-import { userWalletDTO } from '../../services/user/dto'
+import { userWalletDTO } from '../../../services/user/dto'
 
 export type apiResponseGetAllUserType = {
   data: userWalletDTO[]

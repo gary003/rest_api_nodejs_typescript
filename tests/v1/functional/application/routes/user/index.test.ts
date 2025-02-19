@@ -6,7 +6,7 @@ import { DockerComposeEnvironment, PullPolicy, StartedDockerComposeEnvironment, 
 import request from 'supertest'
 import { createSandbox, SinonSandbox } from 'sinon'
 import logger from '../../../../../../src/v1/helpers/logger'
-import { errorAPIUSER } from '../../../../../../src/v1/application/routes/user/error.dto'
+import { errorAPIUSER } from '../../../../../../src/v1/presentation/routes/user/error.dto'
 import { moneyTypesO } from '../../../../../../src/v1/domain'
 
 const DB_READY_WAIT_MS = 30000

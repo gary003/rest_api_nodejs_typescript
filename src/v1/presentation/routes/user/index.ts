@@ -1,12 +1,12 @@
 import { Router, Request, Response } from 'express'
-import { deleteUserById, getAllUsers, getAllUsersStream, getUserWalletInfo, saveNewUser, transferMoney } from '../../services/user/index'
+import { deleteUserById, getAllUsers, getAllUsersStream, getUserWalletInfo, saveNewUser, transferMoney } from '../../../services/user/index'
 
 import { errorAPIUSER } from './error.dto'
 
 import logger from '../../../helpers/logger'
 import { validateUserIdParams } from './validation'
 import { apiResponseGetAllUserType, apiResponseGetUserType, apiResponseCreateUserType, apiResponseDeleteUserType } from './apiResponse.dto'
-import { userWalletDTO } from '../../services/user/dto'
+import { userWalletDTO } from '../../../services/user/dto'
 
 const userRouter = Router()
 

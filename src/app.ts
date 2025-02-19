@@ -1,6 +1,6 @@
 require('dotenv').config()
 import express from 'express'
-import userRoute from './v1/application/routes/user/index'
+import userRoute from './v1/presentation/routes/user/index'
 
 import swaggerUi from 'swagger-ui-express'
 import apiDocumentation from './v1/helpers/apiDocumentation'

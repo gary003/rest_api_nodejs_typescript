@@ -1,11 +1,11 @@
-import { acquireLockOnWallet, commitAndQuitTransactionRunner, createAndStartTransaction, rollBackAndQuitTransactionRunner } from '../../../infrastructure/persistance/connection/connectionFile'
-import { getAllUsersDB, getUserWalletInfoDB, saveNewUserDB, deleteUserByIdDB, getAllUsersStreamDB } from '../../../infrastructure/persistance/user'
-import { updateWalletByWalletIdDB, updateWalletByWalletIdTransaction } from '../../../infrastructure/persistance/wallet'
-import { moneyTypes, moneyTypesO } from '../../../domain'
+import { acquireLockOnWallet, commitAndQuitTransactionRunner, createAndStartTransaction, rollBackAndQuitTransactionRunner } from '../../infrastructure/database/db_connection/connectionFile'
+import { getAllUsersDB, getUserWalletInfoDB, saveNewUserDB, deleteUserByIdDB, getAllUsersStreamDB } from '../../infrastructure/database/user'
+import { updateWalletByWalletIdDB, updateWalletByWalletIdTransaction } from '../../infrastructure/database/wallet'
+import { moneyTypes, moneyTypesO } from '../../domain'
 import { userWalletDTO } from './dto'
 import { transferMoneyErrors, userFunctionsErrors, moneyTransferParamsValidatorErrors, transferMoneyWithRetryErrors } from './error.dto'
-import logger from '../../../helpers/logger'
-import { errorType } from '../../../domain/error'
+import logger from '../../helpers/logger'
+import { errorType } from '../../domain/error'
 
 export const getAllUsers = async (): Promise<userWalletDTO[]> => {
   const allUsers = await getAllUsersDB().catch((err) => err)

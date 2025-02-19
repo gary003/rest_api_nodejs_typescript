@@ -1,5 +1,5 @@
 import { Wallet } from '../wallet/entity'
-import { getConnection } from '../connection/connectionFile'
+import { getConnection } from '../db_connection/connectionFile'
 import { User } from './entity'
 import { createNewWalletDB, deleteWalletByIdDB } from '../wallet'
 import { Readable } from 'stream'

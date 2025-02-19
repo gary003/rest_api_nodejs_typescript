@@ -1,4 +1,4 @@
-import { errorType } from '../../../domain/error'
+import { errorType } from '../../domain/error'
 
 export const transferMoneyErrors: Record<string, errorType> = {
   ErrorParamsValidator: {

@@ -1,4 +1,4 @@
-import { getConnection } from '../connection/connectionFile'
+import { getConnection } from '../db_connection/connectionFile'
 import { Wallet } from './entity'
 import { walletDBDTO } from './walletDB.dto'
 import { v4 as uuidv4 } from 'uuid'
