@@ -15,6 +15,9 @@ pids
 *.seed
 *.pid.lock
 
+# clinic supervision load test
+.clinic
+
 # Docker
 db_volume
 
