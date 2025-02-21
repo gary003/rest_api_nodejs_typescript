@@ -2,11 +2,11 @@ require('dotenv').config()
 import chai from 'chai'
 import { expect } from 'chai'
 import { describe, it } from 'mocha'
-import app from '../../../../../../src/app'
+import app from '../../src/app'
 import { GenericContainer, StartedTestContainer, Wait } from 'testcontainers'
 import request from 'supertest'
 import { createSandbox, SinonSandbox } from 'sinon'
-import logger from '../../../../../../src/v1/helpers/logger'
+import logger from '../../src/v1/helpers/logger'
 import path from 'path'
 
 const DB_READY_WAIT_MS = 30000

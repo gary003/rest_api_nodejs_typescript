@@ -1,26 +1,26 @@
 import chai from 'chai'
 import { expect } from 'chai'
 import { describe, it } from 'mocha'
-import app from '../../../../../../src/app'
+import app from '../../src/app'
 import { DockerComposeEnvironment, PullPolicy, StartedDockerComposeEnvironment, Wait } from 'testcontainers'
 import request from 'supertest'
 import { createSandbox, SinonSandbox } from 'sinon'
-import logger from '../../../../../../src/v1/helpers/logger'
-import { errorAPIUSER } from '../../../../../../src/v1/presentation/routes/user/error.dto'
-import { moneyTypesO } from '../../../../../../src/v1/domain'
+import logger from '../../src/v1/helpers/logger'
+import { errorAPIUSER } from '../../src/v1/presentation/routes/user/error.dto'
+import { moneyTypesO } from '../../src/v1/domain'
 
 const DB_READY_WAIT_MS = 30000
 
-describe('Functional tests for user', () => {
+describe('Functional tests - presentation:routes:user', () => {
+  const originalEnv = process.env
+
   const sandbox: SinonSandbox = createSandbox()
 
-  // // Dont accidently fetch the real database (use the contenerized test environment) !
-  // process.env.DB_URI = ''
-  // process.env.DB_HOST = ''
+  // Dont accidently fetch the real database (use the contenerized test environment) !
+  process.env.DB_URI = ''
+  process.env.DB_HOST = ''
 
   let environment: StartedDockerComposeEnvironment
-
-  const original_env = { ...process.env }
 
   // This is a portfolio API, in a real project, use a .env !
   const test_env = {
@@ -57,7 +57,7 @@ describe('Functional tests for user', () => {
         .withEnvironment(test_env)
         .withWaitStrategy('app-1', Wait.forLogMessage('app running on'))
         .withWaitStrategy('db-1', Wait.forLogMessage('ready for connections'))
-        .up(['app', 'db'])
+        .up(['db'])
 
       await new Promise((resolve) => setTimeout(resolve, DB_READY_WAIT_MS))
     } catch (error) {
@@ -78,16 +78,17 @@ describe('Functional tests for user', () => {
     await environment.down()
 
     // Cancel the modification of the env variable
-    process.env = original_env
+    process.env = originalEnv
     // logger.info("Docker Compose test environment stopped for functional tests on user/.")
 
     return true
   })
 
-  describe('src > v1 > application > route > user > GET (getting all the users)', () => {
+  describe('src > v1 > presentation > routes > user > GET (getting all the users)', () => {
     beforeEach(() => {
       sandbox.restore()
     })
+
     it('Should get all users from DB', async () => {
       const response = await request(app).get(`/${urlBase}/user/`).set('Accept', 'application/json').expect('Content-Type', /json/)
 
@@ -101,7 +102,7 @@ describe('Functional tests for user', () => {
     })
   })
 
-  describe('src > v1 > application > route > user > stream > GET (getting all the users - stream)', () => {
+  describe('src > v1 > presentation > routes > user > stream > GET (getting all the users - stream)', () => {
     beforeEach(() => {
       sandbox.restore()
     })
@@ -124,7 +125,7 @@ describe('Functional tests for user', () => {
     })
   })
 
-  describe('src > v1 > application > route > user > POST (adding a new user)', () => {
+  describe('src > v1 > presentation > routes > user > POST (adding a new user)', () => {
     beforeEach(() => {
       sandbox.restore()
     })
@@ -150,7 +151,7 @@ describe('Functional tests for user', () => {
     })
   })
 
-  describe('src > v1 > application > route > user > GET (single user)', () => {
+  describe('src > v1 > presentation > routes > user > GET (single user)', () => {
     beforeEach(() => {
       sandbox.restore()
     })
@@ -188,7 +189,7 @@ describe('Functional tests for user', () => {
     })
   })
 
-  describe('src > v1 > application > route > user > POST (transfer)', () => {
+  describe('src > v1 > presentation > routes > user > POST (transfer)', () => {
     beforeEach(() => {
       sandbox.restore()
     })
@@ -261,7 +262,7 @@ describe('Functional tests for user', () => {
     })
   })
 
-  describe('src > v1 > application > route > user > DELETE', () => {
+  describe('src > v1 > presentation > routes > user > DELETE', () => {
     beforeEach(() => {
       sandbox.restore()
     })

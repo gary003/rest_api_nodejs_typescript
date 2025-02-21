@@ -6,16 +6,18 @@
   "main": "./src/v1/bin/server.js",
   "scripts": {
     "start": "npm run clean && docker-compose up",
-    "stop": "docker-compose down --remove-orphans --rmi all",
+    "stop": "docker-compose down --remove-orphans",
     "build": "npx tsc -p .",
     "docker-launch": "npx pm2-docker start ./dist/bin/server.js -i 0",
-    "clean": "npm run clean:pm2 && npm run stop",
+    "clean": "npm run stop && npm run clean:pm2 && npm run clean:image:app && npm run clean:container:all",
     "clean:pm2": " npx pm2 kill",
+    "clean:image:app": "docker image rm $(docker image ls -q '*-app*') 2>/dev/null || true",
+    "clean:container:all": "docker container rm $(docker container ls -aq) 2>/dev/null || true",
     "lint": "npx eslint .",
-    "test": "npm run lint && npm run test:v1",
-    "test:v1": "npm run clean && npx c8 mocha -r ts-node/register --timeout 800000 './tests/app/**/*.test.ts' './tests/v1/**/*.test.ts'",
-    "test:v1:functional": "npm run clean && npx c8 mocha -r ts-node/register --timeout 500000 './tests/v1/functional/**/*.test.ts'",
-    "test:v1:unit": "npx c8 mocha -r ts-node/register --timeout 500000 './tests/v1/unit/**/*.test.ts'"
+    "test": "npm run lint && npm run clean && npm run test:performance && c8 mocha -r ts-node/register --timeout 800000 './tests/functional/**/*.test.ts' './tests/unit/v1/**/*.test.ts'",
+    "test:functional": "npm run clean && npx c8 mocha -r ts-node/register --timeout 500000 './tests/functional/**/*.test.ts'",
+    "test:performance": "npm run build && npx mocha -r ts-node/register --timeout 500000 './tests/performance/**/*.test.ts'",
+    "test:unit:v1": "npx c8 mocha -r ts-node/register --timeout 500000 './tests/unit/v1/**/*.test.ts'"
   },
   "dependencies": {
     "cors": "^2.8.5",
