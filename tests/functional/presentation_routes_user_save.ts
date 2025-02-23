@@ -9,9 +9,7 @@ import { createSandbox, SinonSandbox } from 'sinon'
 import logger from '../../src/v1/helpers/logger'
 import path from 'path'
 
-const DB_READY_WAIT_MS = 30000
-
-describe('Functional tests for user', () => {
+describe('Functional tests - routes:user', () => {
   const sandbox: SinonSandbox = createSandbox()
 
   // let environment: StartedDockerComposeEnvironment
@@ -33,8 +31,6 @@ describe('Functional tests for user', () => {
   before(async () => {
     // const composeFilePath = '.'
     // const composeFile = 'docker-compose.yaml'
-
-    // process.env.TESTCONTAINERS_LOCKDIR = './src/v1/inrastrusture/docker'
 
     try {
       // environment = await new DockerComposeEnvironment(composeFilePath, composeFile)
@@ -69,7 +65,7 @@ describe('Functional tests for user', () => {
 
       console.log(mysqlContainer)
 
-      await new Promise((resolve) => setTimeout(resolve, DB_READY_WAIT_MS))
+      await new Promise((resolve) => setTimeout(resolve, 30000))
     } catch (error) {
       logger.error('Docker Compose environment setup failed', error)
       chai.assert.fail(`Container test environment setup failed: ${error}`)

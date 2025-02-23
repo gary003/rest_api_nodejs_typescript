@@ -49,8 +49,6 @@ describe('Functional tests - presentation:routes:user', () => {
     const composeFilePath = '.'
     const composeFile = 'docker-compose.yaml'
 
-    // process.env.TESTCONTAINERS_LOCKDIR = '/tmp/testcontainers-node.lock'
-
     try {
       environment = await new DockerComposeEnvironment(composeFilePath, composeFile)
         .withPullPolicy(PullPolicy.alwaysPull())
@@ -61,7 +59,6 @@ describe('Functional tests - presentation:routes:user', () => {
 
       await new Promise((resolve) => setTimeout(resolve, DB_READY_WAIT_MS))
     } catch (error) {
-      logger.error('Docker Compose environment setup failed', error)
       chai.assert.fail(`Container test environment setup failed: ${error}`)
     }
 
@@ -72,14 +69,14 @@ describe('Functional tests - presentation:routes:user', () => {
     dbUri = `${process.env.DB_DRIVER}://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${dbContainer.getHost()}:${dbContainer.getMappedPort(dbPort)}/${process.env.DB_DATABASE_NAME}`
 
     process.env.DB_URI = dbUri
+
+    return true
   })
 
   after(async () => {
     await environment.down()
 
-    // Cancel the modification of the env variable
     process.env = originalEnv
-    // logger.info("Docker Compose test environment stopped for functional tests on user/.")
 
     return true
   })

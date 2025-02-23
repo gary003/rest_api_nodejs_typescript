@@ -20,7 +20,7 @@ describe('Performance tests - presentation:routes:user', () => {
   const originalEnv = { ...process.env }
 
   // This is a portfolio API, in a real project, use a .env !
-  const test_env = {
+  const test_env: Record<string, string> = {
     DB_DRIVER: 'mysql',
     DB_USERNAME: 'mysql',
     DB_PASSWORD: 'mypass',
@@ -34,12 +34,11 @@ describe('Performance tests - presentation:routes:user', () => {
 
   process.env = { ...process.env, ...test_env }
 
-  let dbUri: string = ''
   let appUrl: string = ''
 
   before(async () => {
-    const composeFilePath = '.'
-    const composeFile = 'docker-compose.yaml'
+    const composeFilePath: string = '.'
+    const composeFile: string = 'docker-compose.yaml'
 
     try {
       environment = await new DockerComposeEnvironment(composeFilePath, composeFile)
@@ -54,17 +53,11 @@ describe('Performance tests - presentation:routes:user', () => {
       chai.assert.fail(`Container test environment setup failed: ${error}`)
     }
 
-    const dbContainer = environment.getContainer('db-1')
     const appContainer = environment.getContainer('app-1')
 
-    const dbPort = Number(process.env.DB_PORT) || 3306
     const appPort = Number(process.env.API_PORT) || 8080
 
-    dbUri = `${process.env.DB_DRIVER}://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${dbContainer.getHost()}:${dbContainer.getMappedPort(dbPort)}/${process.env.DB_DATABASE_NAME}`
-
     appUrl = `http://${appContainer.getHost()}:${appContainer.getMappedPort(appPort)}/api/v1/user`
-
-    process.env.DB_URI = dbUri
   })
 
   after(async () => {
