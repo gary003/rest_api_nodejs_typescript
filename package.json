@@ -1,9 +1,9 @@
 {
   "author": "Gary Johnson",
-  "description": "This is a project used as a portfolio",
-  "name": "api_backend_template",
+  "description": "This is a portfolio project use to share skills ",
+  "name": "rest_api_backend_template",
   "version": "1.0.0",
-  "main": "./src/v1/bin/server.js",
+  "main": "./src/v1/bin/server.ts",
   "scripts": {
     "start": "npm run clean && docker-compose up",
     "stop": "docker-compose down --remove-orphans",
@@ -14,9 +14,9 @@
     "clean:image:app": "docker image rm $(docker image ls -q '*-app*') 2>/dev/null || true",
     "clean:container:all": "docker container rm $(docker container ls -aq) 2>/dev/null || true",
     "lint": "npx eslint .",
-    "test": "npm run lint && npm run clean && npm run test:performance && c8 mocha -r ts-node/register --timeout 800000 './tests/functional/**/*.test.ts' './tests/unit/v1/**/*.test.ts'",
+    "test": "npm run lint && npm run clean && npm run test:performance && npx c8 check-coverage --config './.c8rc.json' mocha -r ts-node/register --timeout 800000 './tests/functional/**/*.test.ts' './tests/unit/v1/**/*.test.ts'",
     "test:functional": "npm run clean && npx c8 mocha -r ts-node/register --timeout 500000 './tests/functional/**/*.test.ts'",
-    "test:performance": "npm run build && npx mocha -r ts-node/register --timeout 500000 './tests/performance/**/*.test.ts'",
+    "test:performance": "npx mocha -r ts-node/register --timeout 500000 './tests/performance/**/*.test.ts'",
     "test:unit:v1": "npx c8 mocha -r ts-node/register --timeout 500000 './tests/unit/v1/**/*.test.ts'"
   },
   "dependencies": {
@@ -31,6 +31,7 @@
     "swagger-ui-express": "^4.1.6",
     "typeorm": "^0.3.20",
     "typescript": "^4.4.4",
+    "ts-node": "^10.7.0",
     "uuid": "^8.3.2",
     "winston": "^3.10.0",
     "zod": "^3.23.8"
@@ -51,17 +52,13 @@
     "@types/uuid": "^8.3.4",
     "@typescript-eslint/eslint-plugin": "^8.19.0",
     "@typescript-eslint/parser": "^8.19.0",
-    "c8": "^9.1.0",
     "chai": "^4.3.6",
     "eslint": "^9.20.1",
-    "globals": "^15.15.0",
     "mocha": "^10.0.0",
-    "nodemon": "^2.0.14",
     "prettier": "^3.5.1",
     "sinon": "^14.0.0",
     "supertest": "^6.2.3",
     "testcontainers": "^10.16.0",
-    "ts-node": "^10.7.0",
     "typescript-eslint": "^8.24.1"
   },
   "license": "ISC"

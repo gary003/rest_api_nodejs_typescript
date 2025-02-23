@@ -2,7 +2,6 @@ import chai from 'chai'
 import { expect } from 'chai'
 import { describe, it } from 'mocha'
 import { DockerComposeEnvironment, PullPolicy, StartedDockerComposeEnvironment, Wait } from 'testcontainers'
-import logger from '../../src/v1/helpers/logger'
 
 import { exec } from 'child_process'
 import { promisify } from 'util'
@@ -42,8 +41,6 @@ describe('Performance tests - presentation:routes:user', () => {
     const composeFilePath = '.'
     const composeFile = 'docker-compose.yaml'
 
-    // process.env.TESTCONTAINERS_LOCKDIR = '/tmp/testcontainers-node.lock'
-
     try {
       environment = await new DockerComposeEnvironment(composeFilePath, composeFile)
         .withPullPolicy(PullPolicy.alwaysPull())
@@ -54,7 +51,6 @@ describe('Performance tests - presentation:routes:user', () => {
 
       await new Promise((resolve) => setTimeout(resolve, DB_READY_WAIT_MS))
     } catch (error) {
-      logger.error('Docker Compose environment setup failed', error)
       chai.assert.fail(`Container test environment setup failed: ${error}`)
     }
 
@@ -67,8 +63,6 @@ describe('Performance tests - presentation:routes:user', () => {
     dbUri = `${process.env.DB_DRIVER}://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${dbContainer.getHost()}:${dbContainer.getMappedPort(dbPort)}/${process.env.DB_DATABASE_NAME}`
 
     appUrl = `http://${appContainer.getHost()}:${appContainer.getMappedPort(appPort)}/api/v1/user`
-
-    console.log(appUrl)
 
     process.env.DB_URI = dbUri
   })
@@ -96,18 +90,17 @@ describe('Performance tests - presentation:routes:user', () => {
       // Parse the output to get specific metrics
       const avgLatencyLine = stderr.split('\n').at(7)
 
-      if (!avgLatencyLine) chai.assert.fail('wrong format for result line')
+      if (!avgLatencyLine) expect.fail('wrong format for result line')
 
       const avgLatencyLineValues = avgLatencyLine.split('│')
 
       if (avgLatencyLineValues instanceof Array) {
         const avgLatencyStr = avgLatencyLineValues[6]
-        if (!avgLatencyStr) chai.assert.fail('invalid value for avg latency')
+        if (!avgLatencyStr) expect.fail('invalid value for avg latency')
         const avgLatency = parseFloat(avgLatencyStr)
-        expect(avgLatency).to.be.below(100) // Asserting average latency below 100ms
+        expect(avgLatency).to.be.below(100)
       } else {
-        console.error('Average latency not found in autocannon output.')
-        expect.fail('Average latency not found in autocannon output.') // This will fail the test
+        expect.fail('Average latency not found in autocannon output.')
       }
     })
   })
