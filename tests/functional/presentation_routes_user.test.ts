@@ -51,7 +51,7 @@ describe('Functional tests - presentation:routes:user', () => {
 
     try {
       environment = await new DockerComposeEnvironment(composeFilePath, composeFile)
-        .withPullPolicy(PullPolicy.alwaysPull())
+        .withPullPolicy(PullPolicy.defaultPolicy())
         .withEnvironment(test_env)
         .withWaitStrategy('app-1', Wait.forLogMessage('app running on'))
         .withWaitStrategy('db-1', Wait.forLogMessage('ready for connections'))
@@ -59,7 +59,9 @@ describe('Functional tests - presentation:routes:user', () => {
 
       await new Promise((resolve) => setTimeout(resolve, DB_READY_WAIT_MS))
     } catch (error) {
-      chai.assert.fail(`Container test environment setup failed: ${error}`)
+      const errorInfo = `Docker Compose environment setup failed - ${String(error)}`
+      logger.error(errorInfo)
+      chai.assert.fail(errorInfo)
     }
 
     const dbContainer = environment.getContainer('db-1')
