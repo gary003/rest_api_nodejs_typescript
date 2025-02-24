@@ -6,8 +6,8 @@ export type transactionQueryRunnerType = QueryRunner
 
 let connection: DataSource | null = null
 
-export const connectionDB = async (): Promise<DataSource> => {
-  const connectionOptions: DataSourceOptions = {
+const getConnectionOptions = async (): Promise<DataSourceOptions> => {
+  return {
     name: `db_connection_${uuidv4()}`,
     type: process.env.DB_DRIVER,
     host: process.env.DB_HOST,
@@ -17,30 +17,62 @@ export const connectionDB = async (): Promise<DataSource> => {
     password: process.env.DB_PASSWORD,
     database: process.env.DB_DATABASE_NAME,
     entities: [__dirname + '/../**/entity.*s'],
-    synchronize: false
+    synchronize: false,
+    // logging: process.env.LOGLEVEL === 'debug',
+    poolSize: 10, // Maximum number of connections in the pool
+    poolErrorHandler: (err) => logger.error('Connection pool error:', err),
+    extra: {
+      connectionLimit: 10, // Max connections (matches poolSize)
+      queueLimit: 0 // No limit on queued requests (adjust based on needs)
+      // waitForConnections: true
+    }
   } as DataSourceOptions
+}
 
-  const connection: DataSource = new DataSource(connectionOptions)
+export const tryToConnectDB = async (): Promise<DataSource> => {
+  try {
+    const dbOptions: DataSourceOptions = await getConnectionOptions()
+    const connection: DataSource = new DataSource(dbOptions)
+    await connection.initialize()
+    return connection
+  } catch (error) {
+    const errorMessage = `Failed to create a new connection to DB - ${String(error)}`
+    logger.error(errorMessage)
+    throw new Error(errorMessage)
+  }
+}
 
-  // logger.debug(JSON.stringify(connectionOptions))
+export const connectionDB = async (currenAttempt = 1, maxAttempts: number = 4, delay: number = 150): Promise<DataSource> => {
+  try {
+    return await tryToConnectDB()
+  } catch (error) {
+    if (currenAttempt < maxAttempts) {
+      const nextAttempt = currenAttempt + 1
+      const waitTime = delay * Math.pow(2, currenAttempt)
+      logger.warn(`Warning - fail to connect to DB - retry in ${waitTime} seconds`)
+      await new Promise((resolve) => setTimeout(resolve, waitTime))
+      return connectionDB(nextAttempt, maxAttempts, delay)
+    }
 
-  await connection.initialize()
-
-  return connection
+    const errorInfo = `Error - Impossible to connect to db after ${maxAttempts} attempts - ${String(error)}`
+    logger.error(errorInfo)
+    throw new Error(errorInfo)
+  }
 }
 
 // Get or create connection
 export const getConnection = async (): Promise<DataSource> => {
-  if (!connection || !connection.isInitialized) {
-    try {
-      connection = await connectionDB()
-      // logger.info('Database connection established successfully')
-    } catch (error) {
-      // logger.error('Failed to establish database connection:', error)
-      throw error
-    }
+  if (connection && connection.isInitialized) return connection
+
+  const newConnection = await connectionDB().catch((err) => err)
+
+  if (connection instanceof Error) {
+    const errorMessage = `Failed to establish database connection - ${String(connection)}`
+    logger.error(errorMessage)
+    throw new Error(errorMessage)
   }
-  return connection
+
+  return newConnection
 }
 
 // Close connection
@@ -49,47 +81,65 @@ export const closeConnection = async (): Promise<void> => {
     try {
       await connection.destroy()
       connection = null
-      logger.info('Database connection closed successfully')
+      // logger.debug('Database connection closed successfully')
     } catch (error) {
-      logger.error('Error closing database connection:', error)
-      throw error
+      const errorMessage = `Error closing database connection - ${String(error)}`
+      logger.error(errorMessage)
+      throw new Error(errorMessage)
     }
   }
 }
 
 export const createAndStartTransaction = async (): Promise<QueryRunner> => {
-  const connection = await connectionDB()
+  try {
+    const connection = await connectionDB()
+    const queryRunner = connection.createQueryRunner()
+    await queryRunner.connect()
+    await queryRunner.startTransaction()
 
-  const queryRunner = connection.createQueryRunner()
-
-  await queryRunner.connect()
-  await queryRunner.startTransaction()
-
-  return queryRunner
+    return queryRunner
+  } catch (error) {
+    const errorMessage = `Error impossible to create transaction runner object - ${String(error)}`
+    logger.error(errorMessage)
+    throw new Error(errorMessage)
+  }
 }
 
 export const commitAndQuitTransactionRunner = async (queryRunner: QueryRunner): Promise<boolean> => {
-  await queryRunner.commitTransaction()
-  await queryRunner.release()
-  await queryRunner.connection.destroy()
-  return true
+  try {
+    await queryRunner.commitTransaction()
+    await queryRunner.release()
+    await queryRunner.connection.destroy()
+    return true
+  } catch (error) {
+    const errorMessage = `Error trying to commit transaction to DB - ${String(error)}`
+    logger.error(errorMessage)
+    throw new Error(errorMessage)
+  }
 }
 
 export const rollBackAndQuitTransactionRunner = async (queryRunner: QueryRunner): Promise<boolean> => {
-  await queryRunner.rollbackTransaction()
-  await queryRunner.release()
-  await queryRunner.connection.destroy()
-  return true
+  try {
+    await queryRunner.rollbackTransaction()
+    await queryRunner.release()
+    await queryRunner.connection.destroy()
+    return true
+  } catch (error) {
+    const errorMessage = `Error trying to rollback transaction - ${String(error)}`
+    logger.error(errorMessage)
+    throw new Error(errorMessage)
+  }
 }
 
 // Added function for acquiring lock on a wallet (using MySQL syntax)
 export const acquireLockOnWallet = async (queryRunner: QueryRunner, walletId: string): Promise<boolean> => {
-  const lockResult = await queryRunner.query('SELECT * FROM wallet WHERE walletId = ? FOR UPDATE', [walletId]).catch((err) => {
-    logger.error(err)
-    return null
-  })
+  const lockResult = await queryRunner.query('SELECT * FROM wallet WHERE walletId = ? FOR UPDATE', [walletId]).catch((err) => err)
 
-  if (!lockResult) return false
+  if (lockResult instanceof Error) {
+    const errorInfo = `Error - Impossible to set the lock for db transaction - ${String(lockResult)}`
+    logger.error(errorInfo)
+    return false
+  }
 
-  return lockResult.length > 0 // Check if a row was returned (indicating successful lock)
+  return lockResult.length > 0
 }

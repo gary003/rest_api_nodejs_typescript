@@ -28,6 +28,8 @@ services:
     environment:
       - MYSQL_ROOT_PASSWORD=mypass
       - MYSQL_DATABASE=mydbuser
+    #   - MYSQL_MAX_CONNECTIONS=100 # Add this to support pool size
+    # command: --max_connections=100 # Override default (151) to match
     volumes:
       - ./src/v1/infrastructure/database/db_volume:/var/lib/mysql
       - ./src/v1/infrastructure/database/db_scripts/:/docker-entrypoint-initdb.d/

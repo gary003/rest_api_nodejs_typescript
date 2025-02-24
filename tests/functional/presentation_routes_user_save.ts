@@ -47,11 +47,11 @@ describe('Functional tests - routes:user', () => {
         })
         .withBindMounts([
           {
-            source: path.resolve('./src/v1/infrastructure/docker/db_volume'),
+            source: path.resolve('./src/v1/infrastructure/database/db_volume'),
             target: '/var/lib/mysql'
           },
           {
-            source: path.resolve('./src/v1/infrastructure/docker/scripts'),
+            source: path.resolve('./src/v1/infrastructure/database/db_scripts'),
             target: '/docker-entrypoint-initdb.d'
           }
         ])
@@ -67,8 +67,9 @@ describe('Functional tests - routes:user', () => {
 
       await new Promise((resolve) => setTimeout(resolve, 30000))
     } catch (error) {
-      logger.error('Docker Compose environment setup failed', error)
-      chai.assert.fail(`Container test environment setup failed: ${error}`)
+      const errorInfo = `Docker Compose environment setup failed - ${String(error)}`
+      logger.error(errorInfo)
+      chai.assert.fail(errorInfo)
     }
 
     // logger.debug(JSON.stringify(mysqlContainer))
@@ -80,7 +81,7 @@ describe('Functional tests - routes:user', () => {
     logger.debug('---------!!!!!!!!!!!!!!!!!!!!!!------------')
     logger.debug(JSON.stringify(dbUri))
     logger.debug(typeof dbUri)
-    logger.debug(path.resolve('./src/v1/infrastructure/docker/db_volume'))
+    logger.debug(path.resolve('./src/v1/infrastructure/database/db_volume'))
     logger.debug('---------!!!!!!!!!!!!!!!!!!!!!!------------')
 
     process.env.DB_URI = dbUri
