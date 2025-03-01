@@ -30,7 +30,6 @@ describe('Functional tests - presentation:routes:user', () => {
     DB_DATABASE_NAME: 'mydbuser',
     DB_PORT: '3306',
     DOCKER_APP_NETWORK: 'my_app_network',
-    CRYPTO_SECRET_KEY: '2345',
     API_PORT: '8080',
     LOGLEVEL: 'debug'
   }

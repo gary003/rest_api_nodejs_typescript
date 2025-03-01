@@ -1,6 +1,6 @@
-# Backend REST API nodejs/typescript
+# REST API nodejs - typescript
 
-## Skills description
+## Skills
 
 - Clean architecture (onion architecture)
 - Testing using sinon.js and mocha
@@ -25,13 +25,24 @@
 - Validation using Zod
 - Typescript
 
+## Description
+
+This repository is a portfolio, NOT a professional project, On a pro set-up things would be different!
+So, there are some things to consider here to make things easier for github users:
+
+- No .env -> easier to test and deploy for external user who want to try it
+- Redundant and unused files on top of Commented and unused functions that contains alternative ways of doing the same thing so I can remember them later
+
 ## Prerequisites
 
 - Having docker(v27+) & docker-compose(v2.20) installed
 
-  !! If your user is not in the sudoers group, you might get some troubles launching the tests !!
+!! A docker group must be created , then your user(sudoer) added into it !!
+!! Otherwise you'll get troubles launching the tests !!
 
-- No .env needed . Since this is a portfolio, no .env was created
+Link to install and configure docker properly : https://medium.com/devops-technical-notes-and-manuals/how-to-run-docker-commands-without-sudo-28019814198f
+
+Don't forgot to restart your computer or session for the changes to be available on all shells
 
 ## Git Installation
 
@@ -60,7 +71,9 @@
 
 ## Developer
 
-- Gary Johnson <gary.johnson.freelance@gmail.com>
+- Gary Johnson
+  -- gary.johnson.freelance@gmail.com
+  -- https://github.com/gary003
 
 ## License
 

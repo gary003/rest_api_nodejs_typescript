@@ -1,3 +1,8 @@
+/**
+ * this file is an alternative example for functional tests, it uses a single container mimiquing database,
+ * for the projects without a docker-compose.yml
+ */
+
 require('dotenv').config()
 import chai from 'chai'
 import { expect } from 'chai'
@@ -13,7 +18,7 @@ describe('Functional tests - routes:user', () => {
   const sandbox: SinonSandbox = createSandbox()
 
   // let environment: StartedDockerComposeEnvironment
-  let mysqlContainer: StartedTestContainer
+  let db_container_test: StartedTestContainer
 
   const original_DB_HOST = process.env.DB_HOST
   const original_DB_URI = process.env.DB_URI
@@ -39,7 +44,7 @@ describe('Functional tests - routes:user', () => {
       //   .withWaitStrategy('db-1', Wait.forLogMessage('ready for connections'))
       //   .up(['app', 'db'])
 
-      mysqlContainer = await new GenericContainer('mysql:latest')
+      db_container_test = await new GenericContainer('mysql:latest')
         .withExposedPorts(Number(process.env.DB_PORT))
         .withEnvironment({
           MYSQL_ROOT_PASSWORD: String(process.env.DB_PASSWORD),
@@ -63,8 +68,6 @@ describe('Functional tests - routes:user', () => {
         .withWaitStrategy(Wait.forHealthCheck())
         .start()
 
-      console.log(mysqlContainer)
-
       await new Promise((resolve) => setTimeout(resolve, 30000))
     } catch (error) {
       const errorInfo = `Docker Compose environment setup failed - ${String(error)}`
@@ -72,11 +75,11 @@ describe('Functional tests - routes:user', () => {
       chai.assert.fail(errorInfo)
     }
 
-    // logger.debug(JSON.stringify(mysqlContainer))
+    // logger.debug(JSON.stringify(db_container_test))
 
     const dbPort = Number(process.env.DB_PORT) || 3306
 
-    dbUri = `${process.env.DB_DRIVER}://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${mysqlContainer.getHost()}:${mysqlContainer.getMappedPort(dbPort)}/${process.env.DB_DATABASE_NAME}`
+    dbUri = `${process.env.DB_DRIVER}://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${db_container_test.getHost()}:${db_container_test.getMappedPort(dbPort)}/${process.env.DB_DATABASE_NAME}`
 
     logger.debug('---------!!!!!!!!!!!!!!!!!!!!!!------------')
     logger.debug(JSON.stringify(dbUri))
@@ -89,7 +92,7 @@ describe('Functional tests - routes:user', () => {
 
   after(async () => {
     // await environment.down()
-    await mysqlContainer.stop()
+    await db_container_test.stop()
     // await container.stop()
 
     // Cancel the modification of the env variable

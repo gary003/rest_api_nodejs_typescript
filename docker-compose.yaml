@@ -14,7 +14,7 @@ services:
       - DB_PASSWORD=mypass
       - DB_DATABASE_NAME=mydbuser
       - DB_PORT=3306
-      - CRYPTO_SECRET_KEY=2345
+      - CRYPTO_SECRET_KEY=4876he526d9148b7ac40bd623b240753
       - API_PORT=8080
       - LOGLEVEL=debug
     restart: always

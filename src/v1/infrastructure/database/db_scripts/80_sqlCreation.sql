@@ -19,6 +19,7 @@ create table wallet(
   userId varchar(50),
   hardCurrency int,
   softCurrency int,
+  INDEX idx_wallet_userId (userId),
   FOREIGN KEY (userId) REFERENCES user(userId)
 );
 

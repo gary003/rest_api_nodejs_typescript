@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm'
+import { Column, Entity, Index, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm'
 import { User } from '../user/entity'
 
 @Entity()
@@ -12,6 +12,7 @@ export class Wallet {
   @Column('int')
   softCurrency!: number
 
+  @Index('idx_wallet_userId')
   @OneToOne(() => User, { cascade: true, onDelete: 'CASCADE' })
   @JoinColumn({
     name: 'userId',
