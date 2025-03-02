@@ -1,8 +1,7 @@
 import { z } from 'zod'
 import { Request, Response, NextFunction } from 'express'
-import { errorValidationUser } from './error.dto'
 
-export const validateUserIdParams = async (req: Request, res: Response, next: NextFunction) => {
+export const validateUserId = async (req: Request, res: Response, next: NextFunction) => {
   const { userId } = req.params
 
   const UserIdScheme = z.string().length(36)
@@ -12,6 +11,9 @@ export const validateUserIdParams = async (req: Request, res: Response, next: Ne
     next()
     return
   } catch (err) {
-    return res.status(404).send({ ...errorValidationUser, ...{ err: err } })
+    return res.status(404).json({
+      middlewareError: `This userId ${userId} is not valid`,
+      validationError: String(err)
+    })
   }
 }

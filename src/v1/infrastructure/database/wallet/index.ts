@@ -89,3 +89,16 @@ export const deleteWalletByIdDB = async (walletId: string): Promise<boolean> => 
 
   return true
 }
+
+export const deleteWalletByIdDBTransaction = async (queryRunner: QueryRunner, walletId: string) => {
+  const WalletsRepository = queryRunner.manager.getRepository(Wallet)
+
+  const result = await WalletsRepository.delete({ walletId }).catch((err) => err)
+
+  if (result instanceof Error || result.affected === 0) {
+    logger.error(result)
+    throw new Error(`Impossible to delete the wallet - ${result.message}`) // Use a custom error message
+  }
+
+  return true
+}

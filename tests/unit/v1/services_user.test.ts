@@ -77,8 +77,7 @@ describe('Unit tests - services:user', () => {
         if (!(err instanceof Error) || err?.message === null) {
           chai.assert.fail('Please use a correct error format')
         } else {
-          const errInfo = JSON.parse(err?.message)
-          chai.assert.equal(errInfo.message, userFunctionsErrors.ErrorCreatingUser!.message)
+          chai.assert.include(err.message, userFunctionsErrors.ErrorCreatingUser!.message)
           sandbox.assert.calledOnce(mockSaveNewUserDB)
           sandbox.assert.calledOnce(mockErrorLogger)
         }
@@ -114,8 +113,7 @@ describe('Unit tests - services:user', () => {
         if (!(err instanceof Error) || err?.message === null) {
           chai.assert.fail('Please use a correct error format')
         }
-        const errInfo = JSON.parse(err.message)
-        chai.assert.equal(errInfo.message, moneyTransferParamsValidatorErrors.ErrorInvalidAmount!.message)
+        chai.assert.include(err.message, moneyTransferParamsValidatorErrors.ErrorInvalidAmount!.message)
       }
     })
     it('should fail (wrong currency type)', async () => {
@@ -127,8 +125,7 @@ describe('Unit tests - services:user', () => {
         if (!(err instanceof Error) || err?.message === null) {
           chai.assert.fail('Please use a correct error format')
         }
-        const errInfo = JSON.parse(err?.message)
-        chai.assert.equal(errInfo.message, moneyTransferParamsValidatorErrors.ErrorCurrencyType!.message)
+        chai.assert.include(err.message, moneyTransferParamsValidatorErrors.ErrorCurrencyType!.message)
       }
     })
   })
@@ -230,8 +227,7 @@ describe('Unit tests - services:user', () => {
         if (!(err instanceof Error) || err?.message === null) {
           chai.assert.fail('Please use a correct error format')
         }
-        const errInfo = JSON.parse(err.message)
-        chai.assert.equal(errInfo.message, moneyTransferParamsValidatorErrors.ErrorCurrencyType!.message)
+        chai.assert.include(err.message, moneyTransferParamsValidatorErrors.ErrorCurrencyType!.message)
         sandbox.assert.notCalled(mockFetchUserDB)
       }
     })
@@ -272,8 +268,7 @@ describe('Unit tests - services:user', () => {
         if (!(err instanceof Error) || err?.message === null) {
           chai.assert.fail('Please use a correct error format')
         }
-        const errInfo = JSON.parse(err.message)
-        chai.assert.equal(errInfo.message, moneyTransferParamsValidatorErrors.ErrorInsufficientFunds!.message)
+        chai.assert.include(err.message, moneyTransferParamsValidatorErrors.ErrorInsufficientFunds!.message)
         sandbox.assert.calledOnce(mockFetchUserDB)
       }
     })
@@ -305,8 +300,7 @@ describe('Unit tests - services:user', () => {
         if (!(err instanceof Error) || err?.message === null) {
           chai.assert.fail('Please use a correct error format')
         }
-        const errInfo = JSON.parse(err.message)
-        chai.assert.equal(errInfo.message, moneyTransferParamsValidatorErrors.ErrorUserInfo!.message) // Verify specific error message
+        chai.assert.include(err.message, moneyTransferParamsValidatorErrors.ErrorUserInfo!.message) // Verify specific error message
         sandbox.assert.calledOnce(mockFetchUserDB)
         sandbox.assert.called(mockErrorLogger)
       }
@@ -351,8 +345,7 @@ describe('Unit tests - services:user', () => {
         if (!(err instanceof Error) || err?.message === null) {
           chai.assert.fail('Please use a correct error format')
         }
-        const errInfo = JSON.parse(err.message)
-        chai.assert.equal(errInfo.message, moneyTransferParamsValidatorErrors.ErrorUserInfo!.message) // Verify specific error message
+        chai.assert.include(err.message, moneyTransferParamsValidatorErrors.ErrorUserInfo!.message) // Verify specific error message
         sandbox.assert.calledTwice(mockFetchUserDB)
         sandbox.assert.called(mockErrorLogger)
       }
@@ -413,8 +406,7 @@ describe('Unit tests - services:user', () => {
         if (!(err instanceof Error) || err?.message === null) {
           chai.assert.fail('Please use a correct error format')
         }
-        const errInfo = JSON.parse(err.message)
-        chai.assert.equal(errInfo.message, transferMoneyErrors.ErrorParamsValidator!.message)
+        chai.assert.include(err.message, transferMoneyErrors.ErrorParamsValidator!.message)
         sandbox.assert.calledOnce(mockTransferMoneyParamsValidator)
         sandbox.assert.notCalled(mockCreateAndStartTransaction)
         sandbox.assert.called(mockErrorLogger)
@@ -433,8 +425,7 @@ describe('Unit tests - services:user', () => {
         if (!(err instanceof Error) || err?.message === null) {
           chai.assert.fail('Please use a correct error format')
         }
-        const errInfo = JSON.parse(err.message)
-        chai.assert.equal(errInfo.message, transferMoneyErrors.ErrorTransactionCreation!.message)
+        chai.assert.include(err.message, transferMoneyErrors.ErrorTransactionCreation!.message)
         sandbox.assert.calledOnce(mockTransferMoneyParamsValidator)
         sandbox.assert.calledOnce(mockCreateAndStartTransaction)
         sandbox.assert.called(mockErrorLogger)
@@ -458,8 +449,7 @@ describe('Unit tests - services:user', () => {
         if (!(err instanceof Error) || err?.message === null) {
           chai.assert.fail('Please use a correct error format')
         }
-        const errInfo = JSON.parse(err.message)
-        chai.assert.equal(errInfo.message, transferMoneyErrors.ErrorLockAcquisition!.message)
+        chai.assert.include(err.message, transferMoneyErrors.ErrorLockAcquisition!.message)
         sandbox.assert.calledOnce(mockTransferMoneyParamsValidator)
         sandbox.assert.calledOnce(mockCreateAndStartTransaction)
         sandbox.assert.called(mockErrorLogger)
@@ -486,8 +476,7 @@ describe('Unit tests - services:user', () => {
         if (!(err instanceof Error) || err?.message === null) {
           chai.assert.fail('Please use a correct error format')
         }
-        const errorInfo = JSON.parse(err.message)
-        chai.assert.equal(errorInfo.message, transferMoneyErrors.ErrorLockAcquisition!.message)
+        chai.assert.include(err.message, transferMoneyErrors.ErrorLockAcquisition!.message)
         sandbox.assert.calledOnce(mockTransferMoneyParamsValidator)
         sandbox.assert.calledOnce(mockCreateAndStartTransaction)
         sandbox.assert.called(mockErrorLogger)
@@ -540,11 +529,10 @@ describe('Unit tests - services:user', () => {
 
       const fakeInsufficientFundsError: errorType = {
         name: 'fakeNetworkError',
-        message: 'Not enough funds to do the transaction',
-        httpCode: 500
+        message: 'Not enough funds to do the transaction'
       }
 
-      const mockTransferMoney = sandbox.stub(modUser, 'transferMoney').throws(new Error(JSON.stringify(fakeInsufficientFundsError)))
+      const mockTransferMoney = sandbox.stub(modUser, 'transferMoney').throws(new Error(fakeInsufficientFundsError.message))
 
       // Call the transferMoneyWithRetry function
       try {
@@ -553,8 +541,7 @@ describe('Unit tests - services:user', () => {
         if (!(err instanceof Error) || err?.message === null) {
           chai.assert.fail('Please use a correct error format')
         }
-        const errInfo = JSON.parse(err.message)
-        chai.assert(errInfo.message.includes('Not enough funds to do the transaction'))
+        chai.assert(err.message.includes('Not enough funds to do the transaction'))
         sandbox.assert.calledOnce(mockTransferMoney)
         chai.assert(mockTransferMoney.calledWithExactly(moneyTypesO.soft_currency, 'giver123', 'recipient456', 100))
         sandbox.assert.called(mockErrorLogger)
@@ -563,18 +550,16 @@ describe('Unit tests - services:user', () => {
     it('Failure - Transfer fail (with retryable error followed by non-retryable error)', async () => {
       const fakeNetworkError: errorType = {
         name: 'fakeNetworkError',
-        message: 'Network error',
-        httpCode: 500
+        message: 'Network error'
       }
       const fakeLockError: errorType = {
         name: 'fakeLockError',
-        message: 'Error - Lock - Network error',
-        httpCode: 500
+        message: 'Error - Lock - Network error'
       }
       // Mock the transferMoney function to fail twice and succeed on the third try
       const mockTransferMoney = sandbox.stub(modUser, 'transferMoney')
-      mockTransferMoney.onFirstCall().throws(new Error(JSON.stringify(fakeLockError)))
-      mockTransferMoney.onSecondCall().throws(new Error(JSON.stringify(fakeNetworkError)))
+      mockTransferMoney.onFirstCall().throws(new Error(fakeLockError.message))
+      mockTransferMoney.onSecondCall().throws(new Error(fakeNetworkError.message))
       mockTransferMoney.onThirdCall().resolves(true)
       const mockWarnLogger = sandbox.stub(logger, 'warn')
       const mockErrorLogger = sandbox.stub(logger, 'error')
@@ -586,8 +571,7 @@ describe('Unit tests - services:user', () => {
         if (!(err instanceof Error) || err?.message === null) {
           chai.assert.fail('Please use a correct error format')
         }
-        const errorInfo = JSON.parse(err.message)
-        chai.assert.isTrue(errorInfo.message.includes('Network error'))
+        chai.assert.isTrue(err.message.includes('Network error'))
         sandbox.assert.calledTwice(mockTransferMoney)
         sandbox.assert.calledWithExactly(mockTransferMoney, moneyTypesO.soft_currency, 'giver123', 'recipient456', 100)
         sandbox.assert.calledOnce(mockWarnLogger)
@@ -616,8 +600,8 @@ describe('Unit tests - services:user', () => {
         if (!(err instanceof Error) || err?.message === null) {
           chai.assert.fail('Please use a correct error format')
         }
-        const errorInfo = JSON.parse(err.message)
-        chai.assert.isTrue(errorInfo.message === transferMoneyWithRetryErrors.ErrorMaxRetry!.message)
+
+        chai.assert.include(err.message, transferMoneyWithRetryErrors.ErrorMaxRetry!.message)
         sandbox.assert.callCount(mockTransferMoney, maxAttempt)
         sandbox.assert.calledWithExactly(mockTransferMoney, moneyTypesO.soft_currency, 'giver123', 'recipient456', amountToTransfer)
         sandbox.assert.called(mockWarnLogger)

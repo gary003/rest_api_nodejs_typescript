@@ -1,7 +1,7 @@
 import { Wallet } from '../wallet/entity'
-import { getConnection } from '../db_connection/connectionFile'
+import { createAndStartTransaction, getConnection } from '../db_connection/connectionFile'
 import { User } from './entity'
-import { createNewWalletDB, deleteWalletByIdDB } from '../wallet'
+import { createNewWalletDB, deleteWalletByIdDBTransaction } from '../wallet'
 import { Readable } from 'stream'
 import { ReadStream } from 'typeorm/platform/PlatformTools'
 import logger from '../../../helpers/logger'
@@ -82,36 +82,42 @@ export const saveNewUserDB = async (firstname: string, lastname: string): Promis
 }
 
 export const deleteUserByIdDB = async (userId: string): Promise<boolean> => {
-  const connection = await getConnection()
-
+  // Step 1: Get user information
   const userToDeleteInfo = await getUserWalletInfoDB(userId).catch((err) => err)
 
   if (userToDeleteInfo instanceof Error) {
     logger.error(userToDeleteInfo)
-    throw new Error(`Impossible to delete the user in DB, no user information available (step : 0) - ${String(userToDeleteInfo)}`)
+    throw new Error(`Impossible to delete the user in DB, no user information available (step : 1) - ${String(userToDeleteInfo)}`)
   }
-  // logger.debug(JSON.stringify(userToDeleteInfo))
 
+  // Start a transaction
+  const queryRunner = await createAndStartTransaction()
+
+  // Step 2: Delete the wallet if it exists
   if (userToDeleteInfo.Wallet) {
-    const walletDeletion = await deleteWalletByIdDB(String(userToDeleteInfo.Wallet.walletId)).catch((err) => err)
-
+    const walletDeletion = await deleteWalletByIdDBTransaction(queryRunner, String(userToDeleteInfo.Wallet.walletId)).catch((err) => err)
     if (walletDeletion instanceof Error) {
       logger.error(walletDeletion)
-      throw new Error(`Impossible to delete the user in DB (step : 1) - ${String(walletDeletion)}`)
+      await queryRunner.rollbackTransaction()
+      throw new Error(`Impossible to delete the user in DB (step : 2) - ${String(walletDeletion)}`)
     }
   }
 
-  // Let the db some time to handle the previous request
-  await new Promise((resolve) => setTimeout(resolve, 709))
-
-  const UserRepository = connection.getRepository(User)
-
+  // Step 3: Delete the user
+  const UserRepository = queryRunner.manager.getRepository(User)
   const deletedUser = await UserRepository.delete(userId).catch((err) => err)
 
   if (deletedUser instanceof Error || deletedUser.affected === 0) {
     logger.error(deletedUser)
-    throw new Error(`Impossible to delete the user in DB (step : 2) - ${deletedUser.message}`)
+    await queryRunner.rollbackTransaction()
+    throw new Error(`Impossible to delete the user in DB (step : 3) - ${deletedUser.message}`)
   }
+
+  // Successful tarnsaction
+  await queryRunner.commitTransaction()
+
+  // Release of the query runner
+  await queryRunner.release()
 
   return true
 }

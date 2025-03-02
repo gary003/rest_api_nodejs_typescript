@@ -8,6 +8,8 @@ import { getAllUsersDB, userStreamAdaptor } from '../../../src/v1/infrastructure
 import { Readable } from 'stream'
 
 import logger from '../../../src/v1/helpers/logger'
+import { ReadStream } from 'fs'
+import { DataSource } from 'typeorm'
 
 describe('Unit tests - infrastructure:database:user', () => {
   const originalEnv = process.env
@@ -58,7 +60,7 @@ describe('Unit tests - infrastructure:database:user', () => {
       }
 
       // Stub getConnection to return mock connection
-      const getConnectionStub = sandbox.stub(modConnection, 'getConnection').resolves(mockConnection as any)
+      const getConnectionStub = sandbox.stub(modConnection, 'getConnection').resolves(mockConnection as never)
 
       try {
         const result = await getAllUsersDB()
@@ -96,7 +98,7 @@ describe('Unit tests - infrastructure:database:user', () => {
         getRepository: sandbox.stub().returns(mockRepository)
       }
 
-      const getConnectionStub = sandbox.stub(modConnection, 'getConnection').resolves(mockConnection as any)
+      const getConnectionStub = sandbox.stub(modConnection, 'getConnection').resolves(mockConnection as unknown as DataSource)
 
       const loggerErrorStub = sandbox.stub(logger, 'error')
 
@@ -122,7 +124,7 @@ describe('Unit tests - infrastructure:database:user', () => {
     })
 
     it('should adapt stream data correctly', async () => {
-      // Prepare mock stream data
+      // Mock user DB data for stream
       const mockChunks = [
         {
           user_userId: 'user1',
@@ -135,26 +137,21 @@ describe('Unit tests - infrastructure:database:user', () => {
       ]
 
       // Create a readable stream from mock chunks
-      const mockStream = new Readable({
-        objectMode: true,
-        read() {
-          mockChunks.forEach((chunk) => this.push(chunk))
-          this.push(null)
-        }
-      })
+      const mockStream = Readable.from(mockChunks) as ReadStream // Type assertion: mockStream mimics ReadStream behavior
 
-      const adaptor = userStreamAdaptor(mockStream as any)
-      const results = []
+      const adaptor = userStreamAdaptor(mockStream)
+
+      // Results from the async generator to test
+      const results: string[] = []
       for await (const item of adaptor) {
-        // @ts-ignore
-        results.push(JSON.parse(item)) // Parse the JSON string back to an object
+        results.push(item)
       }
 
       // Assertions
       chai.assert.lengthOf(results, 1, 'Should process one chunk')
       chai.assert.deepEqual(
         results[0],
-        {
+        JSON.stringify({
           userId: 'user1',
           firstname: 'John',
           lastname: 'Doe',
@@ -163,8 +160,8 @@ describe('Unit tests - infrastructure:database:user', () => {
             hardCurrency: 1000,
             softCurrency: 500
           }
-        },
-        'Chunk should be correctly adapted'
+        }) + '\n',
+        'Should correctly adapt and stringify the stream data with a newline'
       )
     })
 
@@ -180,7 +177,7 @@ describe('Unit tests - infrastructure:database:user', () => {
       const loggerErrorStub = sandbox.stub(logger, 'error')
 
       try {
-        const adaptor = userStreamAdaptor(mockStream as any)
+        const adaptor = userStreamAdaptor(mockStream as never)
         await adaptor.next()
         chai.assert.fail('Expected an error to be thrown')
       } catch (err) {

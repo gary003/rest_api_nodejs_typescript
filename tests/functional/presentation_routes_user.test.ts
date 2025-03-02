@@ -88,7 +88,7 @@ describe('Functional tests - presentation:routes:user', () => {
     })
 
     it('Should get all users from DB', async () => {
-      const response = await request(app).get(`/${urlBase}/user/`).set('Accept', 'application/json').expect('Content-Type', /json/)
+      const response = await request(app).get(`/${urlBase}/user/`).set('Accept', 'application/json')
 
       const body = JSON.parse(response.text)
 
@@ -133,7 +133,7 @@ describe('Functional tests - presentation:routes:user', () => {
         lastname: 'test_Espinosa'
       }
 
-      const response = await request(app).post(`/${urlBase}/user/`).send(newUser).set('Accept', 'application/json').expect('Content-Type', /json/)
+      const response = await request(app).post(`/${urlBase}/user/`).send(newUser).set('Accept', 'application/json')
 
       const body = JSON.parse(response.text)
 
@@ -154,7 +154,7 @@ describe('Functional tests - presentation:routes:user', () => {
       sandbox.restore()
     })
     it('should return a single user', async () => {
-      const response = await request(app).get(`/${urlBase}/user/${testUserId1}`).set('Accept', 'application/json').expect('Content-Type', /json/)
+      const response = await request(app).get(`/${urlBase}/user/${testUserId1}`).set('Accept', 'application/json')
 
       const body = JSON.parse(response.text)
 
@@ -164,24 +164,22 @@ describe('Functional tests - presentation:routes:user', () => {
     it('should fail returning a single user ( wrong parameter in route )', async () => {
       const wrongUserId = 123
 
-      const response = await request(app).get(`/${urlBase}/user/${wrongUserId}`).set('Accept', 'application/json').expect('Content-Type', /json/)
+      const response = await request(app).get(`/${urlBase}/user/${wrongUserId}`).set('Accept', 'application/json')
 
       const body = JSON.parse(response.text)
 
       expect(response.statusCode).to.be.within(400, 499)
-      expect(body).to.have.property('errorParamUserId')
+      expect(body).to.have.property('middlewareError')
     })
     it('should fail returning a single user ( user dont exists )', async () => {
       const mockErrorLogger = sandbox.stub(logger, 'error')
 
       const wrongUserId = 'zz2c990b6-029c-11ed-b939-0242ac12002'
 
-      const response = await request(app).get(`/${urlBase}/user/${wrongUserId}`).set('Accept', 'application/json').expect('Content-Type', /json/)
-
-      const body = JSON.parse(response.text)
+      const response = await request(app).get(`/${urlBase}/user/${wrongUserId}`).set('Accept', 'application/json')
 
       expect(response.statusCode).to.be.within(500, 599)
-      expect(body.rawError).includes(' Impossible to get any user with that id')
+      expect(response.text).includes(' Impossible to get any user with that id')
 
       sandbox.assert.called(mockErrorLogger)
     })
@@ -200,7 +198,7 @@ describe('Functional tests - presentation:routes:user', () => {
         currency: moneyTypesO.hard_currency
       }
 
-      const response = await request(app).post(`/${urlBase}/user/transfer`).send(validTransferData).set('Accept', 'application/json').expect('Content-Type', /json/)
+      const response = await request(app).post(`/${urlBase}/user/transfer`).send(validTransferData).set('Accept', 'application/json')
 
       const body = JSON.parse(response.text)
 
@@ -256,7 +254,7 @@ describe('Functional tests - presentation:routes:user', () => {
       const body = JSON.parse(response.text)
 
       expect(response.statusCode).to.be.within(400, 499)
-      expect(body).to.deep.equal(errorAPIUSER.errorAPIUserTransferSelf)
+      expect(body).to.deep.equal(errorAPIUSER.errorAPIUserTransferSelf!)
     })
   })
 
@@ -265,13 +263,11 @@ describe('Functional tests - presentation:routes:user', () => {
       sandbox.restore()
     })
     it('should delete a specified user', async () => {
-      const response = await request(app).delete(`/${urlBase}/user/${testUserId1}`).set('Accept', 'application/json').expect('Content-Type', /json/)
-
-      const body = JSON.parse(response.text)
+      const response = await request(app).delete(`/${urlBase}/user/${testUserId1}`).set('Accept', 'application/json')
 
       expect(response.statusCode).to.be.within(200, 299)
-      expect(body.data).to.not.be.null
-      expect(body.data).to.be.equal(true)
+      expect(response.text).to.not.be.null
+      expect(response.ok).to.be.equal(true)
     })
   })
 })

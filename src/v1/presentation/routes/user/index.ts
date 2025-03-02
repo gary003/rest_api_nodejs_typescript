@@ -4,9 +4,9 @@ import { deleteUserById, getAllUsers, getAllUsersStream, getUserWalletInfo, save
 import { errorAPIUSER } from './error.dto'
 
 import logger from '../../../helpers/logger'
-import { validateUserIdParams } from './validation'
 import { apiResponseGetAllUserType, apiResponseGetUserType, apiResponseCreateUserType, apiResponseDeleteUserType } from './apiResponse.dto'
 import { userWalletDTO } from '../../../services/user/dto'
+import { validateUserId } from '../../middlewares/user/user.validation.'
 
 const userRouter = Router()
 
@@ -19,9 +19,8 @@ userRouter
     })
 
     if (results instanceof Error) {
-      const errorMessage = JSON.parse(results.message)
-      const errInfo = { ...errorAPIUSER.errorAPIGetAllUsers, rawError: errorMessage }
-      return res.status(500).json(errInfo)
+      const errInfo = `presentationError: ${errorAPIUSER.errorAPIGetAllUsers?.message} \n ${results.message}`
+      return res.status(500).send(errInfo)
     }
 
     const apiRes: apiResponseGetAllUserType = { data: results as userWalletDTO[] }
@@ -37,9 +36,8 @@ userRouter
     })
 
     if (result instanceof Error) {
-      const errorMessage = JSON.parse(result.message)
-      const errInfo = { ...errorAPIUSER.errorAPIUserCreation, rawError: errorMessage }
-      return res.status(500).json(errInfo)
+      const errInfo = `presentationError: ${errorAPIUSER.errorAPIUserCreation?.message} \n ${result.message}`
+      return res.status(500).send(errInfo)
     }
 
     const response: apiResponseCreateUserType = { data: result }
@@ -72,9 +70,8 @@ userRouter.route('/transfer').post(async (req: Request, res: Response) => {
   })
 
   if (result instanceof Error) {
-    const errorMessage = JSON.parse(result.message)
-    const errInfo = { ...errorAPIUSER.errorAPIUserTransferNoResults, rawError: errorMessage }
-    return res.status(500).json(errInfo)
+    const errInfo = `presentationError: ${errorAPIUSER.errorAPIUserTransferNoResults?.message} \n ${result.message}`
+    return res.status(500).send(errInfo)
   }
 
   const response = { data: result }
@@ -86,7 +83,8 @@ userRouter.route('/stream').get(async (_: Request, res: Response) => {
   const usersStream = await getAllUsersStream().catch((err) => err)
 
   if (usersStream instanceof Error) {
-    return res.status(500).json({ ...errorAPIUSER.errorAPIGetAllUsers, error: JSON.parse(usersStream.message) })
+    const errInfo = `presentationError: ${errorAPIUSER.errorAPIGetAllUsers?.message} \n ${usersStream.message}`
+    return res.status(500).send(errInfo)
   }
 
   // usersStream.on('data', (d: any) => logger.debug(d))
@@ -95,23 +93,22 @@ userRouter.route('/stream').get(async (_: Request, res: Response) => {
 
 userRouter
   .route('/:userId')
-  .get(validateUserIdParams, async (req: Request, res: Response) => {
+  .get(validateUserId, async (req: Request, res: Response) => {
     const result = await getUserWalletInfo(String(req.params.userId)).catch((err) => err)
 
     if (result instanceof Error) {
-      const errorMessage = JSON.parse(result.message)
-      return res.status(500).json(errorMessage)
+      const errInfo = `presentationError: ${errorAPIUSER.errorAPIGetUserInfo?.message} \n ${result.message}`
+      return res.status(500).send(errInfo)
     }
 
     return res.status(200).json({ data: result } as apiResponseGetUserType)
   })
-  .delete(validateUserIdParams, async (req: Request, res: Response) => {
+  .delete(validateUserId, async (req: Request, res: Response) => {
     const result = await deleteUserById(String(req.params.userId)).catch((err) => err)
 
     if (result instanceof Error) {
-      const errorMessage = JSON.parse(result.message)
-      const errInfo = { ...errorAPIUSER.errorAPIDeleteUser, rawError: errorMessage }
-      return res.status(500).json(errInfo)
+      const errInfo = `presentationError: ${errorAPIUSER.errorAPIDeleteUser?.message} \n ${result.message}`
+      return res.status(500).send(errInfo)
     }
 
     return res.status(200).json({ data: result } as apiResponseDeleteUserType)
