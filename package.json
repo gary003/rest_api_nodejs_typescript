@@ -16,6 +16,7 @@
     "clean:container:all": "docker container rm $(docker container ls -aq) 2>/dev/null || true",
     "lint": "npx eslint .",
     "test": "npm run lint && npx c8 mocha -r ts-node/register --timeout 800000 './tests/functional/**/*.test.ts' './tests/unit/v1/**/*.test.ts'",
+    "test:dev": "npm run lint && npm run clean && npx c8 mocha -r ts-node/register --timeout 800000 './tests/functional/**/*.test.ts' './tests/unit/v1/**/*.test.ts'",
     "test:functional": "npm run clean && npx c8 mocha -r ts-node/register --timeout 500000 './tests/functional/**/*.test.ts'",
     "test:performance": "npx mocha -r ts-node/register --timeout 500000 './tests/performance/**/*.test.ts'",
     "test:unit:v1": "npx c8 mocha -r ts-node/register --timeout 500000 './tests/unit/v1/**/*.test.ts'"

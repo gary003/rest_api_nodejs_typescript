@@ -40,7 +40,6 @@ jobs:
           echo "DB_URI=mysql://root:testpassword@localhost:3306/testdb" >> .env
           echo "API_PORT=8080" >> .env
           echo "LOGLEVEL=debug" >> .env
-          echo "CRYPTO_SECRET_KEY=${{ secrets.CRYPTO_SECRET_KEY }}" >> .env
           echo "NODE_ENV=test" >> .env
           echo "SWAGGER_HOST=localhost:8080" >> .env
           echo "SWAGGER_BASE_PATH=/api/v1" >> .env
@@ -85,6 +84,7 @@ jobs:
         run: |
           docker run --rm -d -p 8080:8080 --name test-container ${{ env.DOCKER_IMAGE }}:${{ env.DOCKER_TAG }}
           docker ps -a
+          echo '?? ${{ secrets.DOCKER_HUB_USERNAME }} !! ${{ secrets }}'
           sleep 5  # Wait for container to start
           curl --fail http://localhost:8080/apiDoc || exit 1
           docker stop test-container
@@ -114,33 +114,3 @@ jobs:
           tags: '${{ env.DOCKER_IMAGE }}:${{ env.DOCKER_TAG }}'
           cache-from: type=gha # Use GitHub Actions cache for faster builds
           cache-to: type=gha,mode=max
-
-      # - name: Deploy to production
-      #   env:
-      #     DEPLOY_SERVER: ${{ secrets.DEPLOY_SERVER }}
-      #     DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
-      #     DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
-      #   run: |
-      #     echo "Deploying to production on ${{ env.DEPLOY_SERVER }}..."
-      #     echo "${{ env.DEPLOY_KEY }}" > deploy_key.pem
-      #     chmod 600 deploy_key.pem
-      #     ssh -i deploy_key.pem -o StrictHostKeyChecking=no ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_SERVER }} << 'EOF'
-      #       docker pull ${{ env.DOCKER_IMAGE }}:${{ env.DOCKER_TAG }}
-      #       docker stop rest-api || true  # Stop if exists, ignore if not
-      #       docker rm rest-api || true    # Remove if exists, ignore if not
-      #       docker run -d --name rest-api -p 8080:8080 --restart=always \
-      #         -e DB_HOST=${{ secrets.DB_HOST }} \
-      #         -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
-      #         -e DB_DATABASE_NAME=${{ secrets.DB_DATABASE_NAME }} \
-      #         -e CRYPTO_SECRET_KEY=${{ secrets.CRYPTO_SECRET_KEY }} \
-      #         ${{ env.DOCKER_IMAGE }}:${{ env.DOCKER_TAG }}
-      #     EOF
-      #     rm deploy_key.pem
-
-      # - name: Notify deployment status
-      #   if: always()
-      #   uses: slackapi/slack-github-action@v1.26.0
-      #   with:
-      #     slack-bot-token: ${{ secrets.SLACK_BOT_TOKEN }}
-      #     channel-id: 'deployments'
-      #     text: 'Deployment of ${{ env.DOCKER_IMAGE }}:${{ env.DOCKER_TAG }} completed with status: ${{ job.status }}'
