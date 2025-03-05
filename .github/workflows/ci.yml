@@ -87,6 +87,9 @@ jobs:
           curl --fail http://localhost:8080/apiDoc || exit 1
           docker stop test-container
 
+      - name: Debug Secrets
+        run: echo '???? ${{ secrets.DOCKER_HUB_USERNAME }} !! ${{ toJson(secrets) }} ~~~'
+
   deploy:
     runs-on: ubuntu-latest
     needs: build
