@@ -10,7 +10,7 @@ on:
 
 env:
   NODE_VERSION: 22
-  DOCKER_IMAGE: ${{ secrets.DOCKER_HUB_USERNAME }}/rest-api-nodejs-typescript
+  DOCKER_IMAGE: gary003/rest-api-nodejs-typescript
   DOCKER_TAG: latest
 
 jobs:
@@ -79,7 +79,7 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Build Docker image
-        run: npm run build:docker:image
+        run: npm run build:docker:image && docker image ls
 
       - name: Test Docker image
         run: |
