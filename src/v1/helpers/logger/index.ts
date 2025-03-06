@@ -8,18 +8,15 @@ const logger = createLogger({
       return `${timestamp} ${level}: ${message};`
     })
   ),
-  exceptionHandlers: [new transports.File({ filename: 'exceptions.log' })]
+  exceptionHandlers: [new transports.File({ filename: './logs/exceptions.log' })]
 })
-
-// Call rejections.handle with a transport to handle rejections
-logger.rejections.handle(new transports.File({ filename: 'rejections.log' }))
 
 if (process.env.NODE_ENV === 'production') {
   logger.level = 'error'
   logger.add(
     new transports.File({
       level: 'error',
-      filename: 'error.log',
+      filename: './logs/error.log',
       handleRejections: true
     })
   )

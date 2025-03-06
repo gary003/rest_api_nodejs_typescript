@@ -11,7 +11,7 @@ import { moneyTypesO } from '../../src/v1/domain'
 
 const DB_READY_WAIT_MS = 30000
 
-describe('Functional tests - presentation:routes:user', () => {
+describe('Integration tests - presentation:routes:user', () => {
   const originalEnv = process.env
 
   const sandbox: SinonSandbox = createSandbox()

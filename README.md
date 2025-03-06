@@ -9,7 +9,7 @@
   - Mocks
   - Coverage
   - Unit tests
-  - Functional tests with **testcontainers** and **supertest**
+  - Integration tests with **testcontainers** and **supertest**
 - Persistance with **typeorm**
   - Entities handling
   - Table join
