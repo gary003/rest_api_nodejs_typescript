@@ -41,7 +41,7 @@ const apiDocumentation = {
       get: {
         tags: ['user'],
         summary: 'get all users',
-        description: 'all users will be retreive from DB',
+        description: 'all users will be retrieve from DB',
         responses: {
           '200': {
             description: 'Successfuly get all users '
@@ -85,7 +85,7 @@ const apiDocumentation = {
       get: {
         tags: ['user'],
         summary: 'get all users from stream',
-        description: 'all users will be retreive from DB',
+        description: 'all users will be retrieve from DB',
         responses: {
           '200': {
             description: 'Successfuly get all users with a stream '

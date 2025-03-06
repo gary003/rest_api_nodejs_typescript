@@ -179,7 +179,7 @@ describe('Integration tests - presentation:routes:user', () => {
       const response = await request(app).get(`/${urlBase}/user/${wrongUserId}`).set('Accept', 'application/json')
 
       expect(response.statusCode).to.be.within(500, 599)
-      expect(response.text).includes(' Impossible to get any user with that id')
+      expect(response.text).includes('Impossible to get any user with that ID')
 
       sandbox.assert.called(mockErrorLogger)
     })

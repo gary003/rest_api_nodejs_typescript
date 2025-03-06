@@ -29,19 +29,15 @@
 
 ## Description
 
-This portfolio is a backend rest api that have a few routes (CRUD) aiming to keep at hand backend development techniques.
-So there are some redundant and unused files on top of Commented and unused functions that contains alternative ways of doing the same thing so I can remember and retreive them later.
-
-This repository is a portfolio, **NOT** a production-ready project, On a pro set-up things would be different!
-So, there are some things to consider that have been set to make things easier for github users.
-So no .env needed, easier to test and deploy for external user who want to try it
+This repository is a backend rest api that has a few routes (CRUD) aiming to keep at-hand backend development techniques.
+To make things easier for github users, there in no need of a .env, easier to test and deploy for external users who want to try it.
 
 ## Prerequisites
 
 - Having docker(v27+) & docker-compose(v2.20) installed
 
-!! A docker group must be created , then your user(sudoer) added into it !!
-!! Otherwise you'll get troubles launching the tests !!
+!! A docker group must be created, then your user(sudoer) is added to it.
+Otherwise you'll have trouble launching the tests !!
 
 Link to install and configure docker properly :
 

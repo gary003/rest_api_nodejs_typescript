@@ -108,7 +108,7 @@ describe('Unit tests - infrastructure:database:user', () => {
       } catch (err) {
         chai.assert.exists(err, 'Error should be thrown')
         chai.assert.instanceOf(err, Error, 'Error should be an Error instance')
-        chai.assert.include((err as Error).message, 'Impossible to retreive any user')
+        chai.assert.include((err as Error).message, 'Impossible to retrieve any user')
 
         // Verify logger was called with the error
         sandbox.assert.calledOnce(loggerErrorStub)
