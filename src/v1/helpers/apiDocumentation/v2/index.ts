@@ -7,7 +7,7 @@ const apiDocumentation = {
   host: `${localIp}:${process.env.API_PORT || 8080}`,
   basePath: '/api/v1',
   info: {
-    title: 'api_backend_template',
+    title: 'rest_api_backend_user',
     version: '1'
   },
   schemes: ['http'],
