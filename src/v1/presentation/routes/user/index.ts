@@ -6,7 +6,7 @@ import { errorAPIUSER } from './error.dto'
 import logger from '../../../helpers/logger'
 import { apiResponseGetAllUserType, apiResponseGetUserType, apiResponseCreateUserType, apiResponseDeleteUserType } from './apiResponse.dto'
 import { userWalletDTO } from '../../../services/user/dto'
-import { validateUserId } from '../../middlewares/user/user.validation.'
+import { validateUserId } from '../../middlewares/user/user.validation'
 
 const userRouter = Router()
 
