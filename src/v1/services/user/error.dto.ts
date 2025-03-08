@@ -3,7 +3,7 @@ import { errorType } from '../../domain/error'
 export const transferMoneyErrors: Record<string, errorType> = {
   ErrorParamsValidator: {
     name: 'ErrorParamsValidator',
-    message: 'Error - Failed to retreive recipient - giver informations'
+    message: 'Error - Failed to retrieve recipient - giver informations'
   } as const,
   ErrorLockAcquisition: {
     name: 'ErrorLockAcquisition',

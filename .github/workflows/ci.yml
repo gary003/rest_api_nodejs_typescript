@@ -18,16 +18,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4 # Updated to latest version for better performance
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4 # Updated to latest version
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm' # Cache npm dependencies for faster builds
+          cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci # Use `npm ci` for CI environments (faster, more reliable)
+        run: npm ci
 
       - name: Create .env file
         run: |
@@ -47,7 +47,7 @@ jobs:
       - name: Run all tests
         run: npm run test
         env:
-          CI: true # Ensures tests run in CI mode (e.g., no interactive prompts)
+          CI: true
 
       - name: Upload test artifacts (if failed)
         if: failure()
@@ -78,7 +78,7 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Build Docker image
-        run: npm run build:docker:image && docker image ls
+        run: npm run build:docker:image
 
       - name: Test Docker image
         run: |
@@ -86,9 +86,6 @@ jobs:
           sleep 5  # Wait for container to start
           curl --fail http://localhost:8080/apiDoc || exit 1
           docker stop test-container
-
-      - name: Debug Secrets
-        run: echo '???? ${{ secrets.DOCKER_HUB_USERNAME }} !!!!!2992!!!!! ${{ toJson(secrets) }} ~~~'
 
   deploy:
     runs-on: ubuntu-latest
@@ -105,7 +102,7 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
-          logout: true # Ensure clean login
+          logout: true
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6

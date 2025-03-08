@@ -10,6 +10,10 @@ describe('Unit tests - infrastructure:database', () => {
   describe('src > v1 > infrastructure > database > db_connection > connectionFile > connectionDB', () => {
     const sandbox = sinon.createSandbox()
 
+    // Dont accidently fetch real database (use of mocks in the tests) !
+    process.env.DB_URI = ''
+    process.env.DB_HOST = ''
+
     beforeEach(() => {
       sandbox.restore()
     })

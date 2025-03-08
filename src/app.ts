@@ -3,7 +3,9 @@ import express from 'express'
 import userRoute from './v1/presentation/routes/user/index'
 
 import swaggerUi from 'swagger-ui-express'
-import apiDocumentation from './v1/helpers/apiDocumentation'
+import apiDocumentation from './v1/helpers/apiDocumentation/v2'
+// import { openApiOptions } from './v1/helpers/apiDocumentation/v3/docOptions'
+import openApiSpec from './v1/helpers/apiDocumentation/v3'
 
 import helmet from 'helmet'
 import cors from 'cors'
@@ -12,6 +14,12 @@ import logger from './v1/helpers/logger'
 const app = express()
 
 if (!process.env.production) app.use('/apiDoc', swaggerUi.serve, swaggerUi.setup(apiDocumentation))
+
+// OpenAPI 3.0 setup
+if (!process.env.production) {
+  // app.use('/apiDocV3', swaggerUi.serve, swaggerUi.setup(openApiSpec, openApiOptions))
+  app.use('/apiDocV3', swaggerUi.serve, swaggerUi.setup(openApiSpec))
+}
 
 app.use(helmet())
 app.use(cors())

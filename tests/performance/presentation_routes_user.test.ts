@@ -64,7 +64,7 @@ describe('Performance tests - presentation:routes:user', () => {
 
     // Cancel the modification of the env variable
     process.env = originalEnv
-    // logger.info("Docker Compose test environment stopped for functional tests on user/.")
+    // logger.info("Docker Compose test environment stopped for integration tests on user/.")
 
     return true
   })
