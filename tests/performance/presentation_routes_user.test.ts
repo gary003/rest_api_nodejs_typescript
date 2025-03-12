@@ -11,11 +11,12 @@ const execAsync = promisify(exec)
 const DB_READY_WAIT_MS = 30000
 
 describe('Performance tests - presentation:routes:user', () => {
-  // Dont accidently fetch the real database (use the contenerized test environment) !
+  // Dont accidentally fetch the real database (use the containerized test environment) !
   process.env.DB_URI = ''
   process.env.DB_HOST = ''
 
-  let environment: StartedDockerComposeEnvironment
+  // This variable will store the test environment from the docker-compose
+  let dockerComposeEnvironment: StartedDockerComposeEnvironment
 
   const originalEnv = { ...process.env }
 
@@ -40,19 +41,19 @@ describe('Performance tests - presentation:routes:user', () => {
     const composeFile: string = 'docker-compose.yaml'
 
     try {
-      environment = await new DockerComposeEnvironment(composeFilePath, composeFile)
+      dockerComposeEnvironment = await new DockerComposeEnvironment(composeFilePath, composeFile)
         .withPullPolicy(PullPolicy.defaultPolicy())
         .withEnvironment(test_env)
         .withWaitStrategy('app-1', Wait.forLogMessage('app running on'))
         .withWaitStrategy('db-1', Wait.forLogMessage('ready for connections'))
-        .up(['app', 'db'])
+        .up(['app'])
 
       await new Promise((resolve) => setTimeout(resolve, DB_READY_WAIT_MS))
     } catch (error) {
       chai.assert.fail(`Container test environment setup failed: ${String(error)}`)
     }
 
-    const appContainer = environment.getContainer('app-1')
+    const appContainer = dockerComposeEnvironment.getContainer('app-1')
 
     const appPort = Number(process.env.API_PORT) || 8080
 
@@ -60,13 +61,11 @@ describe('Performance tests - presentation:routes:user', () => {
   })
 
   after(async () => {
-    await environment.down()
+    await dockerComposeEnvironment.down()
 
     // Cancel the modification of the env variable
     process.env = originalEnv
     // logger.info("Docker Compose test environment stopped for integration tests on user/.")
-
-    return true
   })
 
   describe('routes > user > /user GET', () => {

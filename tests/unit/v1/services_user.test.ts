@@ -14,7 +14,7 @@ import { errorType } from '../../../src/v1/domain/error'
 import { userWalletDTO } from '../../../src/v1/services/user/dto'
 
 describe('Unit tests - services:user', () => {
-  const originalEnv = process.env
+  const originalEnv = { ...process.env }
 
   after(() => {
     sandbox.restore()
@@ -23,7 +23,7 @@ describe('Unit tests - services:user', () => {
 
   const sandbox: SinonSandbox = createSandbox()
 
-  // Dont accidently fetch real database (use of mocks in the tests) !
+  // Dont accidentally fetch real database (use of mocks in the tests) !
   process.env.DB_URI = ''
   process.env.DB_HOST = ''
 
@@ -358,8 +358,12 @@ describe('Unit tests - services:user', () => {
     })
     it('Successful transfer', async () => {
       // Mock all the dependent functions
-      const mockTransferMoneyParamsValidator = sandbox.stub(modUser, 'transferMoneyParamsValidator').resolves([{ Wallet: { walletId: '1234', softCurrency: 123 } }, { Wallet: { walletId: '4321', softCurrency: 300 } }] as unknown as userWalletDTO[])
-      const mockCreateAndStartTransaction = sandbox.stub(modConnection, 'createAndStartTransaction').resolves({ someTransactionObject: true } as unknown as transactionQueryRunnerType)
+      const mockTransferMoneyParamsValidator = sandbox
+        .stub(modUser, 'transferMoneyParamsValidator')
+        .resolves([{ Wallet: { walletId: '1234', softCurrency: 123 } }, { Wallet: { walletId: '4321', softCurrency: 300 } }] as unknown as userWalletDTO[])
+      const mockCreateAndStartTransaction = sandbox
+        .stub(modConnection, 'createAndStartTransaction')
+        .resolves({ someTransactionObject: true } as unknown as transactionQueryRunnerType)
       const mockAcquireLockOnWallet = sandbox.stub(modConnection, 'acquireLockOnWallet').resolves(true)
       const mockUpdateWalletByWalletIdTransaction = sandbox.stub(modWalletDB, 'updateWalletByWalletIdTransaction').resolves(true) // Assuming update functions return success indicator (modify as needed)
       const mockRollBackAndQuitTransactionRunner = sandbox.stub(modConnection, 'rollBackAndQuitTransactionRunner')
@@ -381,8 +385,20 @@ describe('Unit tests - services:user', () => {
 
       sandbox.assert.calledTwice(mockUpdateWalletByWalletIdTransaction)
       // Replace these assertions with the expected arguments and return values based on your implementation
-      sandbox.assert.calledWith(mockUpdateWalletByWalletIdTransaction, { someTransactionObject: true } as unknown as transactionQueryRunnerType, '1234', moneyTypesO.soft_currency, 23)
-      sandbox.assert.calledWith(mockUpdateWalletByWalletIdTransaction, { someTransactionObject: true } as unknown as transactionQueryRunnerType, '4321', moneyTypesO.soft_currency, 400)
+      sandbox.assert.calledWith(
+        mockUpdateWalletByWalletIdTransaction,
+        { someTransactionObject: true } as unknown as transactionQueryRunnerType,
+        '1234',
+        moneyTypesO.soft_currency,
+        23
+      )
+      sandbox.assert.calledWith(
+        mockUpdateWalletByWalletIdTransaction,
+        { someTransactionObject: true } as unknown as transactionQueryRunnerType,
+        '4321',
+        moneyTypesO.soft_currency,
+        400
+      )
 
       sandbox.assert.notCalled(mockRollBackAndQuitTransactionRunner) // No rollback expected in successful case
 
@@ -395,7 +411,9 @@ describe('Unit tests - services:user', () => {
     })
     it('Transfer failure due to transferMoneyParamsValidator error', async () => {
       const mockTransferMoneyParamsValidator = sandbox.stub(modUser, 'transferMoneyParamsValidator').rejects(new Error('Validation Error'))
-      const mockCreateAndStartTransaction = sandbox.stub(modConnection, 'createAndStartTransaction').resolves({ someTransactionObject: true } as unknown as transactionQueryRunnerType)
+      const mockCreateAndStartTransaction = sandbox
+        .stub(modConnection, 'createAndStartTransaction')
+        .resolves({ someTransactionObject: true } as unknown as transactionQueryRunnerType)
       const mockErrorLogger = sandbox.stub(logger, 'error')
 
       try {
@@ -433,8 +451,12 @@ describe('Unit tests - services:user', () => {
       }
     })
     it('Transfer failure due to acquireLockOnWallet failure (giver)', async () => {
-      const mockTransferMoneyParamsValidator = sandbox.stub(modUser, 'transferMoneyParamsValidator').resolves([{ Wallet: { walletId: '1234', softCurrency: 123 } }, { Wallet: { walletId: '4321', softCurrency: 300 } }] as unknown as userWalletDTO[])
-      const mockCreateAndStartTransaction = sandbox.stub(modConnection, 'createAndStartTransaction').resolves({ someTransactionObject: true } as unknown as transactionQueryRunnerType)
+      const mockTransferMoneyParamsValidator = sandbox
+        .stub(modUser, 'transferMoneyParamsValidator')
+        .resolves([{ Wallet: { walletId: '1234', softCurrency: 123 } }, { Wallet: { walletId: '4321', softCurrency: 300 } }] as unknown as userWalletDTO[])
+      const mockCreateAndStartTransaction = sandbox
+        .stub(modConnection, 'createAndStartTransaction')
+        .resolves({ someTransactionObject: true } as unknown as transactionQueryRunnerType)
       const mockAcquireLockOnWallet = sandbox.stub(modConnection, 'acquireLockOnWallet')
       mockAcquireLockOnWallet.onFirstCall().resolves(false)
       mockAcquireLockOnWallet.onSecondCall().resolves(true)
@@ -460,8 +482,12 @@ describe('Unit tests - services:user', () => {
       }
     })
     it('Transfer failure due to acquireLockOnWallet failure (recipient)', async () => {
-      const mockTransferMoneyParamsValidator = sandbox.stub(modUser, 'transferMoneyParamsValidator').resolves([{ Wallet: { walletId: '1234', softCurrency: 123 } }, { Wallet: { walletId: '4321', softCurrency: 300 } }] as unknown as userWalletDTO[])
-      const mockCreateAndStartTransaction = sandbox.stub(modConnection, 'createAndStartTransaction').resolves({ someTransactionObject: true } as unknown as transactionQueryRunnerType)
+      const mockTransferMoneyParamsValidator = sandbox
+        .stub(modUser, 'transferMoneyParamsValidator')
+        .resolves([{ Wallet: { walletId: '1234', softCurrency: 123 } }, { Wallet: { walletId: '4321', softCurrency: 300 } }] as unknown as userWalletDTO[])
+      const mockCreateAndStartTransaction = sandbox
+        .stub(modConnection, 'createAndStartTransaction')
+        .resolves({ someTransactionObject: true } as unknown as transactionQueryRunnerType)
       const mockAcquireLockOnWallet = sandbox.stub(modConnection, 'acquireLockOnWallet')
       mockAcquireLockOnWallet.onFirstCall().resolves(true)
       mockAcquireLockOnWallet.onSecondCall().resolves(false)

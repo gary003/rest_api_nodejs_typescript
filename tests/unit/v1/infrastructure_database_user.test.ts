@@ -12,7 +12,7 @@ import { ReadStream } from 'fs'
 import { DataSource } from 'typeorm'
 
 describe('Unit tests - infrastructure:database:user', () => {
-  const originalEnv = process.env
+  const originalEnv = { ...process.env }
 
   after(() => {
     sandbox.restore()
@@ -21,7 +21,7 @@ describe('Unit tests - infrastructure:database:user', () => {
 
   const sandbox: SinonSandbox = createSandbox()
 
-  // Dont accidently fetch real database (use of mocks in the tests) !
+  // Dont accidentally fetch real database (use of mocks in the tests) !
   process.env.DB_URI = ''
   process.env.DB_HOST = ''
 

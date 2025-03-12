@@ -12,15 +12,16 @@ import { moneyTypesO } from '../../src/v1/domain'
 const DB_READY_WAIT_MS = 30000
 
 describe('Integration tests - presentation:routes:user', () => {
-  const originalEnv = process.env
+  const originalEnv = { ...process.env }
 
   const sandbox: SinonSandbox = createSandbox()
 
-  // Dont accidently fetch the real database (use the contenerized test environment) !
+  // Dont accidentally fetch the real database (use the containerized test environment) !
   process.env.DB_URI = ''
   process.env.DB_HOST = ''
 
-  let environment: StartedDockerComposeEnvironment
+  // This variable will store the test environment from the docker-compose
+  let dockerComposeEnvironment: StartedDockerComposeEnvironment
 
   // This is a portfolio API, in a real project, use a .env !
   const test_env = {
@@ -36,7 +37,8 @@ describe('Integration tests - presentation:routes:user', () => {
 
   process.env = { ...process.env, ...test_env }
 
-  let dbUri: string = ''
+  // This string will store the test database uri to fetch
+  let dbUriTest: string = ''
 
   // This is test user ids  use through all tests (as recipient and giver for money transfer tests)
   let testUserId1: string = ''
@@ -49,10 +51,9 @@ describe('Integration tests - presentation:routes:user', () => {
     const composeFile = 'docker-compose.yaml'
 
     try {
-      environment = await new DockerComposeEnvironment(composeFilePath, composeFile)
+      dockerComposeEnvironment = await new DockerComposeEnvironment(composeFilePath, composeFile)
         .withPullPolicy(PullPolicy.defaultPolicy())
         .withEnvironment(test_env)
-        .withWaitStrategy('app-1', Wait.forLogMessage('app running on'))
         .withWaitStrategy('db-1', Wait.forLogMessage('ready for connections'))
         .up(['db'])
 
@@ -63,23 +64,21 @@ describe('Integration tests - presentation:routes:user', () => {
       chai.assert.fail(errorInfo)
     }
 
-    const dbContainer = environment.getContainer('db-1')
+    const dbContainer = dockerComposeEnvironment.getContainer('db-1')
 
     const dbPort = Number(process.env.DB_PORT) || 3306
 
-    dbUri = `${process.env.DB_DRIVER}://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${dbContainer.getHost()}:${dbContainer.getMappedPort(dbPort)}/${process.env.DB_DATABASE_NAME}`
+    dbUriTest = `${process.env.DB_DRIVER}://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${dbContainer.getHost()}:${dbContainer.getMappedPort(dbPort)}/${process.env.DB_DATABASE_NAME}`
 
-    process.env.DB_URI = dbUri
-
-    return true
+    process.env.DB_URI = dbUriTest
   })
 
   after(async () => {
-    await environment.down()
+    await dockerComposeEnvironment.down()
 
     process.env = originalEnv
 
-    return true
+    sandbox.restore()
   })
 
   describe('src > v1 > presentation > routes > user > GET (getting all the users)', () => {
@@ -92,6 +91,7 @@ describe('Integration tests - presentation:routes:user', () => {
 
       const body = JSON.parse(response.text)
 
+      // This user will be used through the whole file
       testUserId2 = body.data[1].userId
 
       expect(response.statusCode).to.be.within(200, 299)
@@ -262,6 +262,7 @@ describe('Integration tests - presentation:routes:user', () => {
     beforeEach(() => {
       sandbox.restore()
     })
+
     it('should delete a specified user', async () => {
       const response = await request(app).delete(`/${urlBase}/user/${testUserId1}`).set('Accept', 'application/json')
 
