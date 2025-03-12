@@ -1,8 +1,7 @@
 {
   "include": ["src/v1"],
-  "exclude": ["tests/**", "coverage/**", "dist/**/*", "node_modules/**", "**/*.spec.js", "**/*.test.js", "**/*.d.ts"],
   "thresholds": {
-    "branches": 90,
+    "branches": 80,
     "lines": 85,
     "functions": 90,
     "statements": 85

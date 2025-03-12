@@ -29,7 +29,7 @@ const apiDocumentation = {
           type: 'string'
         },
         lastname: {
-          description: "user's lastname",
+          description: 'The user lastname',
           type: 'string'
         }
       },
@@ -56,7 +56,7 @@ const apiDocumentation = {
           {
             in: 'body',
             name: 'body',
-            description: "User's first and last name",
+            description: 'The user first and last name',
             required: true,
             schema: {
               type: 'object',

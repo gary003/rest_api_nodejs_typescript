@@ -15,11 +15,11 @@ export const transferMoneyErrors: Record<string, errorType> = {
   } as const,
   ErrorUpdateGiverWallet: {
     name: 'ErrorUpdateGiverWallet',
-    message: "Error - Failed to update giver's wallet balance"
+    message: 'Error - Failed to update giver wallet balance'
   } as const,
   ErrorUpdateRecipientWallet: {
     name: 'ErrorUpdateRecipientWallet',
-    message: "Error - Failed to update recipient's wallet balance"
+    message: 'Error - Failed to update recipient wallet balance'
   }
 } as const
 
@@ -42,7 +42,7 @@ export const userFunctionsErrors: Record<string, errorType> = {
   } as const,
   ErrorUpdatingWallet: {
     name: 'ErrorUpdatingWallet',
-    message: "Error - Failed to update user's wallet"
+    message: 'Error - Failed to update user wallet'
   } as const,
   ErrorDeletingUser: {
     name: 'ErrorDeletingUser',
@@ -69,7 +69,7 @@ export const moneyTransferParamsValidatorErrors: Record<string, errorType> = {
   },
   ErrorInsufficientFunds: {
     name: 'ErrorInsufficientFunds',
-    message: "Error - Insufficient funds in giver's wallet"
+    message: 'Error - Insufficient funds in giver wallet'
   }
 } as const
 

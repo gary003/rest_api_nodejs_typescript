@@ -41,13 +41,13 @@ const apiDocumentation: OpenAPIObject = {
             type: 'string',
             minLength: 2,
             example: 'John',
-            description: "User's first name"
+            description: 'The user first name'
           },
           lastname: {
             type: 'string',
             minLength: 2,
             example: 'Doe',
-            description: "User's last name"
+            description: 'The user s last name'
           },
           walletId: {
             type: 'string',

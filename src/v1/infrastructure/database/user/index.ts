@@ -154,7 +154,7 @@ export const getUserWalletInfoDB = async (userId: string): Promise<userWalletDBD
 
   // Handle case where user doesn't exist
   if (userWalletInfo == null) {
-    throw new Error(`Impossible to get any user with that ID (response is null - user doesn't exist)`)
+    throw new Error('Impossible to get any user with that ID (response is null - user doesnt exist)')
   }
 
   return userWalletInfo as userWalletDBDTO // Return user's wallet info
