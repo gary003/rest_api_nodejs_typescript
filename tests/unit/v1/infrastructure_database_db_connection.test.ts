@@ -7,18 +7,18 @@ import * as modConnectionFile from '../../../src/v1/infrastructure/database/db_c
 import logger from '../../../src/v1/helpers/logger'
 
 describe('Unit tests - infrastructure:database', () => {
+  const sandbox = sinon.createSandbox()
+
+  // Dont accidentally fetch real database (use of mocks in the tests) !
+  process.env.DB_URI = ''
+  process.env.DB_HOST = ''
+
+  after(() => {
+    sandbox.restore()
+  })
+
   describe('src > v1 > infrastructure > database > db_connection > connectionFile > connectionDB', () => {
-    const sandbox = sinon.createSandbox()
-
-    // Dont accidently fetch real database (use of mocks in the tests) !
-    process.env.DB_URI = ''
-    process.env.DB_HOST = ''
-
     beforeEach(() => {
-      sandbox.restore()
-    })
-
-    after(() => {
       sandbox.restore()
     })
 

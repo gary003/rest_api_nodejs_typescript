@@ -1,4 +1,9 @@
-import { acquireLockOnWallet, commitAndQuitTransactionRunner, createAndStartTransaction, rollBackAndQuitTransactionRunner } from '../../infrastructure/database/db_connection/connectionFile'
+import {
+  acquireLockOnWallet,
+  commitAndQuitTransactionRunner,
+  createAndStartTransaction,
+  rollBackAndQuitTransactionRunner
+} from '../../infrastructure/database/db_connection/connectionFile'
 import { getAllUsersDB, getUserWalletInfoDB, saveNewUserDB, deleteUserByIdDB, getAllUsersStreamDB } from '../../infrastructure/database/user'
 import { updateWalletByWalletIdDB, updateWalletByWalletIdTransaction } from '../../infrastructure/database/wallet'
 import { moneyTypes, moneyTypesO } from '../../domain'
@@ -93,7 +98,11 @@ export const addCurrency = async (userId: string, currencyType: moneyTypes, amou
   }
 
   // Update the wallet with the new balance
-  const resultUpdate = await updateWalletByWalletIdDB(String(currentUserWalletInfo.Wallet.walletId), currencyType, Number(currentUserWalletInfo.Wallet[currencyType]) + amount).catch((err) => err)
+  const resultUpdate = await updateWalletByWalletIdDB(
+    String(currentUserWalletInfo.Wallet.walletId),
+    currencyType,
+    Number(currentUserWalletInfo.Wallet[currencyType]) + amount
+  ).catch((err) => err)
 
   if (resultUpdate instanceof Error) {
     // Log and throw an error if the wallet update fails
@@ -266,7 +275,9 @@ export const transferMoney = async (currency: moneyTypes, giverId: string, recip
   // Update the recipient's wallet with the new balance
   const recipientNewBalance: number = Number(recipientUserInfo.Wallet[currency]) + amount
 
-  const updateWalletRecipientResult = await updateWalletByWalletIdTransaction(transacRunner, String(recipientUserInfo.Wallet.walletId), currency, recipientNewBalance).catch((err) => err)
+  const updateWalletRecipientResult = await updateWalletByWalletIdTransaction(transacRunner, String(recipientUserInfo.Wallet.walletId), currency, recipientNewBalance).catch(
+    (err) => err
+  )
 
   if (updateWalletRecipientResult instanceof Error) {
     // Log and throw an error if the recipient's wallet update fails
@@ -294,7 +305,15 @@ export const transferMoney = async (currency: moneyTypes, giverId: string, recip
  * @returns {Promise<boolean>} - True if the transfer is successful.
  * @throws {Error} - If the transfer fails after the maximum number of retries.
  */
-export const transferMoneyWithRetry = async (currency: moneyTypes, giverId: string, recipientId: string, amount: number, delayTime = 300, maxRetries = 3, attempt = 1): Promise<boolean> => {
+export const transferMoneyWithRetry = async (
+  currency: moneyTypes,
+  giverId: string,
+  recipientId: string,
+  amount: number,
+  delayTime = 300,
+  maxRetries = 3,
+  attempt = 1
+): Promise<boolean> => {
   try {
     // Attempt the transfer
     return await transferMoney(currency, giverId, recipientId, amount)
