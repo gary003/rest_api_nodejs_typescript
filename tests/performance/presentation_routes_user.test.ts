@@ -44,7 +44,7 @@ describe('Performance tests - presentation:routes:user', () => {
       dockerComposeEnvironment = await new DockerComposeEnvironment(composeFilePath, composeFile)
         .withPullPolicy(PullPolicy.defaultPolicy())
         .withEnvironment(test_env)
-        .withWaitStrategy('app-1', Wait.forLogMessage('app running on'))
+        .withWaitStrategy('app-1', Wait.forLogMessage('app running'))
         .withWaitStrategy('db-1', Wait.forLogMessage('ready for connections'))
         .up(['app'])
 

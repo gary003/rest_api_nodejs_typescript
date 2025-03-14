@@ -29,7 +29,7 @@ server.on('error', async (error) => {
 })
 
 server.on('listening', async () => {
-  if (!process.env.production) logger.info(`app running on http://${localIp}:${port}, api documentation on http://${localIp}:${port}/apiDoc`)
+  if (!process.env.production) logger.info(`app running ... api documentation on http://${localIp}:${port}/apiDocumentation or localhost:${port}/apiDocumentation`)
 })
 
 // Setup process handlers

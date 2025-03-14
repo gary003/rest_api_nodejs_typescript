@@ -5,7 +5,7 @@ const logger = createLogger({
     winston.format.errors({ stack: true }), // Important for error handling
     winston.format.timestamp(),
     winston.format.printf(({ level, message, timestamp }) => {
-      return `${timestamp} ${level}: ${message};`
+      return `${timestamp} ${level}: ${message}`
     })
   ),
   exceptionHandlers: [new transports.File({ filename: './logs/exceptions.log' })]

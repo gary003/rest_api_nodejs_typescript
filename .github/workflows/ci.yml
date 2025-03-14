@@ -84,7 +84,7 @@ jobs:
         run: |
           docker run --rm -d -p 8080:8080 --name test-container ${{ env.DOCKER_IMAGE }}:${{ env.DOCKER_TAG }}
           sleep 5  # Wait for container to start
-          curl --fail http://localhost:8080/apiDoc || exit 1
+          curl --fail http://localhost:8080 || exit 1
           docker stop test-container
 
   deploy:
