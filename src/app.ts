@@ -13,17 +13,23 @@ import logger from './v1/helpers/logger'
 
 const app = express()
 
-if (!process.env.production) app.use('/apiDoc', swaggerUi.serve, swaggerUi.setup(apiDocumentation))
-
-// OpenAPI 3.0 setup
 if (!process.env.production) {
+  // openAPI V2
+  app.use('/apiDocumentation', swaggerUi.serve, swaggerUi.setup(apiDocumentation))
+
+  // openAPI V3
   // app.use('/apiDocV3', swaggerUi.serve, swaggerUi.setup(openApiSpec, openApiOptions))
-  app.use('/apiDocV3', swaggerUi.serve, swaggerUi.setup(openApiSpec))
+  app.use('/apiDocumentation', swaggerUi.serve, swaggerUi.setup(openApiSpec))
 }
 
 app.use(helmet())
 app.use(cors())
 app.use(express.json())
+
+// Redirect root URL to /apiDocV3
+app.get('/', (req, res) => {
+  return res.status(300).redirect('/apiDocumentation')
+})
 
 app.use('/api/v1/user', userRoute)
 
