@@ -7,7 +7,7 @@ const API_PORT = process.env.API_PORT || 8080
 const apiDocumentation: OpenAPIObject = {
   openapi: '3.1.0',
   info: {
-    title: 'REST API nodejs typscript',
+    title: 'REST API nodejs typescript',
     description: 'REST API for user management and wallet transactions',
     version: API_VERSION,
     contact: {
@@ -195,16 +195,6 @@ const apiDocumentation: OpenAPIObject = {
                 }
               }
             }
-          },
-          '404': {
-            description: 'User not found',
-            content: {
-              'application/json': {
-                schema: {
-                  $ref: '#/components/schemas/ErrorResponse'
-                }
-              }
-            }
           }
         }
       },
@@ -225,9 +215,6 @@ const apiDocumentation: OpenAPIObject = {
         responses: {
           '204': {
             description: 'User deleted successfully'
-          },
-          '404': {
-            $ref: '#/components/responses/NotFound'
           }
         }
       }
