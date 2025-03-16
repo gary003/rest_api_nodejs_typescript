@@ -4,7 +4,7 @@ import { User } from './entity'
 import { createNewWalletDB, deleteWalletByIdDBTransaction } from '../wallet'
 import { Readable } from 'stream'
 import { ReadStream } from 'typeorm/platform/PlatformTools'
-import logger from '../../../helpers/logger'
+import logger from '../../../../helpers/logger'
 import { userWalletDBDTO } from './userWalletDB.dto'
 import { v4 as uuidv4 } from 'uuid'
 

@@ -2,8 +2,8 @@ import { DataSource } from 'typeorm'
 import * as sinon from 'sinon'
 import { expect } from 'chai'
 import { describe, it } from 'mocha'
-import { connectionDB } from '../../../src/v1/infrastructure/database/db_connection/connectionFile'
-import * as modConnectionFile from '../../../src/v1/infrastructure/database/db_connection/connectionFile'
+import { connectionDB } from '../../../src/v1/infrastructure/persistance/database/db_connection/connectionFile'
+import * as modConnectionFile from '../../../src/v1/infrastructure/persistance/database/db_connection/connectionFile'
 import logger from '../../../src/v1/helpers/logger'
 
 describe('Unit tests - infrastructure:database', () => {

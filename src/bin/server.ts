@@ -3,7 +3,7 @@ import * as http from 'http'
 import ip from 'ip'
 import app from '../app'
 import logger from '../v1/helpers/logger'
-import { closeConnection } from '../v1/infrastructure/database/db_connection/connectionFile'
+import { closeConnection } from '../v1/infrastructure/persistance/database/db_connection/connectionFile'
 
 const localIp: string = ip.address()
 
