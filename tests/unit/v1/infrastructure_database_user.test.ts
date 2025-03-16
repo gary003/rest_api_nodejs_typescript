@@ -1,10 +1,10 @@
-import * as modConnection from '../../../src/v1/infrastructure/database/db_connection/connectionFile'
+import * as modConnection from '../../../src/v1/infrastructure/persistance/database/db_connection/connectionFile'
 
 import { createSandbox, SinonSandbox } from 'sinon'
 import { describe, it } from 'mocha'
 import chai from 'chai'
 
-import { getAllUsersDB, userStreamAdaptor } from '../../../src/v1/infrastructure/database/user'
+import { getAllUsersDB, userStreamAdaptor } from '../../../src/v1/infrastructure/persistance/database/user'
 import { Readable } from 'stream'
 
 import logger from '../../../src/v1/helpers/logger'

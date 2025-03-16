@@ -3,9 +3,9 @@ import {
   commitAndQuitTransactionRunner,
   createAndStartTransaction,
   rollBackAndQuitTransactionRunner
-} from '../../infrastructure/database/db_connection/connectionFile'
-import { getAllUsersDB, getUserWalletInfoDB, saveNewUserDB, deleteUserByIdDB, getAllUsersStreamDB } from '../../infrastructure/database/user'
-import { updateWalletByWalletIdDB, updateWalletByWalletIdTransaction } from '../../infrastructure/database/wallet'
+} from '../../infrastructure/persistance/database/db_connection/connectionFile'
+import { getAllUsersDB, getUserWalletInfoDB, saveNewUserDB, deleteUserByIdDB, getAllUsersStreamDB } from '../../infrastructure/persistance/database/user'
+import { updateWalletByWalletIdDB, updateWalletByWalletIdTransaction } from '../../infrastructure/persistance/database/wallet'
 import { moneyTypes, moneyTypesO } from '../../domain'
 import { userWalletDTO } from './dto'
 import { transferMoneyErrors, userFunctionsErrors, moneyTransferParamsValidatorErrors, transferMoneyWithRetryErrors } from './error.dto'
@@ -18,7 +18,7 @@ import { errorType } from '../../domain/error'
  * @throws {Error} - If the database query fails.
  */
 export const getAllUsers = async (): Promise<userWalletDTO[]> => {
-  const allUsers = await getAllUsersDB().catch((err) => err)
+  const allUsers = await getAllUsersDB().catch((err: unknown) => err)
 
   if (allUsers instanceof Error) {
     // Log and throw an error if the database query fails

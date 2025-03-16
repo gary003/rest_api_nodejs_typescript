@@ -4,8 +4,8 @@ import { walletDBDTO } from './walletDB.dto'
 import { v4 as uuidv4 } from 'uuid'
 import { QueryRunner } from 'typeorm'
 import { User } from '../user/entity'
-import { moneyTypes } from '../../../domain'
-import logger from '../../../helpers/logger'
+import { moneyTypes } from '../../../../domain'
+import logger from '../../../../helpers/logger'
 
 export const getWalletByIdDB = async (walletId: string): Promise<walletDBDTO> => {
   const connection = await getConnection()

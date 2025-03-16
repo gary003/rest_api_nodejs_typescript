@@ -1,5 +1,5 @@
 import { DataSourceOptions, QueryRunner, DataSource } from 'typeorm'
-import logger from '../../../helpers/logger'
+import logger from '../../../../helpers/logger'
 import { v4 as uuidv4 } from 'uuid'
 
 export type transactionQueryRunnerType = QueryRunner
