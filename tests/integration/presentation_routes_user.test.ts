@@ -28,7 +28,7 @@ describe('Integration tests - presentation:routes:user', () => {
     DB_DRIVER: 'mysql',
     DB_USERNAME: 'mysql',
     DB_PASSWORD: 'mypass',
-    DB_DATABASE_NAME: 'mydbuser',
+    DB_DATABASE_NAME: 'mydb',
     DB_PORT: '3306',
     DOCKER_APP_NETWORK: 'my_app_network',
     API_PORT: '8080',
@@ -104,6 +104,7 @@ describe('Integration tests - presentation:routes:user', () => {
     beforeEach(() => {
       sandbox.restore()
     })
+
     it('Should get all users from DB from a stream', async () => {
       const resp = await request(app).get(`/${urlBase}/user/stream`)
 
@@ -127,6 +128,7 @@ describe('Integration tests - presentation:routes:user', () => {
     beforeEach(() => {
       sandbox.restore()
     })
+
     it('should add a new user', async () => {
       const newUser = {
         firstname: 'test_Rosita',
@@ -137,7 +139,8 @@ describe('Integration tests - presentation:routes:user', () => {
 
       const body = JSON.parse(response.text)
 
-      testUserId1 = body.data.userId
+      // Get the user id from DB response in addUser
+      testUserId1 = body.data.customer_id
 
       // logger.debug(JSON.stringify(body))
       expect(response.statusCode).to.be.within(200, 299)
@@ -179,7 +182,7 @@ describe('Integration tests - presentation:routes:user', () => {
       const response = await request(app).get(`/${urlBase}/user/${wrongUserId}`).set('Accept', 'application/json')
 
       expect(response.statusCode).to.be.within(500, 599)
-      expect(response.text).includes('Impossible to get any user with that ID')
+      expect(response.text).includes('Impossible to get any')
 
       sandbox.assert.called(mockErrorLogger)
     })

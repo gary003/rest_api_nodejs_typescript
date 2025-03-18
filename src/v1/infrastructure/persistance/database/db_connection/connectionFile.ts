@@ -58,7 +58,7 @@ export const tryToConnectDB = async (): Promise<DataSource> => {
  * @returns {Promise<DataSource>} - The initialized database connection.
  * @throws {Error} - If the connection fails after max attempts.
  */
-export const connectionDB = async (currenAttempt = 1, maxAttempts: number = 4, delay: number = 150): Promise<DataSource> => {
+export const connectionDB = async (currenAttempt: number = 1, maxAttempts: number = 4, delay: number = 150): Promise<DataSource> => {
   try {
     return await tryToConnectDB() // Attempt to connect
   } catch (error) {
@@ -121,7 +121,7 @@ export const closeConnection = async (): Promise<void> => {
  */
 export const createAndStartTransaction = async (): Promise<QueryRunner> => {
   try {
-    const connection = await connectionDB() // Get database connection
+    const connection = await getConnection() // Get database connection
     const queryRunner = connection.createQueryRunner() // Create query runner
     await queryRunner.connect() // Connect the query runner
     await queryRunner.startTransaction() // Start the transaction
@@ -143,7 +143,6 @@ export const commitAndQuitTransactionRunner = async (queryRunner: QueryRunner): 
   try {
     await queryRunner.commitTransaction() // Commit the transaction
     await queryRunner.release() // Release the query runner
-    await queryRunner.connection.destroy() // Destroy the connection
     return true
   } catch (error) {
     const errorMessage = `Error trying to commit transaction to DB - ${String(error)}`
@@ -162,7 +161,6 @@ export const rollBackAndQuitTransactionRunner = async (queryRunner: QueryRunner)
   try {
     await queryRunner.rollbackTransaction() // Rollback the transaction
     await queryRunner.release() // Release the query runner
-    await queryRunner.connection.destroy() // Destroy the connection
     return true
   } catch (error) {
     const errorMessage = `Error trying to rollback transaction - ${String(error)}`
@@ -179,12 +177,12 @@ export const rollBackAndQuitTransactionRunner = async (queryRunner: QueryRunner)
  * @throws {Error} - If acquiring the lock fails.
  */
 export const acquireLockOnWallet = async (queryRunner: QueryRunner, walletId: string): Promise<boolean> => {
-  const lockResult = await queryRunner.query('SELECT * FROM wallet WHERE walletId = ? FOR UPDATE', [walletId]).catch((err) => err)
+  const lockResult = await queryRunner.query('SELECT * FROM wallet WHERE wallet_id = ? FOR UPDATE', [walletId]).catch((err) => err)
 
   if (lockResult instanceof Error) {
     const errorInfo = `Error - Impossible to set the lock for db transaction - ${String(lockResult)}`
     logger.error(errorInfo)
-    return false
+    throw new Error(errorInfo)
   }
 
   return lockResult.length > 0 // Return true if lock is acquired

@@ -1,22 +1,22 @@
 import { Column, Entity, Index, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm'
-import { User } from '../user/entity'
+import { Customer } from '../customer/entity'
 
 @Entity()
 export class Wallet {
-  @PrimaryColumn({ name: 'walletId' })
-  walletId!: string
+  @PrimaryColumn('varchar')
+  wallet_id!: string
 
   @Column('int')
-  hardCurrency!: number
+  hard_currency!: number
 
   @Column('int')
-  softCurrency!: number
+  soft_currency!: number
 
-  @Index('idx_wallet_userId')
-  @OneToOne(() => User, { cascade: true, onDelete: 'CASCADE' })
+  @Index('idx_wallet_customer_id')
+  @OneToOne(() => Customer, { cascade: true, onDelete: 'CASCADE' })
   @JoinColumn({
-    name: 'userId',
-    referencedColumnName: 'userId'
+    name: 'customer_id',
+    referencedColumnName: 'customer_id'
   })
-  user!: User
+  customer!: Customer
 }

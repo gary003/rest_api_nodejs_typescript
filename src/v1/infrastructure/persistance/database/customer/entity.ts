@@ -1,9 +1,9 @@
 import { Column, Entity, PrimaryColumn } from 'typeorm'
 
 @Entity()
-export class User {
+export class Customer {
   @PrimaryColumn('varchar')
-  userId!: string
+  customer_id!: string
 
   @Column({
     type: 'varchar',

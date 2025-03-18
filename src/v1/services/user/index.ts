@@ -4,7 +4,7 @@ import {
   createAndStartTransaction,
   rollBackAndQuitTransactionRunner
 } from '../../infrastructure/persistance/database/db_connection/connectionFile'
-import { getAllUsersDB, getUserWalletInfoDB, saveNewUserDB, deleteUserByIdDB, getAllUsersStreamDB } from '../../infrastructure/persistance/database/user'
+import { getAllCustomersDB, getCustomerWalletInfoDB, saveNewCustomerDB, deleteCustomerByIdDB, getAllUsersStreamDB } from '../../infrastructure/persistance/database/customer'
 import { updateWalletByWalletIdDB, updateWalletByWalletIdTransaction } from '../../infrastructure/persistance/database/wallet'
 import { moneyTypes, moneyTypesO } from '../../domain'
 import { userWalletDTO } from './dto'
@@ -18,7 +18,7 @@ import { errorType } from '../../domain/error'
  * @throws {Error} - If the database query fails.
  */
 export const getAllUsers = async (): Promise<userWalletDTO[]> => {
-  const allUsers = await getAllUsersDB().catch((err: unknown) => err)
+  const allUsers = await getAllCustomersDB().catch((err: unknown) => err)
 
   if (allUsers instanceof Error) {
     // Log and throw an error if the database query fails
@@ -56,7 +56,7 @@ export const getAllUsersStream = async () => {
  * @throws {Error} - If the user creation fails.
  */
 export const saveNewUser = async (firstname: string, lastname: string): Promise<userWalletDTO> => {
-  const newUser = await saveNewUserDB(firstname, lastname).catch((err) => err)
+  const newUser = await saveNewCustomerDB(firstname, lastname).catch((err) => err)
 
   if (newUser instanceof Error) {
     // Log and throw an error if user creation fails
@@ -121,7 +121,7 @@ export const addCurrency = async (userId: string, currencyType: moneyTypes, amou
  * @throws {Error} - If the deletion fails.
  */
 export const deleteUserById = async (userId: string): Promise<boolean> => {
-  const deletedUser = await deleteUserByIdDB(userId).catch((err) => err)
+  const deletedUser = await deleteCustomerByIdDB(userId).catch((err: Error) => err)
 
   if (deletedUser instanceof Error) {
     // Log and throw an error if the deletion fails
@@ -140,7 +140,7 @@ export const deleteUserById = async (userId: string): Promise<boolean> => {
  * @throws {Error} - If the wallet info retrieval fails.
  */
 export const getUserWalletInfo = async (userId: string): Promise<userWalletDTO> => {
-  const userWalletI = await getUserWalletInfoDB(userId).catch((err) => err)
+  const userWalletI = await getCustomerWalletInfoDB(userId).catch((err) => err)
 
   if (userWalletI instanceof Error) {
     // Log and throw an error if the wallet info retrieval fails
@@ -166,7 +166,7 @@ export const transferMoneyParamsValidator = async (currency: moneyTypes, giverId
   if (!Object.values(moneyTypesO).includes(currency)) throw new Error(`serviceError: ${moneyTransferParamsValidatorErrors.ErrorCurrencyType!.message}`)
 
   // Retrieve the giver's wallet information
-  const giverUserInfo = await getUserWalletInfoDB(giverId).catch((error) => error)
+  const giverUserInfo = await getCustomerWalletInfoDB(giverId).catch((error) => error)
 
   if (giverUserInfo instanceof Error) {
     // Log and throw an error if the giver's wallet info retrieval fails
@@ -191,7 +191,7 @@ export const transferMoneyParamsValidator = async (currency: moneyTypes, giverId
   }
 
   // Retrieve the recipient's wallet information
-  const recipientUserInfo = await getUserWalletInfoDB(recipientId).catch((error) => error)
+  const recipientUserInfo = await getCustomerWalletInfoDB(recipientId).catch((error: Error) => error)
 
   if (recipientUserInfo instanceof Error) {
     // Log and throw an error if the recipient's wallet info retrieval fails
@@ -249,12 +249,14 @@ export const transferMoney = async (currency: moneyTypes, giverId: string, recip
   }
 
   // Acquire locks on the giver and recipient wallets to prevent concurrent updates
-  const lockResultGiver: boolean = await acquireLockOnWallet(transacRunner, String(giverUserInfo.Wallet.walletId))
-  const lockResultRecipient: boolean = await acquireLockOnWallet(transacRunner, String(recipientUserInfo.Wallet.walletId))
+  const lockResultGiver = await acquireLockOnWallet(transacRunner, String(giverUserInfo.Wallet.walletId)).catch((err) => err)
+  const lockResultRecipient = await acquireLockOnWallet(transacRunner, String(recipientUserInfo.Wallet.walletId)).catch((err) => err)
 
-  if (!lockResultGiver || !lockResultRecipient) {
+  if (lockResultGiver instanceof Error || lockResultRecipient instanceof Error) {
     // Log and throw an error if the lock acquisition fails
-    const errorLock = `serviceError: ${transferMoneyErrors.ErrorLockAcquisition!.message}`
+
+    const errorStr = !lockResultGiver ? String(lockResultGiver) : String(lockResultRecipient)
+    const errorLock = `serviceError: ${transferMoneyErrors.ErrorLockAcquisition!.message} - ${errorStr}`
     logger.error(errorLock)
     throw new Error(errorLock)
   }
