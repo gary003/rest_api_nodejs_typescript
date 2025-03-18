@@ -4,7 +4,7 @@ import { walletDBDTO } from './walletDB.dto'
 import { v4 as uuidv4 } from 'uuid'
 import { QueryRunner } from 'typeorm'
 import { User } from '../user/entity'
-import { moneyTypes } from '../../../../domain'
+import { moneyTypes, moneyTypesO2 } from '../../../../domain'
 import logger from '../../../../helpers/logger'
 
 export const getWalletByIdDB = async (walletId: string): Promise<walletDBDTO> => {
@@ -12,7 +12,7 @@ export const getWalletByIdDB = async (walletId: string): Promise<walletDBDTO> =>
 
   const WalletsRepository = connection.getRepository(Wallet)
 
-  const wallet = await WalletsRepository.findOne({ where: { walletId } }).catch((err) => err)
+  const wallet = await WalletsRepository.findOne({ where: { wallet_id: walletId } }).catch((err) => err)
 
   if (wallet instanceof Error) {
     logger.error(wallet)
@@ -27,11 +27,11 @@ export const updateWalletByWalletIdDB = async (walletId: string, currencyType: m
 
   const WalletsRepository = connection.getRepository(Wallet)
 
-  const result = await WalletsRepository.update(walletId, { [currencyType]: newBalance }).catch((err) => err)
+  const result = await WalletsRepository.update(walletId, { [moneyTypesO2[currencyType]]: newBalance }).catch((err) => err)
 
-  if (!(result instanceof Object)) {
+  if (result instanceof Error) {
     logger.error(result)
-    throw new Error(`Impossible to found the requested wallet - ${result.message}`)
+    throw new Error(`Impossible to found the requested wallet - ${String(result)}`)
   }
 
   return true
@@ -42,11 +42,13 @@ export const updateWalletByWalletIdTransaction = async (transactionRunner: Query
 
   const WalletsRepository = transactionRunner.manager.getRepository(Wallet)
 
-  const result = await WalletsRepository.update(walletId, { [currencyType]: newBalance }).catch((err) => err)
+  const curr = String(moneyTypesO2[currencyType])
 
-  if (!(result instanceof Object)) {
+  const result = await WalletsRepository.update(walletId, { [curr]: newBalance }).catch((err) => err)
+
+  if (result instanceof Error) {
     logger.error(result)
-    throw new Error(`Error while updating wallet - ${result.message}`)
+    throw new Error(`Error while updating wallet - ${String(result)}`)
   }
 
   if (result.affected === 0) throw new Error('Impossible to found the requested wallet')
@@ -60,10 +62,10 @@ export const createNewWalletDB = async (user: User): Promise<walletDBDTO> => {
   const WalletsRepository = connection.getRepository(Wallet)
 
   const newWalletToSave: Wallet = new Wallet()
-  newWalletToSave.walletId = uuidv4()
+  newWalletToSave.wallet_id = uuidv4()
   newWalletToSave.user = user
-  newWalletToSave.hardCurrency = Math.floor(Math.random() * 2000)
-  newWalletToSave.softCurrency = Math.floor(Math.random() * 2000)
+  newWalletToSave.hard_currency = Math.floor(Math.random() * 2000)
+  newWalletToSave.soft_currency = Math.floor(Math.random() * 2000)
 
   const newWallet = await WalletsRepository.save(newWalletToSave).catch((err) => err)
 
@@ -80,7 +82,7 @@ export const deleteWalletByIdDB = async (walletId: string): Promise<boolean> => 
 
   const WalletsRepository = connection.getRepository(Wallet)
 
-  const result = await WalletsRepository.delete({ walletId }).catch((err) => err)
+  const result = await WalletsRepository.delete({ wallet_id: walletId }).catch((err) => err)
 
   if (result instanceof Error || result.affected === 0) {
     logger.error(result)
@@ -93,11 +95,17 @@ export const deleteWalletByIdDB = async (walletId: string): Promise<boolean> => 
 export const deleteWalletByIdDBTransaction = async (queryRunner: QueryRunner, walletId: string) => {
   const WalletsRepository = queryRunner.manager.getRepository(Wallet)
 
-  const result = await WalletsRepository.delete({ walletId }).catch((err) => err)
+  const result = await WalletsRepository.delete({ wallet_id: walletId }).catch((err) => err)
 
-  if (result instanceof Error || result.affected === 0) {
+  if (result instanceof Error) {
     logger.error(result)
-    throw new Error(`Impossible to delete the wallet - ${result.message}`) // Use a custom error message
+    throw new Error(`Impossible to delete the wallet - ${String(result)}`) // Use a custom error message
+  }
+
+  if (result.affected === 0) {
+    const errStr = `Impossible to delete the wallet - No wallet found - idWallet = ${walletId}`
+    logger.error(errStr)
+    throw new Error(errStr) // Use a custom error message
   }
 
   return true

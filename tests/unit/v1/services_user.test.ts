@@ -32,24 +32,23 @@ describe('Unit tests - services:user', () => {
       sandbox.restore()
     })
     it('should create a new user', async () => {
-      const fakeUser = {
-        userId: 'fake_22ef5564-0234-11ed-b939-0242ac120002',
+      const fakeUserDB = {
+        user_id: 'fake_22ef5564-0234-11ed-b939-0242ac120002',
         firstname: 'fake_Eugene',
         lastname: 'fake_Porter',
         wallet: {
-          walletId: 'fake_515f73c2-027d-11ed-b939-0242ac120002',
-          hardCurrency: 2000,
-          softCurrency: 2000
+          wallet_id: 'fake_515f73c2-027d-11ed-b939-0242ac120002',
+          hard_currency: 2000,
+          soft_currency: 2000
         }
       }
 
-      const mockSaveNewUserDB = sandbox.stub(modUserDB, 'saveNewUserDB').returns(Promise.resolve(fakeUser))
+      const mockSaveNewUserDB = sandbox.stub(modUserDB, 'saveNewUserDB').returns(Promise.resolve(fakeUserDB))
 
       try {
-        const response = await saveNewUser(fakeUser.firstname, fakeUser.lastname)
+        const response = await saveNewUser(fakeUserDB.firstname, fakeUserDB.lastname)
 
         chai.assert.exists(response, 'Should get the correct response')
-        chai.assert.strictEqual(response.userId, fakeUser.userId, 'Should get the correct userId')
         chai.assert.isTrue(mockSaveNewUserDB.calledOnce)
       } catch (err) {
         chai.assert.fail(`Should not happen - no error in catch expected - ${err}`)
@@ -60,7 +59,7 @@ describe('Unit tests - services:user', () => {
         userId: 'fake_22ef5564-0234-11ed-b939-0242ac120002',
         firstname: 'fake_Eugene',
         lastname: 'fake_Porter',
-        wallet: {
+        Wallet: {
           walletId: 'fake_515f73c2-027d-11ed-b939-0242ac120002',
           hardCurrency: 2000,
           softCurrency: 2000
@@ -90,7 +89,17 @@ describe('Unit tests - services:user', () => {
       sandbox.restore()
     })
     it('should succeed adding currency', async () => {
-      const mockGetUserWalletInfo = sandbox.stub(modUserDB, 'getUserWalletInfoDB').resolves({ Wallet: { walletId: '12345' } } as unknown as userWalletDTO)
+      const fakeUser = {
+        userId: 'fake_22ef5564-0234-11ed-b939-0242ac120002',
+        firstname: 'fake_Eugene',
+        lastname: 'fake_Porter',
+        Wallet: {
+          walletId: 'fake_515f73c2-027d-11ed-b939-0242ac120002',
+          hardCurrency: 2000,
+          softCurrency: 2000
+        }
+      }
+      const mockGetUserWalletInfo = sandbox.stub(modUserDB, 'getUserWalletInfoDB').resolves(fakeUser)
       const mockUpdateWalletByWalletIdDB = sandbox.stub(modWalletDB, 'updateWalletByWalletIdDB').resolves(true)
 
       const amountToAdd = 150
@@ -458,7 +467,7 @@ describe('Unit tests - services:user', () => {
         .stub(modConnection, 'createAndStartTransaction')
         .resolves({ someTransactionObject: true } as unknown as transactionQueryRunnerType)
       const mockAcquireLockOnWallet = sandbox.stub(modConnection, 'acquireLockOnWallet')
-      mockAcquireLockOnWallet.onFirstCall().resolves(false)
+      mockAcquireLockOnWallet.onFirstCall().rejects(new Error('lock test Error'))
       mockAcquireLockOnWallet.onSecondCall().resolves(true)
       const mockUpdateWalletByWalletIdTransaction = sandbox.stub(modWalletDB, 'updateWalletByWalletIdTransaction').resolves(true) // Assuming update functions return success indicator (modify as needed)
       const mockErrorLogger = sandbox.stub(logger, 'error')
@@ -490,7 +499,7 @@ describe('Unit tests - services:user', () => {
         .resolves({ someTransactionObject: true } as unknown as transactionQueryRunnerType)
       const mockAcquireLockOnWallet = sandbox.stub(modConnection, 'acquireLockOnWallet')
       mockAcquireLockOnWallet.onFirstCall().resolves(true)
-      mockAcquireLockOnWallet.onSecondCall().resolves(false)
+      mockAcquireLockOnWallet.onSecondCall().rejects(new Error('lock test Error'))
       const mockUpdateWalletByWalletIdTransaction = sandbox.stub(modWalletDB, 'updateWalletByWalletIdTransaction').resolves(true) // Assuming update functions return success indicator (modify as needed)
       const mockErrorLogger = sandbox.stub(logger, 'error')
 

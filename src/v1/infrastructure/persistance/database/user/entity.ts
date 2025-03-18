@@ -3,7 +3,7 @@ import { Column, Entity, PrimaryColumn } from 'typeorm'
 @Entity()
 export class User {
   @PrimaryColumn('varchar')
-  userId!: string
+  user_id!: string
 
   @Column({
     type: 'varchar',
