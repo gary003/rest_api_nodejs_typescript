@@ -104,6 +104,7 @@ describe('Integration tests - presentation:routes:user', () => {
     beforeEach(() => {
       sandbox.restore()
     })
+
     it('Should get all users from DB from a stream', async () => {
       const resp = await request(app).get(`/${urlBase}/user/stream`)
 
@@ -127,6 +128,7 @@ describe('Integration tests - presentation:routes:user', () => {
     beforeEach(() => {
       sandbox.restore()
     })
+
     it('should add a new user', async () => {
       const newUser = {
         firstname: 'test_Rosita',
@@ -137,7 +139,8 @@ describe('Integration tests - presentation:routes:user', () => {
 
       const body = JSON.parse(response.text)
 
-      testUserId1 = body.data.userId
+      // Get the user id from DB response in addUser
+      testUserId1 = body.data.user_id
 
       // logger.debug(JSON.stringify(body))
       expect(response.statusCode).to.be.within(200, 299)

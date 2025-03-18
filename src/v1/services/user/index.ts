@@ -249,12 +249,14 @@ export const transferMoney = async (currency: moneyTypes, giverId: string, recip
   }
 
   // Acquire locks on the giver and recipient wallets to prevent concurrent updates
-  const lockResultGiver: boolean = await acquireLockOnWallet(transacRunner, String(giverUserInfo.Wallet.walletId))
-  const lockResultRecipient: boolean = await acquireLockOnWallet(transacRunner, String(recipientUserInfo.Wallet.walletId))
+  const lockResultGiver = await acquireLockOnWallet(transacRunner, String(giverUserInfo.Wallet.walletId)).catch((err) => err)
+  const lockResultRecipient = await acquireLockOnWallet(transacRunner, String(recipientUserInfo.Wallet.walletId)).catch((err) => err)
 
-  if (!lockResultGiver || !lockResultRecipient) {
+  if (lockResultGiver instanceof Error || lockResultRecipient instanceof Error) {
     // Log and throw an error if the lock acquisition fails
-    const errorLock = `serviceError: ${transferMoneyErrors.ErrorLockAcquisition!.message}`
+
+    const errorStr = !lockResultGiver ? String(lockResultGiver) : String(lockResultRecipient)
+    const errorLock = `serviceError: ${transferMoneyErrors.ErrorLockAcquisition!.message} - ${errorStr}`
     logger.error(errorLock)
     throw new Error(errorLock)
   }

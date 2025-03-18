@@ -3,20 +3,20 @@ import { User } from '../user/entity'
 
 @Entity()
 export class Wallet {
-  @PrimaryColumn({ name: 'walletId' })
-  walletId!: string
+  @PrimaryColumn('varchar')
+  wallet_id!: string
 
   @Column('int')
-  hardCurrency!: number
+  hard_currency!: number
 
   @Column('int')
-  softCurrency!: number
+  soft_currency!: number
 
-  @Index('idx_wallet_userId')
+  @Index('idx_wallet_user_id')
   @OneToOne(() => User, { cascade: true, onDelete: 'CASCADE' })
   @JoinColumn({
-    name: 'userId',
-    referencedColumnName: 'userId'
+    name: 'user_id',
+    referencedColumnName: 'user_id'
   })
   user!: User
 }

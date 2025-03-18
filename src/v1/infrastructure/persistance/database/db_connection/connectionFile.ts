@@ -179,12 +179,12 @@ export const rollBackAndQuitTransactionRunner = async (queryRunner: QueryRunner)
  * @throws {Error} - If acquiring the lock fails.
  */
 export const acquireLockOnWallet = async (queryRunner: QueryRunner, walletId: string): Promise<boolean> => {
-  const lockResult = await queryRunner.query('SELECT * FROM wallet WHERE walletId = ? FOR UPDATE', [walletId]).catch((err) => err)
+  const lockResult = await queryRunner.query('SELECT * FROM wallet WHERE wallet_id = ? FOR UPDATE', [walletId]).catch((err) => err)
 
   if (lockResult instanceof Error) {
     const errorInfo = `Error - Impossible to set the lock for db transaction - ${String(lockResult)}`
     logger.error(errorInfo)
-    return false
+    throw new Error(errorInfo)
   }
 
   return lockResult.length > 0 // Return true if lock is acquired
