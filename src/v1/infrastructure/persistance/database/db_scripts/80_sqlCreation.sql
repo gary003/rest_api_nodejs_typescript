@@ -1,17 +1,17 @@
 CREATE USER 'mysql'@'%' IDENTIFIED BY 'mypass';
-GRANT ALL PRIVILEGES ON mydbuser.* TO 'mysql'@'%';
+GRANT ALL PRIVILEGES ON mydb.* TO 'mysql'@'%';
 FLUSH PRIVILEGES;
 
 drop table if exists wallet;
-drop table if exists user;
+drop table if exists customer;
 
-create table user(
-  user_id varchar(50) primary key,
+create table customer(
+  customer_id varchar(50) primary key,
   firstname varchar(50),
   lastname varchar(50)
 );
 
-insert into user(user_id, firstname, lastname) 
+insert into customer(customer_id, firstname, lastname) 
   values 
   ("22ef5564-0234-11ed-b939-0242ac120002", "Carol", "Peletier"),
   ("35269564-0234-11ed-b939-0242ac120002", "Beth", "Greene"),
@@ -20,14 +20,14 @@ insert into user(user_id, firstname, lastname)
 
 create table wallet(
   wallet_id varchar(50) primary key,
-  user_id varchar(50),
+  customer_id varchar(50),
   hard_currency int,
   soft_currency int,
-  INDEX idx_wallet_user_id (user_id),
-  FOREIGN KEY (user_id) REFERENCES user(user_id)
+  INDEX idx_wallet_customer_id (customer_id),
+  FOREIGN KEY (customer_id) REFERENCES customer(customer_id)
 );
 
-insert into wallet(wallet_id, user_id, hard_currency, soft_currency) 
+insert into wallet(wallet_id, customer_id, hard_currency, soft_currency) 
   values 
   ("515f73c2-027d-11ed-b939-0242ac120002", "22ef5564-0234-11ed-b939-0242ac120002", 1000, 1240),
   ("698f73c2-027d-11ed-b939-0242ac120002", "35269564-0234-11ed-b939-0242ac120002", 250, 450),

@@ -1,5 +1,5 @@
 import { Column, Entity, Index, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm'
-import { User } from '../user/entity'
+import { Customer } from '../customer/entity'
 
 @Entity()
 export class Wallet {
@@ -12,11 +12,11 @@ export class Wallet {
   @Column('int')
   soft_currency!: number
 
-  @Index('idx_wallet_user_id')
-  @OneToOne(() => User, { cascade: true, onDelete: 'CASCADE' })
+  @Index('idx_wallet_customer_id')
+  @OneToOne(() => Customer, { cascade: true, onDelete: 'CASCADE' })
   @JoinColumn({
-    name: 'user_id',
-    referencedColumnName: 'user_id'
+    name: 'customer_id',
+    referencedColumnName: 'customer_id'
   })
-  user!: User
+  customer!: Customer
 }

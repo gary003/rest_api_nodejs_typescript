@@ -3,7 +3,7 @@ import { Wallet } from './entity'
 import { walletDBDTO } from './walletDB.dto'
 import { v4 as uuidv4 } from 'uuid'
 import { QueryRunner } from 'typeorm'
-import { User } from '../user/entity'
+import { Customer } from '../customer/entity'
 import { moneyTypes, moneyTypesO2 } from '../../../../domain'
 import logger from '../../../../helpers/logger'
 
@@ -56,14 +56,14 @@ export const updateWalletByWalletIdTransaction = async (transactionRunner: Query
   return true
 }
 
-export const createNewWalletDB = async (user: User): Promise<walletDBDTO> => {
+export const createNewWalletDB = async (customer: Customer): Promise<walletDBDTO> => {
   const connection = await getConnection()
 
   const WalletsRepository = connection.getRepository(Wallet)
 
   const newWalletToSave: Wallet = new Wallet()
   newWalletToSave.wallet_id = uuidv4()
-  newWalletToSave.user = user
+  newWalletToSave.customer = customer
   newWalletToSave.hard_currency = Math.floor(Math.random() * 2000)
   newWalletToSave.soft_currency = Math.floor(Math.random() * 2000)
 

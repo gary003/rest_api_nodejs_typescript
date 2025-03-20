@@ -1,4 +1,4 @@
-import * as modUserDB from '../../../src/v1/infrastructure/persistance/database/user'
+import * as modUserDB from '../../../src/v1/infrastructure/persistance/database/customer'
 import * as modWalletDB from '../../../src/v1/infrastructure/persistance/database/wallet'
 import * as modUser from '../../../src/v1/services/user/index'
 import * as modConnection from '../../../src/v1/infrastructure/persistance/database/db_connection/connectionFile'
@@ -31,9 +31,10 @@ describe('Unit tests - services:user', () => {
     beforeEach(() => {
       sandbox.restore()
     })
+
     it('should create a new user', async () => {
       const fakeUserDB = {
-        user_id: 'fake_22ef5564-0234-11ed-b939-0242ac120002',
+        customer_id: 'fake_22ef5564-0234-11ed-b939-0242ac120002',
         firstname: 'fake_Eugene',
         lastname: 'fake_Porter',
         wallet: {
@@ -43,7 +44,7 @@ describe('Unit tests - services:user', () => {
         }
       }
 
-      const mockSaveNewUserDB = sandbox.stub(modUserDB, 'saveNewUserDB').returns(Promise.resolve(fakeUserDB))
+      const mockSaveNewUserDB = sandbox.stub(modUserDB, 'saveNewCustomerDB').returns(Promise.resolve(fakeUserDB))
 
       try {
         const response = await saveNewUser(fakeUserDB.firstname, fakeUserDB.lastname)
@@ -66,7 +67,7 @@ describe('Unit tests - services:user', () => {
         }
       }
 
-      const mockSaveNewUserDB = sandbox.stub(modUserDB, 'saveNewUserDB').rejects(null)
+      const mockSaveNewUserDB = sandbox.stub(modUserDB, 'saveNewCustomerDB').rejects(null)
       const mockErrorLogger = sandbox.stub(logger, 'error')
 
       try {
@@ -99,7 +100,7 @@ describe('Unit tests - services:user', () => {
           softCurrency: 2000
         }
       }
-      const mockGetUserWalletInfo = sandbox.stub(modUserDB, 'getUserWalletInfoDB').resolves(fakeUser)
+      const mockGetUserWalletInfo = sandbox.stub(modUserDB, 'getCustomerWalletInfoDB').resolves(fakeUser)
       const mockUpdateWalletByWalletIdDB = sandbox.stub(modWalletDB, 'updateWalletByWalletIdDB').resolves(true)
 
       const amountToAdd = 150
@@ -146,7 +147,7 @@ describe('Unit tests - services:user', () => {
     it('should delete a single user from DB by its id', async () => {
       const userToFetch: string = '22ef5564-0234-11ed-b939-0242ac120002'
 
-      const mockDeleteUserByIdDB = sandbox.stub(modUserDB, 'deleteUserByIdDB').returns(Promise.resolve(true))
+      const mockDeleteUserByIdDB = sandbox.stub(modUserDB, 'deleteCustomerByIdDB').returns(Promise.resolve(true))
       // const mockDeleteWalletByIdDB = sandbox.stub(modWalletDB, "").returns(Promise.resolve(true))
 
       try {
@@ -188,7 +189,7 @@ describe('Unit tests - services:user', () => {
         }
       }
 
-      const mockFetchUserDB = sandbox.stub(modUserDB, 'getUserWalletInfoDB')
+      const mockFetchUserDB = sandbox.stub(modUserDB, 'getCustomerWalletInfoDB')
       mockFetchUserDB.onFirstCall().resolves(fakeUserGiver)
       mockFetchUserDB.onSecondCall().resolves(fakeUserRecipient)
 
@@ -222,7 +223,7 @@ describe('Unit tests - services:user', () => {
         }
       }
 
-      const mockFetchUserDB = sandbox.stub(modUserDB, 'getUserWalletInfoDB')
+      const mockFetchUserDB = sandbox.stub(modUserDB, 'getCustomerWalletInfoDB')
       mockFetchUserDB.onFirstCall().resolves(fakeUserGiver)
       mockFetchUserDB.onSecondCall().resolves(fakeUserRecipient)
 
@@ -264,7 +265,7 @@ describe('Unit tests - services:user', () => {
         }
       }
 
-      const mockFetchUserDB = sandbox.stub(modUserDB, 'getUserWalletInfoDB')
+      const mockFetchUserDB = sandbox.stub(modUserDB, 'getCustomerWalletInfoDB')
       mockFetchUserDB.onFirstCall().resolves(fakeUserGiver)
       mockFetchUserDB.onSecondCall().resolves(fakeUserRecipient)
 
@@ -296,7 +297,7 @@ describe('Unit tests - services:user', () => {
         }
       }
 
-      const mockFetchUserDB = sandbox.stub(modUserDB, 'getUserWalletInfoDB')
+      const mockFetchUserDB = sandbox.stub(modUserDB, 'getCustomerWalletInfoDB')
       mockFetchUserDB.onFirstCall().rejects(new Error('test - 1'))
       mockFetchUserDB.onSecondCall().rejects(null)
 
@@ -341,7 +342,7 @@ describe('Unit tests - services:user', () => {
         }
       }
 
-      const mockFetchUserDB = sandbox.stub(modUserDB, 'getUserWalletInfoDB')
+      const mockFetchUserDB = sandbox.stub(modUserDB, 'getCustomerWalletInfoDB')
       mockFetchUserDB.onFirstCall().resolves(fakeUserGiver)
       mockFetchUserDB.onSecondCall().rejects(null)
 

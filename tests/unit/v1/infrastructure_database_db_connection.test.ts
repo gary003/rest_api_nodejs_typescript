@@ -6,7 +6,7 @@ import { connectionDB } from '../../../src/v1/infrastructure/persistance/databas
 import * as modConnectionFile from '../../../src/v1/infrastructure/persistance/database/db_connection/connectionFile'
 import logger from '../../../src/v1/helpers/logger'
 
-describe('Unit tests - infrastructure:database', () => {
+describe('Unit tests - infrastructure:database:db_connection', () => {
   const sandbox = sinon.createSandbox()
 
   // Dont accidentally fetch real database (use of mocks in the tests) !

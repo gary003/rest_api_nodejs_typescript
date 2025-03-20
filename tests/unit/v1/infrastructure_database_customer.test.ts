@@ -4,14 +4,14 @@ import { createSandbox, SinonSandbox } from 'sinon'
 import { describe, it } from 'mocha'
 import chai from 'chai'
 
-import { getAllUsersDB, userStreamAdaptor } from '../../../src/v1/infrastructure/persistance/database/user'
+import { getAllCustomersDB, customerStreamAdaptor } from '../../../src/v1/infrastructure/persistance/database/customer'
 import { Readable } from 'stream'
 
 import logger from '../../../src/v1/helpers/logger'
 import { ReadStream } from 'fs'
 import { DataSource } from 'typeorm'
 
-describe('Unit tests - infrastructure:database:user', () => {
+describe('Unit tests - infrastructure:database:customer', () => {
   const originalEnv = { ...process.env }
 
   after(() => {
@@ -25,16 +25,16 @@ describe('Unit tests - infrastructure:database:user', () => {
   process.env.DB_URI = ''
   process.env.DB_HOST = ''
 
-  describe('src > v1 > infrastructure > database > user > index > getAllUserDB ', () => {
+  describe('src > v1 > infrastructure > database > customer > index > getAllUserDB ', () => {
     beforeEach(() => {
       sandbox.restore()
     })
 
-    it('should successfully retrieve all users with their wallets', async () => {
+    it('should successfully retrieve all customers with their wallets', async () => {
       // Prepare mock data
       const mockUsers = [
         {
-          user_id: 'user1',
+          customer_id: 'customer1',
           firstname: 'John',
           lastname: 'Doe',
           Wallet: {
@@ -63,12 +63,12 @@ describe('Unit tests - infrastructure:database:user', () => {
       const getConnectionStub = sandbox.stub(modConnection, 'getConnection').resolves(mockConnection as never)
 
       try {
-        const result = await getAllUsersDB()
+        const result = await getAllCustomersDB()
 
         // Assertions
         chai.assert.exists(result, 'Result should exist')
         chai.assert.isArray(result, 'Result should be an array')
-        chai.assert.lengthOf(result, 1, 'Result should have one user')
+        chai.assert.lengthOf(result, mockUsers.length, 'Result should have the same amount of customers that the mock data')
 
         // Verify stub calls
         sandbox.assert.calledOnce(getConnectionStub)
@@ -102,12 +102,12 @@ describe('Unit tests - infrastructure:database:user', () => {
       const loggerErrorStub = sandbox.stub(logger, 'error')
 
       try {
-        await getAllUsersDB()
+        await getAllCustomersDB()
         chai.assert.fail('Expected an error to be thrown')
       } catch (err) {
         chai.assert.exists(err, 'Error should be thrown')
         chai.assert.instanceOf(err, Error, 'Error should be an Error instance')
-        chai.assert.include((err as Error).message, 'Impossible to retrieve any user')
+        chai.assert.include((err as Error).message, 'Impossible to retrieve any')
 
         // Verify logger was called with the error
         sandbox.assert.calledOnce(loggerErrorStub)
@@ -117,19 +117,19 @@ describe('Unit tests - infrastructure:database:user', () => {
     })
   })
 
-  describe('src > v1 > infrastructure > database > user > index > userStreamAdaptor', () => {
+  describe('src > v1 > infrastructure > database > customer > index > customerStreamAdaptor', () => {
     beforeEach(() => {
       sandbox.restore()
     })
 
     it('should adapt stream data correctly', async () => {
-      // Mock user DB data from a stream
+      // Mock customer DB data from a stream
       const mockChunks = [
         {
-          user_user_id: 'user1_id',
-          user_firstname: 'John',
-          user_lastname: 'Doe',
-          wallet_user_id: 'user1_id',
+          customer_customer_id: 'customer1_id',
+          customer_firstname: 'John',
+          customer_lastname: 'Doe',
+          wallet_customer_id: 'customer1_id',
           wallet_wallet_id: 'wallet1',
           wallet_hard_currency: 1000,
           wallet_soft_currency: 500
@@ -139,7 +139,7 @@ describe('Unit tests - infrastructure:database:user', () => {
       // Create a readable stream from mock chunks
       const mockStream = Readable.from(mockChunks) as ReadStream // Type assertion: mockStream mimics ReadStream behavior
 
-      const adaptor = userStreamAdaptor(mockStream)
+      const adaptor = customerStreamAdaptor(mockStream)
 
       // Results from the async generator to test
       const results: string[] = []
@@ -152,7 +152,7 @@ describe('Unit tests - infrastructure:database:user', () => {
       chai.assert.deepEqual(
         results[0],
         JSON.stringify({
-          userId: 'user1_id',
+          userId: 'customer1_id',
           firstname: 'John',
           lastname: 'Doe',
           Wallet: {
@@ -177,7 +177,7 @@ describe('Unit tests - infrastructure:database:user', () => {
       const loggerErrorStub = sandbox.stub(logger, 'error')
 
       try {
-        const adaptor = userStreamAdaptor(mockStream as never)
+        const adaptor = customerStreamAdaptor(mockStream as never)
         await adaptor.next()
         chai.assert.fail('Expected an error to be thrown')
       } catch (err) {
