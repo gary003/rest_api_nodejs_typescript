@@ -3,10 +3,10 @@ import { createAndStartTransaction, getConnection } from '../db_connection/conne
 import { Customer } from './entity'
 import { createNewWalletDB, deleteWalletByIdDBTransaction } from '../wallet'
 import { Readable } from 'stream'
-import { ReadStream } from 'typeorm/platform/PlatformTools'
 import logger from '../../../../helpers/logger'
 import { v4 as uuidv4 } from 'uuid'
 import { customerWalletDBDTO, customerWalletFromTableDB } from './userWalletDB.dto'
+import { ReadStream } from 'fs'
 
 export const getAllCustomersDBAdapter = (customerDB: customerWalletFromTableDB): customerWalletDBDTO => {
   return {
