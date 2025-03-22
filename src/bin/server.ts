@@ -5,6 +5,8 @@ import app from '../app'
 import logger from '../v1/helpers/logger'
 import { closeConnection } from '../v1/infrastructure/persistance/database/db_connection/connectionFile'
 
+const urlBase: string = 'api/v1'
+
 const localIp: string = ip.address()
 
 const port: number = Number(process.env.API_PORT) || 8080
@@ -29,7 +31,7 @@ server.on('error', async (error) => {
 })
 
 server.on('listening', async () => {
-  if (!process.env.production) logger.info(`app running ... api documentation on http://${localIp}:${port}/apiDocumentation or localhost:${port}/apiDocumentation`)
+  if (!process.env.production) logger.info(`app running ... api documentation on localhost:${port} or http://${localIp}:${port}/${urlBase}/doc3/apiDocumentation`)
 })
 
 // Setup process handlers
