@@ -13,13 +13,15 @@ import logger from './v1/helpers/logger'
 
 const app = express()
 
+const urlBase: string = 'api/v1'
+
 if (!process.env.production) {
   // openAPI V2
-  app.use('/apiDocumentation', swaggerUi.serve, swaggerUi.setup(apiDocumentation))
+  app.use(`/${urlBase}/doc2/apiDocumentation`, swaggerUi.serve, swaggerUi.setup(apiDocumentation))
 
   // openAPI V3
   // app.use('/apiDocV3', swaggerUi.serve, swaggerUi.setup(openApiSpec, openApiOptions))
-  app.use('/apiDocumentation', swaggerUi.serve, swaggerUi.setup(openApiSpec))
+  app.use(`/${urlBase}/doc3/apiDocumentation`, swaggerUi.serve, swaggerUi.setup(openApiSpec))
 }
 
 app.use(helmet())
@@ -28,10 +30,10 @@ app.use(express.json())
 
 // Redirect root URL to /apiDocV3
 app.get('/', (req, res) => {
-  return res.status(300).redirect('/apiDocumentation')
+  return res.status(300).redirect(`/${urlBase}/doc3/apiDocumentation`)
 })
 
-app.use('/api/v1/user', userRoute)
+app.use(`/${urlBase}/user`, userRoute)
 
 const handleNotFound = (req: express.Request, res: express.Response, next: express.NextFunction) => {
   // Check if any route handler has already handled the request
