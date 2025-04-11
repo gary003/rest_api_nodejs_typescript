@@ -68,7 +68,7 @@ Don't forgot to restart your computer or session for the changes to be available
 - OpenAPI (swagger)
   Copy this url in a browser (adapt the port if needed)
 
-  `localhost:8080/apiDoc`
+  `localhost:8080`
 
 ## Tests + Coverage
 
@@ -79,9 +79,7 @@ Don't forgot to restart your computer or session for the changes to be available
 ## Developer
 
 - Gary Johnson
-
   - mail: gary.johnson.freelance@gmail.com
-
   - github: https://github.com/gary003
 
 ## License
