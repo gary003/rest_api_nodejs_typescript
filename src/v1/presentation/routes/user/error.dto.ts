@@ -1,6 +1,6 @@
 import { errorType } from '../../../domain/error'
 
-export const errorAPIUSER: Record<string, errorType> = {
+export const errorAPIUSER = {
   errorAPIGetAllUsers: {
     name: 'errorAPIGetAllUsers',
     message: 'Error - Impossible to get any user from database'

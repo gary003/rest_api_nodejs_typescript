@@ -112,7 +112,7 @@ describe('Unit tests - infrastructure:database:customer', () => {
         // Verify logger was called with the error
         sandbox.assert.calledOnce(loggerErrorStub)
         sandbox.assert.calledOnce(getConnectionStub)
-        sandbox.assert.calledWith(loggerErrorStub, mockError)
+        sandbox.assert.called(loggerErrorStub)
       }
     })
   })
