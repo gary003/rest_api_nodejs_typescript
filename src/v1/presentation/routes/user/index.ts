@@ -13,14 +13,12 @@ const userRouter = Router()
 userRouter
   .route('/')
   .get(async (_: Request, res: Response) => {
-    const results = await getAllUsers().catch((err) => {
-      logger.error(err)
-      return err
-    })
+    const results = await getAllUsers().catch((err) => err)
 
     if (results instanceof Error) {
-      const errInfo = `presentationError: ${errorAPIUSER.errorAPIGetAllUsers?.message} \n ${results.message}`
-      return res.status(500).send(errInfo)
+      const errInfo = `presentationError: ${errorAPIUSER.errorAPIGetAllUsers.message} \n ${String(results)}`
+      logger.error(errInfo)
+      return res.status(588).end(errInfo)
     }
 
     const apiRes: apiResponseGetAllUserType = { data: results as userWalletDTO[] }
@@ -97,7 +95,7 @@ userRouter
     const result = await getUserWalletInfo(String(req.params.userId)).catch((err) => err)
 
     if (result instanceof Error) {
-      const errInfo = `presentationError: ${errorAPIUSER.errorAPIGetUserInfo?.message} \n ${result.message}`
+      const errInfo = `presentationError: ${errorAPIUSER.errorAPIGetUser.message} \n ${result.message}`
       return res.status(500).send(errInfo)
     }
 
