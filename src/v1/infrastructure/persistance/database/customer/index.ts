@@ -34,8 +34,9 @@ export const getAllCustomersDB = async (): Promise<customerWalletDBDTO[]> => {
 
   // Handle errors during query execution
   if (result instanceof Error) {
-    logger.error(result)
-    throw new Error(`Impossible to retrieve any customer - ${result.message}`)
+    const errorMessage = `Impossible to retrieve any customer - ${String(result)}`
+    logger.error(errorMessage)
+    throw new Error(errorMessage)
   }
 
   // Create result customers with wallets

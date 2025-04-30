@@ -22,7 +22,7 @@ export const getAllUsers = async (): Promise<userWalletDTO[]> => {
 
   if (allUsers instanceof Error) {
     // Log and throw an error if the database query fails
-    const allUsersError = `serviceError: ${userFunctionsErrors.ErrorRetrievingUser!.message} \n databaseError: ${String(allUsers)}`
+    const allUsersError = `serviceError: ${userFunctionsErrors.ErrorRetrievingUsers!.message} \n databaseError: ${String(allUsers)}`
     logger.error(allUsersError)
     throw new Error(allUsersError)
   }
