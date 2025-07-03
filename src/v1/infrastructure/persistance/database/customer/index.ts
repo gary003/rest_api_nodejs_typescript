@@ -2,7 +2,7 @@ import { Wallet } from '../wallet/entity'
 import { createAndStartTransaction, getConnection } from '../db_connection/connectionFile'
 import { Customer } from './entity'
 import { createNewWalletDB, deleteWalletByIdDBTransaction } from '../wallet'
-import { Readable } from 'stream'
+import { pipeline } from 'stream'
 import logger from '../../../../helpers/logger'
 import { v4 as uuidv4 } from 'uuid'
 import { customerWalletDBDTO, customerWalletFromTableDB } from './userWalletDB.dto'
@@ -64,7 +64,7 @@ export const customerStreamAdaptor = async function* (source: ReadStream): Async
         }
       }
 
-      yield JSON.stringify(adaptedData) + '\n'
+      yield `${JSON.stringify(adaptedData)}\n`
     }
   } catch (err) {
     logger.error(err) // Log stream processing errors
@@ -73,7 +73,7 @@ export const customerStreamAdaptor = async function* (source: ReadStream): Async
 }
 
 // Get all customers as a stream for efficient handling of large datasets
-export const getAllUsersStreamDB = async (): Promise<Readable> => {
+export const getAllUsersStreamDB = async () => {
   const connection = await getConnection() // Get DB connection
   const CustomerRepository = connection.getRepository(Customer) // Get User repository
 
@@ -82,12 +82,7 @@ export const getAllUsersStreamDB = async (): Promise<Readable> => {
     .innerJoinAndMapOne('customer.Wallet', Wallet, 'wallet', 'wallet.customer_id = customer.customer_id')
     .stream()
 
-  // Convert generator to a readable stream
-  const readableStream = Readable.from(customerStreamAdaptor(customerStream), {
-    objectMode: true
-  })
-
-  return readableStream
+  return pipeline(customerStream, customerStreamAdaptor, (err) => err)
 }
 
 // Save a new customer to the database and create a wallet for them
