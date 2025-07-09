@@ -63,9 +63,12 @@ Don't forgot to restart your computer or session for the changes to be available
 
 - Launch the app & DB (mysql)
 
+  In a shell, at the root directory of the project, type
+
   `docker-compose up`
 
 - OpenAPI (swagger)
+
   Copy this url in a browser (adapt the port if needed)
 
   `localhost:8080`
@@ -79,7 +82,7 @@ Don't forgot to restart your computer or session for the changes to be available
 ## Developer
 
 - Gary Johnson
-  - mail: gary.johnson.freelance@gmail.com
+  - mail: gary.top.freelance@gmail.com
   - github: https://github.com/gary003
 
 ## License
