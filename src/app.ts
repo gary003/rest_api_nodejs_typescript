@@ -7,9 +7,12 @@ import apiDocumentation from './v1/helpers/apiDocumentation/v2'
 // import { openApiOptions } from './v1/helpers/apiDocumentation/v3/docOptions'
 import openApiSpec from './v1/helpers/apiDocumentation/v3'
 
+import compression from 'compression'
 import helmet from 'helmet'
 import cors from 'cors'
 import logger from './v1/helpers/logger'
+
+import rateLimit from 'express-rate-limit'
 
 const app = express()
 
@@ -24,9 +27,12 @@ if (!process.env.production) {
   app.use(`/${urlBase}/doc3/apiDocumentation`, swaggerUi.serve, swaggerUi.setup(openApiSpec))
 }
 
+app.use(compression())
 app.use(helmet())
 app.use(cors())
 app.use(express.json())
+
+app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100 })) // 100 req/15min
 
 // Redirect root URL to /apiDocV3
 app.get('/', (req, res) => {

@@ -24,7 +24,9 @@ services:
     image: mysql:latest
     restart: always
     environment:
-      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD:-mypass}
+      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD:-StrongRootPassword123!}
+      - MYSQL_USER=${DB_USERNAME:-mysql}
+      - MYSQL_PASSWORD=${DB_PASSWORD:-mypass}
       - MYSQL_DATABASE=${DB_DATABASE_NAME:-mydb}
     volumes:
       - ./src/v1/infrastructure/persistance/database/db_volume:/var/lib/mysql

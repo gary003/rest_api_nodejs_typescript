@@ -11,9 +11,10 @@
     "build:docker:image": "docker build -t gary003/rest-api-nodejs-typescript .",
     "docker:launch": "npx pm2-docker start ./dist/bin/server.js -i 0",
     "docker:launch:dev": "npx nodemon ./src/bin/server.ts",
-    "clean": "npm run stop && npm run clean:pm2 && npm run clean:image:app && npm run clean:container:all",
+    "clean": "npm run stop && npm run clean:pm2 && npm run clean:image:app && npm run clean:container:all && npm run clean:volumes",
     "clean:pm2": " npx pm2 kill",
     "clean:image:app": "docker image rm $(docker image ls -q '*-app*') 2>/dev/null || true",
+    "clean:volumes": "docker volume rm $(docker volume ls -q) 2>/dev/null || true",
     "clean:container:all": "docker container rm $(docker container ls -aq) 2>/dev/null || true",
     "lint": "npx eslint .",
     "test": "npm run lint && npx c8 mocha -r ts-node/register --timeout 800000 './tests/integration/**/*.test.ts' './tests/unit/v1/**/*.test.ts'",
@@ -23,10 +24,12 @@
     "test:unit:v1": "npx c8 mocha -r ts-node/register --timeout 500000 './tests/unit/v1/**/*.test.ts'"
   },
   "dependencies": {
+    "compression": "^1.8.0",
     "cors": "^2.8.5",
     "crypto-js": "^4.1.1",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "express-rate-limit": "^7.5.1",
     "helmet": "^7.1.0",
     "ip": "^1.1.5",
     "mysql2": "^3.12.0",
@@ -41,6 +44,7 @@
   "devDependencies": {
     "@eslint/js": "^9.20.0",
     "@types/chai": "^4.3.1",
+    "@types/compression": "^1.8.1",
     "@types/cors": "^2.8.12",
     "@types/crypto-js": "^4.1.1",
     "@types/express": "^4.17.13",

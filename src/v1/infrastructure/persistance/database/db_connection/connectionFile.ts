@@ -24,6 +24,7 @@ const getConnectionOptions = async (): Promise<DataSourceOptions> => {
     entities: [__dirname + '/../**/entity.*s'], // Path to entity files
     synchronize: false, // Disable auto-sync
     poolSize: 10, // Max connections in the pool
+    idleTimeout: 30000,
     poolErrorHandler: (err) => logger.error('Connection pool error:', err), // Handle pool errors
     extra: {
       connectionLimit: 10, // Max connections (matches poolSize)
