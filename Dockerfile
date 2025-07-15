@@ -10,6 +10,6 @@ COPY . .
 
 EXPOSE 8080
 
-RUN ["npm", "run", "build"]
+RUN ["npm", "run", "build:app"]
 
-CMD [ "npm", "run", "docker:launch"]
+CMD [ "npm", "run", "docker:launch:app"]
