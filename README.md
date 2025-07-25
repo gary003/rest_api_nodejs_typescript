@@ -10,7 +10,7 @@
   - Coverage
   - Unit tests
   - Integration tests with **testcontainers** and **supertest**
-- Persistance with **typeorm**
+- persistence with **typeorm**
   - Entities handling
   - Table join
   - Table lock
