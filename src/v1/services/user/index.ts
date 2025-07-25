@@ -3,9 +3,9 @@ import {
   commitAndQuitTransactionRunner,
   createAndStartTransaction,
   rollBackAndQuitTransactionRunner
-} from '../../infrastructure/persistance/database/db_connection/connectionFile'
-import { getAllCustomersDB, getCustomerWalletInfoDB, saveNewCustomerDB, deleteCustomerByIdDB, getAllUsersStreamDB } from '../../infrastructure/persistance/database/customer'
-import { updateWalletByWalletIdDB, updateWalletByWalletIdTransaction } from '../../infrastructure/persistance/database/wallet'
+} from '../../infrastructure/persistence/database/db_connection/connectionFile'
+import { getAllCustomersDB, getCustomerWalletInfoDB, saveNewCustomerDB, deleteCustomerByIdDB, getAllUsersStreamDB } from '../../infrastructure/persistence/database/customer'
+import { updateWalletByWalletIdDB, updateWalletByWalletIdTransaction } from '../../infrastructure/persistence/database/wallet'
 import { moneyTypes, moneyTypesO } from '../../domain'
 import { userWalletDTO } from './dto'
 import { transferMoneyErrors, userFunctionsErrors, moneyTransferParamsValidatorErrors, transferMoneyWithRetryErrors } from './error.dto'

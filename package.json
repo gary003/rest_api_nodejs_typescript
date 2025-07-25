@@ -10,7 +10,6 @@
     "build:app": "npx tsc -p .",
     "docker:build:image": "docker build -t gary003/rest-api-nodejs-typescript .",
     "docker:launch:app": "npx pm2-docker start ./dist/bin/server.js -i 0",
-    "docker:launch:dev:app": "npx nodemon ./src/bin/server.ts",
     "clean": "npm run stop && npm run clean:pm2 && npm run clean:image:app && npm run clean:container:all && npm run clean:volumes",
     "clean:pm2": " npx pm2 kill",
     "clean:image:app": "docker image rm $(docker image ls -q '*-app*') 2>/dev/null || true",
