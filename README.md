@@ -10,7 +10,7 @@
   - Coverage
   - Unit tests
   - Integration tests with **testcontainers** and **supertest**
-- persistence with **typeorm**
+- Persistence with **typeorm**
   - Entities handling
   - Table join
   - Table lock
@@ -34,16 +34,18 @@ To make things easier for github users, there in no need of a .env, easier to te
 
 ## Prerequisites
 
-- Having docker(v27+) & docker-compose(v2.20) installed
+- Having git installed
 
-!! A docker group must be created, then your user(sudoer) is added to it.
-Otherwise you'll have trouble launching the tests !!
+- Having npm(v6+) & npx installed
 
-Link to install and configure docker properly :
+- Having docker(v27+) & docker-compose(v2.20+) installed
 
-    https://medium.com/devops-technical-notes-and-manuals/how-to-run-docker-commands-without-sudo-28019814198f
+  !! A docker group must be created, then your user(sudoer) is added to it.
+  Otherwise you'll have trouble launching the tests !!
 
-Don't forgot to restart your computer or session for the changes to be available on all shells
+  Link to install and configure docker properly : https://medium.com/devops-technical-notes-and-manuals/how-to-run-docker-commands-without-sudo-28019814198f
+
+  Don't forgot to restart your computer or session for the changes to be available on all shells
 
 ## Git Installation
 
@@ -65,7 +67,7 @@ Don't forgot to restart your computer or session for the changes to be available
 
   In a shell, at the root directory of the project, type
 
-  `docker-compose up`
+  `npm run start` or `docker-compose up`
 
 - OpenAPI (swagger)
 
