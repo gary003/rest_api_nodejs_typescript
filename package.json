@@ -23,6 +23,10 @@
     "test:unit:v1": "npx c8 mocha -r ts-node/register --timeout 500000 './tests/unit/v1/**/*.test.ts'"
   },
   "dependencies": {
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/auto-instrumentations-node": "^0.62.0",
+    "@opentelemetry/sdk-node": "^0.203.0",
+    "@opentelemetry/semantic-conventions": "^1.36.0",
     "compression": "^1.8.0",
     "cors": "^2.8.5",
     "crypto-js": "^4.1.1",

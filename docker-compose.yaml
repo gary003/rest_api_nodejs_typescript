@@ -5,7 +5,10 @@ services:
       - '${API_PORT:-8080}:${API_PORT:-8080}'
     depends_on:
       - db
+      - otel-collector
     environment:
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+      - OTEL_SERVICE_NAME=rest-api-nodejs
       - DB_DRIVER=${DB_DRIVER:-mysql}
       - DB_HOST=${DB_HOST:-db}
       - DB_USERNAME=${DB_USERNAME:-mysql}
@@ -40,7 +43,77 @@ services:
     networks:
       - my_db_network
 
+  # OpenTelemetry Collector
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    command: ['--config=/etc/otel-config.yaml']
+    volumes:
+      - ./src/v1/infrastructure/observability/otel-collector-config.yaml:/etc/otel-config.yaml
+    ports:
+      # Receivers
+      - '4317:4317' # OTLP gRPC
+
+      - '4318:4318' # OTLP HTTP
+
+      # Extensions
+      - '13133:13133' # health_check
+      - '1777:1777' # pprof
+      - '55679:55679' # zPages
+      - '8888:8888' # Prometheus metrics
+
+      # Optional receivers
+      - '9411:9411' # Zipkin
+      - '14250:14253' # Jaeger gRPC
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:13133/livez']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - otel-net
+
+  # Jaeger UI (optional)
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - '16686:16686' # UI
+      - '14253:14250' # gRPC
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    networks:
+      - otel-net
+
+  # Prometheus (optional)
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./src/v1/infrastructure/observability/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - '9090:9090'
+    networks:
+      - otel-net
+
+  # otel-collector:
+  #   image: otel/opentelemetry-collector-contrib:latest # Use the contrib image for more receivers/exporters
+  #   command: ['--config=/etc/otel-collector-config.yaml']
+  #   volumes:
+  #     - ./src/v1/infrastructure/observability/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+  #   ports:
+  #     - '4317:4317' # OTLP/gRPC receiver
+  #     - '4318:4318' # OTLP/HTTP receiver
+  #     - '8888:8888' # Prometheus metrics (for collector itself)
+  #     - '55679:55679' # ZPages (debugging)
+  #   healthcheck:
+  #     test: ['CMD', 'curl', '-f', 'http://localhost:13133']
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #   networks:
+  #     - my_app_network # Ensure your application service is on the same network
+
 networks:
+  otel-net:
+    driver: bridge
   my_app_network:
     driver: bridge
   my_db_network:

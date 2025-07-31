@@ -1,0 +1,26 @@
+extensions:
+  health_check: {} # Required for /metrics (default port: 13133)
+  zpages: {} # For live debugging (default port: 55679)
+
+receivers:
+  otlp:
+    protocols:
+      grpc: {}
+      http: {}
+
+exporters:
+  debug:
+    verbosity: detailed
+
+service:
+  extensions: [health_check, zpages] # Activate extensions
+  pipelines:
+    traces:
+      receivers: [otlp]
+      exporters: [debug]
+    metrics:
+      receivers: [otlp]
+      exporters: [debug]
+    logs:
+      receivers: [otlp]
+      exporters: [debug]
