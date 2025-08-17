@@ -5,8 +5,8 @@
   "version": "1.0.0",
   "main": "./src/v1/bin/server.ts",
   "scripts": {
-    "start": "npm run clean && docker-compose up",
-    "stop": "docker-compose down --remove-orphans",
+    "start": "npm run clean && docker compose up",
+    "stop": "docker compose down --remove-orphans",
     "build:app": "npx tsc -p .",
     "docker:build:image": "docker build -t gary003/rest-api-nodejs-typescript .",
     "docker:launch:app": "npx pm2-docker start ./dist/bin/server.js -i 0",
