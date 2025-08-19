@@ -4,7 +4,6 @@ import ip from 'ip'
 import app from '../app'
 import logger from '../v1/helpers/logger'
 import { closeConnection } from '../v1/infrastructure/persistence/database/db_connection/connectionFile'
-import { sdk } from '../v1/infrastructure/observability/instrumentation'
 
 const urlBase: string = 'api/v1'
 
@@ -38,7 +37,5 @@ server.on('listening', async () => {
 // Setup process handlers
 process.on('SIGTERM', shutdown)
 process.on('SIGINT', shutdown)
-
-sdk.start()
 
 server.listen(port)

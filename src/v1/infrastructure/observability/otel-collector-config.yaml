@@ -5,22 +5,35 @@ extensions:
 receivers:
   otlp:
     protocols:
-      grpc: {}
-      http: {}
+      grpc:
+        endpoint: 0.0.0.0:54317
+      http:
+        endpoint: 0.0.0.0:54318
 
 exporters:
+  otlp/tempo:
+    endpoint: tempo:64317
+    tls:
+      insecure: true
   debug:
     verbosity: detailed
 
+processors:
+  batch:
+    timeout: 1s
+    send_batch_size: 100
+
 service:
-  extensions: [health_check, zpages] # Activate extensions
   pipelines:
     traces:
       receivers: [otlp]
-      exporters: [debug]
+      processors: [batch]
+      exporters: [otlp/tempo]
     metrics:
       receivers: [otlp]
+      processors: [batch]
       exporters: [debug]
     logs:
       receivers: [otlp]
+      processors: [batch]
       exporters: [debug]

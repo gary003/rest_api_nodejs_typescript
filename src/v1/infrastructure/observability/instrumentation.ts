@@ -1,4 +1,3 @@
-/*instrumentation.ts*/
 import { NodeSDK } from '@opentelemetry/sdk-node'
 // import { ConsoleSpanExporter } from '@opentelemetry/sdk-trace-node'
 import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics'
@@ -14,13 +13,19 @@ export const sdk = new NodeSDK({
     [ATTR_SERVICE_VERSION]: process.env.API_VERSION || '1.0'
   }),
 
+  // const traceExporter = new OTLPTraceExporter({
+  //   url: 'http://otel-collector:54318/v1/traces'
+  // })
+
   //traceExporter: new ConsoleSpanExporter(),
   traceExporter: new OTLPTraceExporter({
     url: process.env.OTEL_EXPORTER_OTLP_ENDPOINT || 'otel-collector'
   }),
+
   // metricReader: new PeriodicExportingMetricReader({
   //   exporter: new ConsoleMetricExporter()
   // })
+
   metricReader: new PeriodicExportingMetricReader({
     exporter: new OTLPMetricExporter({
       // Similarly for metrics

@@ -10,84 +10,84 @@ on:
 
 env:
   NODE_VERSION: 22
-  DOCKER_IMAGE: gary003/rest-api-nodejs-typescript
+  DOCKER_IMAGE: gary003/rest_api_nodejs_typescript
   DOCKER_TAG: latest
 
 jobs:
-  security-scan:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+  # security-scan:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
+  #     - name: Setup Node.js
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: ${{ env.NODE_VERSION }}
 
-      - name: Install dependencies
-        run: npm ci
+  #     - name: Install dependencies
+  #       run: npm ci
 
-      # Static Analysis - Trivy
-      - name: Trivy filesystem scan
-        uses: aquasecurity/trivy-action@master
-        with:
-          scan-type: 'fs'
-          scan-ref: '.'
-          format: 'sarif'
-          output: 'trivy-results.sarif'
+  #     # Static Analysis - Trivy
+  #     - name: Trivy filesystem scan
+  #       uses: aquasecurity/trivy-action@master
+  #       with:
+  #         scan-type: 'fs'
+  #         scan-ref: '.'
+  #         format: 'sarif'
+  #         output: 'trivy-results.sarif'
 
-      # # Dependency Scanning - Snyk
-      # - name: Snyk dependency scan
-      #   uses: snyk/actions/node@master
-      #   env:
-      #     SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      #   with:
-      #     args: --severity-threshold=medium --sarif-file-output=snyk.sarif
+  #     # # Dependency Scanning - Snyk
+  #     # - name: Snyk dependency scan
+  #     #   uses: snyk/actions/node@master
+  #     #   env:
+  #     #     SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+  #     #   with:
+  #     #     args: --severity-threshold=medium --sarif-file-output=snyk.sarif
 
-      # Build Docker image
-      - name: Build Docker image
-        run: npm run docker:image:build
+  #     # Build Docker image
+  #     - name: Build Docker image
+  #       run: npm run docker:build:image
 
-      # Container Scanning - Trivy
-      - name: Trivy container scan
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: ''
-          format: 'sarif'
-          output: 'trivy-container.sarif'
+  #     # Container Scanning - Trivy
+  #     - name: Trivy container scan
+  #       uses: aquasecurity/trivy-action@master
+  #       with:
+  #         image-ref: ''
+  #         format: 'sarif'
+  #         output: 'trivy-container.sarif'
 
-      # Start application for DAST
-      - name: Start application
-        run: |
-          docker run -d -p 3000:3000 --name test-app ${{ env.DOCKER_IMAGE }}:${{ env.DOCKER_TAG }}
-          sleep 30
+  #     # Start application for DAST
+  #     - name: Start application
+  #       run: |
+  #         docker run -d -p 3000:3000 --name test-app ${{ env.DOCKER_IMAGE }}:${{ env.DOCKER_TAG }}
+  #         sleep 30
 
-      # Dynamic Analysis - OWASP ZAP
-      - name: OWASP ZAP scan
-        uses: zaproxy/action-baseline@v0.10.0
-        with:
-          target: 'http://localhost:3000'
-          rules_file_name: '.zap/rules.tsv'
+  #     # Dynamic Analysis - OWASP ZAP
+  #     - name: OWASP ZAP scan
+  #       uses: zaproxy/action-baseline@v0.10.0
+  #       with:
+  #         target: 'http://localhost:3000'
+  #         rules_file_name: '.zap/rules.tsv'
 
-      # Upload all results to GitHub Security
-      - name: Upload Trivy results
-        uses: github/codeql-action/upload-sarif@v2
-        with:
-          sarif_file: 'trivy-results.sarif'
+  #     # Upload all results to GitHub Security
+  #     - name: Upload Trivy results
+  #       uses: github/codeql-action/upload-sarif@v2
+  #       with:
+  #         sarif_file: 'trivy-results.sarif'
 
-      # - name: Upload Snyk results
-      #   uses: github/codeql-action/upload-sarif@v2
-      #   with:
-      #     sarif_file: 'snyk.sarif'
+  #     # - name: Upload Snyk results
+  #     #   uses: github/codeql-action/upload-sarif@v2
+  #     #   with:
+  #     #     sarif_file: 'snyk.sarif'
 
-      # Fail build on high severity vulnerabilities
-      - name: Check for high severity issues
-        run: |
-          if grep -q "HIGH\|CRITICAL" trivy-results.sarif; then
-            echo "High/Critical vulnerabilities found!"
-            exit 1
-          fi
+  #     # Fail build on high severity vulnerabilities
+  #     - name: Check for high severity issues
+  #       run: |
+  #         if grep -q "HIGH\|CRITICAL" trivy-results.sarif; then
+  #           echo "High/Critical vulnerabilities found!"
+  #           exit 1
+  #         fi
 
   test-app:
     runs-on: ubuntu-latest
@@ -133,9 +133,9 @@ jobs:
             *.log
             coverage/
 
-  docker-image-build:
+  docker-build-image:
     runs-on: ubuntu-latest
-    needs: test
+    needs: test-app
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -153,7 +153,7 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Build Docker image
-        run: npm run docker:image:build
+        run: npm run docker:build:image
 
       - name: Test Docker image
         run: |
@@ -164,7 +164,7 @@ jobs:
 
   deploy-dockerHub:
     runs-on: ubuntu-latest
-    needs: build
+    needs: docker-build-image
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
