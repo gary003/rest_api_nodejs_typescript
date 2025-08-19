@@ -18,6 +18,10 @@ pids
 # clinic supervision load test
 .clinic
 
+# observability volumes
+trace_data_volume/
+dashboard_data_volume/
+
 # Docker
 db_volume
 
