@@ -43,55 +43,77 @@ services:
     networks:
       - my_db_network
 
-  # OpenTelemetry Collector
   otel-collector:
     image: otel/opentelemetry-collector-contrib:latest
     command: ['--config=/etc/otel-config.yaml']
     volumes:
       - ./src/v1/infrastructure/observability/otel-collector-config.yaml:/etc/otel-config.yaml
     ports:
-      # Receivers
       - '4317:4317' # OTLP gRPC
-
       - '4318:4318' # OTLP HTTP
-
-      # Extensions
       - '13133:13133' # health_check
-      - '1777:1777' # pprof
-      - '55679:55679' # zPages
       - '8888:8888' # Prometheus metrics
-
-      # Optional receivers
-      - '9411:9411' # Zipkin
-      - '14250:14253' # Jaeger gRPC
     healthcheck:
       test: ['CMD', 'curl', '-f', 'http://localhost:13133/livez']
       interval: 30s
       timeout: 10s
       retries: 3
+    depends_on:
+      tempo:
+        condition: service_healthy
+    dns:
+      - 8.8.8.8
     networks:
-      - otel-net
+      - my_app_network
 
-  # Jaeger UI (optional)
-  jaeger:
-    image: jaegertracing/all-in-one:latest
-    ports:
-      - '16686:16686' # UI
-      - '14253:14250' # gRPC
-    environment:
-      - COLLECTOR_OTLP_ENABLED=true
-    networks:
-      - otel-net
-
-  # Prometheus (optional)
-  prometheus:
-    image: prom/prometheus:latest
+  tempo:
+    image: grafana/tempo:latest
+    user: "10001:10001" # Run as Tempo's default user
+    command: ["-config.file=/etc/tempo.yaml"]
     volumes:
-      - ./src/v1/infrastructure/observability/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./src/v1/infrastructure/observability/tempo.yaml:/etc/tempo.yaml
+      - ./src/v1/infrastructure/observability/trace_data_volume:/tmp/tempo
     ports:
-      - '9090:9090'
+      - "3200:3200"   # Tempo HTTP API
+      - "14268:14268" # Jaeger Thrift HTTP
+      - "9411:9411"   # Zipkin
+    expose:
+      - "4317"  # OTLP gRPC (internal only)
+      - "4318"  # OTLP HTTP (internal only)
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:3200/status']
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
-      - otel-net
+      - my_app_network
+
+  # # Prometheus (optional)
+  # prometheus:
+  #   image: prom/prometheus:latest
+  #   volumes:
+  #     - ./src/v1/infrastructure/observability/prometheus.yml:/etc/prometheus/prometheus.yml
+  #   ports:
+  #     - '9090:9090'
+  #   networks:
+  #     - otel-net
+
+  # grafana:
+  #   image: grafana/grafana:latest
+  #   user: "472:472"  # Run as grafana user (UID 472)
+  #   ports:
+  #     - "3000:3000"
+  #   environment:
+  #     - GF_SECURITY_ADMIN_USER=admin
+  #     - GF_SECURITY_ADMIN_PASSWORD=admin
+  #     - GF_PATHS_DATA=/var/lib/grafana
+  #     - GF_PATHS_PLUGINS=/var/lib/grafana/plugins
+  #   volumes:
+  #     - ./src/v1/infrastructure/observability/prometheus/dashboard_data:/var/lib/grafana
+  #   depends_on:
+  #     - tempo
+  #   networks:
+  #     - my_app_network
 
   # otel-collector:
   #   image: otel/opentelemetry-collector-contrib:latest # Use the contrib image for more receivers/exporters
@@ -118,3 +140,8 @@ networks:
     driver: bridge
   my_db_network:
     driver: bridge
+
+volumes:
+  db_volume:
+  tempo_data:
+  grafana_data:
