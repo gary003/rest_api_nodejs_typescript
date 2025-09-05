@@ -1,3 +1,4 @@
+import '../../../../bin/tracing'
 import { Router, Request, Response } from 'express'
 import { deleteUserById, getAllUsers, getAllUsersStream, getUserWalletInfo, saveNewUser, transferMoney } from '../../../services/user/index'
 
@@ -7,23 +8,49 @@ import logger from '../../../helpers/logger'
 import { apiResponseGetAllUserType, apiResponseGetUserType, apiResponseCreateUserType, apiResponseDeleteUserType } from './apiResponse.dto'
 import { userWalletDTO } from '../../../services/user/dto'
 import { validateUserId } from '../../middlewares/user/user.validation'
+import { trace, Span, Tracer, SpanOptions } from '@opentelemetry/api'
 
 const userRouter = Router()
 
 userRouter
   .route('/')
   .get(async (_: Request, res: Response) => {
-    const results = await getAllUsers().catch((err) => err)
-
-    if (results instanceof Error) {
-      const errInfo = `presentationError: ${errorAPIUSER.errorAPIGetAllUsers.message} \n ${String(results)}`
-      logger.error(errInfo)
-      return res.status(588).end(errInfo)
+    const tracer: Tracer = trace.getTracer('user-service')
+    const spanOptions: SpanOptions = {
+      startTime: Date.now()
     }
 
-    const apiRes: apiResponseGetAllUserType = { data: results as userWalletDTO[] }
+    return tracer.startActiveSpan('getAllUsers', spanOptions, async (span: Span) => {
+      // Add attributes (tags) to the span
+      span.setAttribute('http.route', '/users')
+      const { traceId } = span.spanContext()
 
-    return res.status(200).json(apiRes)
+      logger.info({ traceId })
+
+      try {
+        const results = await getAllUsers().catch((err) => err)
+
+        if (results instanceof Error) {
+          const errInfo = `presentationError: ${errorAPIUSER.errorAPIGetAllUsers.message} \n ${String(results)}`
+          logger.error(errInfo)
+          return res.status(588).end(errInfo)
+        }
+
+        // const { traceId } = span.spanContext()
+        // logger.debug(JSON.stringify(span.spanContext()))
+        // logger.debug(JSON.stringify(traceId))
+
+        const apiRes: apiResponseGetAllUserType = { data: results as userWalletDTO[] }
+
+        span.end()
+        return res.status(200).json(apiRes)
+      } catch (err) {
+        if (err instanceof Error) span.recordException(String(err))
+        span.end()
+        const errInfo: string = `route:getAllUsers - Internal Server Error - ${err}`
+        return res.status(500).send(errInfo)
+      }
+    })
   })
   .post(async (req: Request, res: Response) => {
     const { firstname, lastname } = req.body

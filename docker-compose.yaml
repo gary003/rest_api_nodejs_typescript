@@ -4,11 +4,9 @@ services:
     ports:
       - '${API_PORT:-8080}:${API_PORT:-8080}'
     depends_on:
-      - db
-      - otel-collector
+      db:
+        condition: service_started
     environment:
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
-      - OTEL_SERVICE_NAME=rest-api-nodejs
       - DB_DRIVER=${DB_DRIVER:-mysql}
       - DB_HOST=${DB_HOST:-db}
       - DB_USERNAME=${DB_USERNAME:-mysql}
@@ -54,34 +52,35 @@ services:
       - '13133:13133' # health_check
       - '8888:8888' # Prometheus metrics
     healthcheck:
-      test: ['CMD', 'curl', '-X', 'http://localhost:13133/livez']
+      test: ['CMD', 'curl', '-f', 'http://localhost:13133/livez']
       interval: 30s
       timeout: 10s
       retries: 3
-    depends_on:
-      - tempo
+    # depends_on:
+    #   tempo:
+    #     condition: service_started
     networks:
       - my_app_network
 
-  tempo:
-    image: grafana/tempo:latest
-    command: ['-config.file=/etc/tempo.yaml']
-    volumes:
-      - ./src/v1/infrastructure/observability/tempo.yaml:/etc/tempo.yaml
-      - ./src/v1/infrastructure/observability/trace_data_volume:/tmp/tempo
-    ports:
-      - '3200:3200' # Tempo HTTP API
-      - '14268:14268' # Jaeger Thrift HTTP
-      - '9411:9411' # Zipkin
-      - '64317:4317' # OTLP gRPC (internal only)
-      - '64318:4318' # OTLP HTTP (internal only)
-    healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:3200/status']
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - my_app_network
+  # tempo:
+  #   image: grafana/tempo:latest
+  #   command: ['-config.file=/etc/tempo.yaml']
+  #   volumes:
+  #     - ./src/v1/infrastructure/observability/tempo.yaml:/etc/tempo.yaml
+  #     - ./src/v1/infrastructure/observability/trace_data_volume:/tmp/tempo
+  #   ports:
+  #     - '3200:3200' # Tempo HTTP API
+  #     - '14268:14268' # Jaeger Thrift HTTP
+  #     - '9411:9411' # Zipkin
+  #     - '64318:4318' # OTLP HTTP (internal only)
+  #     - '64317:4317' # OTLP gRPC (internal only)
+  #   healthcheck:
+  #     test: ['CMD', 'curl', '-f', 'http://localhost:3200/status']
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+  #   networks:
+  #     - my_app_network
 
   # # Prometheus (optional)
   # prometheus:
@@ -91,7 +90,7 @@ services:
   #   ports:
   #     - '9090:9090'
   #   networks:
-  #     - otel-net
+  #     - observability_network
 
   # grafana:
   #   image: grafana/grafana:latest
@@ -108,17 +107,14 @@ services:
   #   depends_on:
   #     - tempo
   #   networks:
-  #     - my_app_network
+  #     - observability_network
 
 networks:
-  otel-net:
-    driver: bridge
   my_app_network:
     driver: bridge
   my_db_network:
     driver: bridge
-
-volumes:
-  db_volume:
-  tempo_data:
-  grafana_data:
+  # observability_network:
+  #   driver: bridge
+# volumes:
+#   grafana_data:

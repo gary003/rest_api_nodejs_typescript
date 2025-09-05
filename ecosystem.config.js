@@ -10,7 +10,9 @@ module.exports = {
       name: 'server',
       script: './dist/bin/server.js',
       exec_mode: 'cluster',
-      instances: 0
+      instances: 1,
+      wait_ready: true,
+      listen_timeout: 500
     }
   ]
 }
