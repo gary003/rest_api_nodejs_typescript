@@ -26,6 +26,8 @@ const logger = winston.createLogger({
 
 logger.add(new OpenTelemetryTransportV3({}))
 
+logger.add(new transports.Console())
+
 if (process.env.NODE_ENV === 'production') {
   logger.level = 'error'
   logger.add(
@@ -37,7 +39,6 @@ if (process.env.NODE_ENV === 'production') {
   )
 } else {
   logger.level = process.env.LOGLEVEL || 'debug'
-  // logger.add(new transports.Console())
 }
 
 export default logger

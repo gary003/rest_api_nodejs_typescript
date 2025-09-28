@@ -25,7 +25,7 @@ userRouter
       span.setAttribute('http.route', '/users')
       const { traceId } = span.spanContext()
 
-      logger.info({ traceId })
+      logger.info(traceId)
 
       try {
         const results = await getAllUsers().catch((err) => err)
@@ -35,10 +35,6 @@ userRouter
           logger.error(errInfo)
           return res.status(588).end(errInfo)
         }
-
-        // const { traceId } = span.spanContext()
-        // logger.debug(JSON.stringify(span.spanContext()))
-        // logger.debug(JSON.stringify(traceId))
 
         const apiRes: apiResponseGetAllUserType = { data: results as userWalletDTO[] }
 

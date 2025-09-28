@@ -5,6 +5,8 @@ find . -type f \
 ! -path "*/logs/*" \
 ! -path "*/coverage/*" \
 ! -path "*/db_volume/*" \
+! -path "*/grafana_data_volume/*" \
+! -path "*/trace_data_volume/*" \
 ! -path "*/.git/*" \
 ! -path "*/github/*" \
 ! -name "package.json" \

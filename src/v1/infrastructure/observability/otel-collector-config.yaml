@@ -1,20 +1,27 @@
 extensions:
-  health_check: {} # Required for /metrics (default port: 13133)
-  zpages: {} # For live debugging (default port: 55679)
+  health_check: {}
+  zpages: {}
 
 receivers:
   otlp:
     protocols:
       grpc:
-        endpoint: 0.0.0.0:54317
       http:
-        endpoint: 0.0.0.0:54318
 
 exporters:
-  # otlp/tempo:
-  #   endpoint: tempo:64317
-  #   tls:
-  #     insecure: true
+  otlphttp/tempo:
+    endpoint: http://tempo:4318
+    tls:
+      insecure: true
+  otlphttp/loki:
+    endpoint: http://loki:3100/loki/api/v1/push
+    tls:
+      insecure: true
+  prometheus:
+    endpoint: 0.0.0.0:8889
+    namespace: otel
+    const_labels:
+      exporter: otel-collector
   debug:
     verbosity: detailed
 
@@ -28,13 +35,12 @@ service:
     traces:
       receivers: [otlp]
       processors: [batch]
-      # exporters: [otlp/tempo]
-      exporters: [debug]
+      exporters: [otlphttp/tempo]
     metrics:
       receivers: [otlp]
       processors: [batch]
-      exporters: [debug]
+      exporters: [prometheus]
     logs:
       receivers: [otlp]
       processors: [batch]
-      exporters: [debug]
+      exporters: [debug, otlphttp/loki]

@@ -4,8 +4,7 @@ services:
     ports:
       - '${API_PORT:-8080}:${API_PORT:-8080}'
     depends_on:
-      db:
-        condition: service_started
+      - db
     environment:
       - DB_DRIVER=${DB_DRIVER:-mysql}
       - DB_HOST=${DB_HOST:-db}
@@ -47,74 +46,132 @@ services:
     volumes:
       - ./src/v1/infrastructure/observability/otel-collector-config.yaml:/etc/otel-config.yaml
     ports:
-      - '54317:4317' # OTLP gRPC (host:container)
-      - '54318:4318' # OTLP HTTP (host:container)
+      - '4317:4317' # OTLP gRPC (host:container)
+      - '4318:4318' # OTLP HTTP (host:container)
       - '13133:13133' # health_check
-      - '8888:8888' # Prometheus metrics
+      - '8889:8889' # Prometheus metrics
     healthcheck:
       test: ['CMD', 'curl', '-f', 'http://localhost:13133/livez']
       interval: 30s
       timeout: 10s
       retries: 3
     # depends_on:
-    #   tempo:
-    #     condition: service_started
+    #   - loki
     networks:
       - my_app_network
 
-  # tempo:
-  #   image: grafana/tempo:latest
-  #   command: ['-config.file=/etc/tempo.yaml']
-  #   volumes:
-  #     - ./src/v1/infrastructure/observability/tempo.yaml:/etc/tempo.yaml
-  #     - ./src/v1/infrastructure/observability/trace_data_volume:/tmp/tempo
-  #   ports:
-  #     - '3200:3200' # Tempo HTTP API
-  #     - '14268:14268' # Jaeger Thrift HTTP
-  #     - '9411:9411' # Zipkin
-  #     - '64318:4318' # OTLP HTTP (internal only)
-  #     - '64317:4317' # OTLP gRPC (internal only)
-  #   healthcheck:
-  #     test: ['CMD', 'curl', '-f', 'http://localhost:3200/status']
-  #     interval: 10s
-  #     timeout: 5s
-  #     retries: 5
-  #   networks:
-  #     - my_app_network
+  loki:
+    image: grafana/loki:latest
+    ports:
+      - '3100:3100' # Loki HTTP API
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - ./src/v1/infrastructure/observability/loki-config.yaml:/etc/loki/local-config.yaml
+    healthcheck:
+      test: ['CMD', 'wget', '--no-verbose', '--spider', 'http://localhost:3100/ready']
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 20s
+    networks:
+      - my_observability_network
 
-  # # Prometheus (optional)
-  # prometheus:
-  #   image: prom/prometheus:latest
-  #   volumes:
-  #     - ./src/v1/infrastructure/observability/prometheus.yml:/etc/prometheus/prometheus.yml
-  #   ports:
-  #     - '9090:9090'
-  #   networks:
-  #     - observability_network
+  # Prometheus (optional)
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./src/v1/infrastructure/observability/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - '9090:9090'
+    networks:
+      - my_observability_network
 
   # grafana:
   #   image: grafana/grafana:latest
-  #   user: "472:472"  # Run as grafana user (UID 472)
+  #   user: '472:472'
   #   ports:
-  #     - "3000:3000"
+  #     - '3000:3000' # Grafana UI
   #   environment:
   #     - GF_SECURITY_ADMIN_USER=admin
   #     - GF_SECURITY_ADMIN_PASSWORD=admin
   #     - GF_PATHS_DATA=/var/lib/grafana
-  #     - GF_PATHS_PLUGINS=/var/lib/grafana/plugins
   #   volumes:
-  #     - ./src/v1/infrastructure/observability/prometheus/dashboard_data:/var/lib/grafana
+  #     - ./src/v1/infrastructure/observability/grafana_data_volume:/var/lib/grafana
+  #   command:
+  #     - sh
+  #     - -c
+  #     - |
+  #       chown -R 472:472 /var/lib/grafana
+  #       exec /run.sh
   #   depends_on:
-  #     - tempo
+  #     - loki
+  #     - otel-collector # Ensure collector is up so Grafana can add it as a data source
   #   networks:
-  #     - observability_network
+  #     - my_app_network
+
+  grafana:
+    image: grafana/grafana:latest
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./src/v1/infrastructure/observability/grafana-datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+      - GF_FEATURE_TOGGLES_ENABLE=traceqlEditor
+      - GF_INSTALL_PLUGINS=grafana-exploretraces-app ## plugin...
+    ports:
+      - '3000:3000'
+    networks:
+      - my_observability_network
+
+  tempo:
+    image: grafana/tempo:latest
+    command: ['-config.file=/etc/tempo.yaml']
+    ports:
+      - '3200' # Tempo HTTP API
+      - '4317' # OTLP gRPC (internal only)
+    volumes:
+      - ./src/v1/infrastructure/observability/tempo.yaml:/etc/tempo.yaml
+      - tempo_data:/var/tempo
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:3200/status']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - my_observability_network
+
+  # init:
+  #   image: &tempoImage grafana/tempo:latest
+  #   user: root
+  #   entrypoint:
+  #     - 'chown'
+  #     - '10001:10001'
+  #     - '/var/tempo'
+  #   volumes:
+  #     - ./tempo-data:/var/tempo
+
+  # tempo:
+  #   image: *tempoImage
+  #   command: ['-config.file=/etc/tempo.yaml']
+  #   volumes:
+  #     - ./src/v1/infrastructure/observability/tempo.yaml:/etc/tempo.yaml
+  #     - ./tempo-data:/var/tempo
+  #   ports:
+  #     - '3200' # tempo
+  #     - '4317' # otlp grpc
+  #   depends_on:
+  #     - init
 
 networks:
   my_app_network:
     driver: bridge
   my_db_network:
     driver: bridge
-  # observability_network:
-  #   driver: bridge
-# volumes:
-#   grafana_data:
+  my_observability_network:
+    driver: bridge
+
+volumes:
+  grafana_data:
+  tempo_data:

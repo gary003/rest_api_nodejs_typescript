@@ -1,19 +1,14 @@
+stream_over_http_enabled: true
 server:
   http_listen_port: 3200
-  grpc_listen_port: 64317
+  log_level: info
 
 distributor:
   receivers:
     otlp:
       protocols:
         grpc:
-        http:
-    jaeger:
-      protocols:
-        thrift_http:
-        thrift_binary:
-        thrift_compact:
-    zipkin:
+          endpoint: 'tempo:4317'
 
 ingester:
   trace_idle_period: 10s
@@ -24,6 +19,19 @@ compactor:
   compaction:
     block_retention: 24h
 
+metrics_generator:
+  registry:
+    external_labels:
+      source: tempo
+      cluster: docker-compose
+  storage:
+    path: /var/tempo/generator/wal
+    remote_write:
+      - url: http://prometheus:9090/api/v1/write
+        send_exemplars: true
+  traces_storage:
+    path: /var/tempo/generator/traces
+
 storage:
   trace:
     backend: local
@@ -31,3 +39,9 @@ storage:
       path: /tmp/tempo/blocks
     wal:
       path: /tmp/tempo/wal
+
+overrides:
+  defaults:
+    metrics_generator:
+      processors: [service-graphs, span-metrics, local-blocks] # enables metrics generator
+      generate_native_histograms: both
