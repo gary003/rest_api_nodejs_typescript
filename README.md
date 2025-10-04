@@ -16,10 +16,10 @@
   - Table lock
   - Transactions (rollback and commit)
 - Observability **opentelemetry**
-  - log with **loki**
+  - logs with **promtail** && **loki**
   - metrics with **prometheus**
   - traces with **tempo**
-  - dashboard with grafana
+  - dashboard with **grafana**
 - Streams
   - Pipeline handling
   - Transformation

@@ -9,6 +9,8 @@ distributor:
       protocols:
         grpc:
           endpoint: 'tempo:4317'
+        http:
+          endpoint: 'tempo:4318'
 
 ingester:
   trace_idle_period: 10s

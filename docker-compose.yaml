@@ -1,6 +1,14 @@
 services:
   app:
     build: .
+    logging:
+      driver: json-file
+      options:
+        max-size: '10m'
+        max-file: '3'
+        labels: 'service'
+    labels:
+      service: 'wallet-api' # becomes service_name in Loki
     ports:
       - '${API_PORT:-8080}:${API_PORT:-8080}'
     depends_on:
@@ -59,12 +67,29 @@ services:
     #   - loki
     networks:
       - my_app_network
+      - my_observability_network
+
+  promtail:
+    image: grafana/promtail:2.9.4
+    ports:
+      - '9080:9080'
+    volumes:
+      - ./src/v1/infrastructure/observability/promtail-config.yaml:/etc/promtail/config.yaml:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    command: -config.file=/etc/promtail/config.yaml -log.level=warn
+    networks:
+      - my_app_network
+      - my_observability_network
+    depends_on:
+      - loki
 
   loki:
     image: grafana/loki:latest
     ports:
-      - '3100:3100' # Loki HTTP API
+      - '3100:3100' # expose Loki to host
     command: -config.file=/etc/loki/local-config.yaml
+    container_name: loki
     volumes:
       - ./src/v1/infrastructure/observability/loki-config.yaml:/etc/loki/local-config.yaml
     healthcheck:
@@ -76,52 +101,19 @@ services:
     networks:
       - my_observability_network
 
-  # Prometheus (optional)
   prometheus:
     image: prom/prometheus:latest
+    container_name: promtail
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--log.level=warn'
     volumes:
       - ./src/v1/infrastructure/observability/prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
       - '9090:9090'
-    networks:
-      - my_observability_network
-
-  # grafana:
-  #   image: grafana/grafana:latest
-  #   user: '472:472'
-  #   ports:
-  #     - '3000:3000' # Grafana UI
-  #   environment:
-  #     - GF_SECURITY_ADMIN_USER=admin
-  #     - GF_SECURITY_ADMIN_PASSWORD=admin
-  #     - GF_PATHS_DATA=/var/lib/grafana
-  #   volumes:
-  #     - ./src/v1/infrastructure/observability/grafana_data_volume:/var/lib/grafana
-  #   command:
-  #     - sh
-  #     - -c
-  #     - |
-  #       chown -R 472:472 /var/lib/grafana
-  #       exec /run.sh
-  #   depends_on:
-  #     - loki
-  #     - otel-collector # Ensure collector is up so Grafana can add it as a data source
-  #   networks:
-  #     - my_app_network
-
-  grafana:
-    image: grafana/grafana:latest
-    volumes:
-      - grafana_data:/var/lib/grafana
-      - ./src/v1/infrastructure/observability/grafana-datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
-    environment:
-      - GF_AUTH_ANONYMOUS_ENABLED=true
-      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
-      - GF_AUTH_DISABLE_LOGIN_FORM=true
-      - GF_FEATURE_TOGGLES_ENABLE=traceqlEditor
-      - GF_INSTALL_PLUGINS=grafana-exploretraces-app ## plugin...
-    ports:
-      - '3000:3000'
     networks:
       - my_observability_network
 
@@ -142,27 +134,35 @@ services:
     networks:
       - my_observability_network
 
-  # init:
-  #   image: &tempoImage grafana/tempo:latest
-  #   user: root
-  #   entrypoint:
-  #     - 'chown'
-  #     - '10001:10001'
-  #     - '/var/tempo'
-  #   volumes:
-  #     - ./tempo-data:/var/tempo
-
-  # tempo:
-  #   image: *tempoImage
-  #   command: ['-config.file=/etc/tempo.yaml']
-  #   volumes:
-  #     - ./src/v1/infrastructure/observability/tempo.yaml:/etc/tempo.yaml
-  #     - ./tempo-data:/var/tempo
-  #   ports:
-  #     - '3200' # tempo
-  #     - '4317' # otlp grpc
-  #   depends_on:
-  #     - init
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    depends_on:
+      - loki
+      - prometheus
+      - tempo
+    volumes:
+      - grafana_data:/var/lib/grafana
+      # Mount provisioning datasources
+      - ./src/v1/infrastructure/observability/grafana-datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml:ro
+    environment:
+      # Less chatty log at startup
+      - GF_LOG_LEVEL=warn
+      - GF_LOG_MODE=console
+      # Enable anonymous access (Admin role, no login form)
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+      # Enable TraceQL editor
+      - GF_FEATURE_TOGGLES_ENABLE=traceqlEditor
+      # Install required plugins
+      - GF_INSTALL_PLUGINS=grafana-exploretraces-app
+      # Optional: allow provisioning overwrite (helpful in dev)
+      - GF_PROVISIONING_ALLOW_OVERWRITE=true
+    ports:
+      - '3000:3000'
+    networks:
+      - my_observability_network
 
 networks:
   my_app_network:

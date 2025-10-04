@@ -15,7 +15,7 @@ const userRouter = Router()
 userRouter
   .route('/')
   .get(async (_: Request, res: Response) => {
-    const tracer: Tracer = trace.getTracer('user-service')
+    const tracer: Tracer = trace.getTracer('route-user')
     const spanOptions: SpanOptions = {
       startTime: Date.now()
     }

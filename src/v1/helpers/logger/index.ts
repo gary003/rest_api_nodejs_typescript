@@ -1,5 +1,5 @@
 import winston, { transports } from 'winston'
-import { OpenTelemetryTransportV3 } from '@opentelemetry/winston-transport'
+// import { OpenTelemetryTransportV3 } from '@opentelemetry/winston-transport'
 
 const logger = winston.createLogger({
   format: winston.format.combine(
@@ -24,7 +24,7 @@ const logger = winston.createLogger({
   exceptionHandlers: [new transports.File({ filename: './logs/exceptions.log' })]
 })
 
-logger.add(new OpenTelemetryTransportV3({}))
+// logger.add(new OpenTelemetryTransportV3({}))
 
 logger.add(new transports.Console())
 

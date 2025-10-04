@@ -13,8 +13,10 @@ datasources:
     editable: false
     jsonData:
       httpMethod: GET
+
   - name: Tempo
     type: tempo
+    uid: tempo
     access: proxy
     orgId: 1
     url: http://tempo:3200
@@ -23,10 +25,32 @@ datasources:
     version: 1
     editable: false
     apiVersion: 1
-    uid: tempo
     jsonData:
       httpMethod: GET
       serviceMap:
         datasourceUid: prometheus
       streamingEnabled:
         search: true
+
+  - name: Loki
+    type: loki
+    uid: loki
+    access: proxy
+    orgId: 1
+    url: http://loki:3100
+    basicAuth: false
+    isDefault: false
+    version: 1
+    editable: false
+    jsonData:
+      httpMethod: GET
+      derivedFields:
+        - datasourceUid: tempo
+          matcherRegex: "traceID=(\\w+)"
+          name: TraceID
+          url: '$${__value.raw}'
+      maxLines: 1000
+      # Add custom header to avoid org_id=fake
+      httpHeaderName1: 'X-Scope-OrgID'
+    secureJsonData:
+      httpHeaderValue1: '1'

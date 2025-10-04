@@ -5,7 +5,7 @@
   "version": "1.0.0",
   "main": "./src/v1/bin/server.ts",
   "scripts": {
-    "start": "npm run clean && npm run launch:config && docker compose up --build",
+    "start": "npm run clean && docker compose up --build",
     "stop": "docker compose down --remove-orphans",
     "build:app": "npx tsc -p .",
     "launch:config": "bash ./scripts/config.sh",
