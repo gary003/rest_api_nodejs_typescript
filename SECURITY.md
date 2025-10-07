@@ -1,11 +1,5 @@
 # Security Practices
 
-<!-- ## Authentication & Authorization
-
-- **JWT with strong algorithms** (RS256, HS512)
-- **OAuth2** for third-party integrations
-- **Role-based access control** (RBAC) enforced at API/DB levels -->
-
 ## Data Protection
 
 - **All inputs sanitized** (Zod for validation, parameterized SQL queries)

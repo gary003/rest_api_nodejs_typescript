@@ -53,19 +53,19 @@ export const tryToConnectDB = async (): Promise<DataSource> => {
 
 /**
  * Connects to the database with retry logic for transient failures.
- * @param {number} currenAttempt - The current retry attempt (default: 1).
+ * @param {number} currentAttempt - The current retry attempt (default: 1).
  * @param {number} maxAttempts - The maximum number of retry attempts (default: 4).
  * @param {number} delay - The initial delay between retries in milliseconds (default: 150).
  * @returns {Promise<DataSource>} - The initialized database connection.
  * @throws {Error} - If the connection fails after max attempts.
  */
-export const connectionDB = async (currenAttempt: number = 1, maxAttempts: number = 4, delay: number = 150): Promise<DataSource> => {
+export const connectionDB = async (currentAttempt: number = 1, maxAttempts: number = 4, delay: number = 150): Promise<DataSource> => {
   try {
     return await tryToConnectDB() // Attempt to connect
   } catch (error) {
-    if (currenAttempt < maxAttempts) {
-      const nextAttempt = currenAttempt + 1 // Increment attempt count
-      const waitTime = delay * Math.pow(2, currenAttempt) // Exponential backoff
+    if (currentAttempt < maxAttempts) {
+      const nextAttempt = currentAttempt + 1 // Increment attempt count
+      const waitTime = delay * Math.pow(2, currentAttempt) // Exponential backoff
       logger.warn(`Warning - fail to connect to DB - retry in ${waitTime} seconds`)
       await new Promise((resolve) => setTimeout(resolve, waitTime)) // Wait before retrying
       return connectionDB(nextAttempt, maxAttempts, delay) // Retry connection

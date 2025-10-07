@@ -170,7 +170,7 @@ export const getCustomerWalletInfoDB = async (customerId: string) => {
   // Handle query errors
   if (customerWalletInfo instanceof Error) {
     logger.error(customerWalletInfo)
-    throw new Error(`Impossible to get the custumer info - ${customerWalletInfo.message}`)
+    throw new Error(`Impossible to get the customer info - ${customerWalletInfo.message}`)
   }
 
   // Handle case where customer doesn't exist

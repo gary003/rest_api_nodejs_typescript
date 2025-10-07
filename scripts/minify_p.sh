@@ -6,6 +6,7 @@ find . -type f \
 ! -path "*/coverage/*" \
 ! -path "*/db_volume/*" \
 ! -path "*/grafana_data_volume/*" \
+! -path "*/promtail/*" \
 ! -path "*/trace_data_volume/*" \
 ! -path "*/.git/*" \
 ! -path "*/github/*" \

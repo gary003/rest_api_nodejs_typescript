@@ -16,6 +16,7 @@ scrape_configs:
       - targets: [localhost] # required by Promtail
         labels:
           region: local
+          service_name: rest_api_nodejs_typescript
           env: dev
           __path__: /var/lib/docker/containers/*/*log # Docker JSON driver path
 
@@ -34,8 +35,8 @@ scrape_configs:
           format: RFC3339Nano
           source: time
       - labels: # promote to indexed Loki labels
-          container_name:
-          service_name:
+          container_name: api_c
+          service_name: api_rest_node_typescript_promtail
           stream:
       - output:
           source: output # send only the message part to Loki

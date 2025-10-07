@@ -4,7 +4,7 @@ import { NodeSDK } from '@opentelemetry/sdk-node'
 import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics'
 import { resourceFromAttributes } from '@opentelemetry/resources'
 import { ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from '@opentelemetry/semantic-conventions'
-import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-grpc'
+import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http'
 import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node'
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http'
 
@@ -39,10 +39,9 @@ export const sdk = new NodeSDK({
 
 try {
   sdk.start()
-  logger.info('✅ OpenTelemetry started')
-  logger.info(`urlTrace: ${process.env.OTEL_EXPORTER_OTLP_ENDPOINT}, url: ${process.env.OTEL_EXPORTER_OTLP_ENDPOINT}`)
+  logger.info('OpenTelemetry started')
 } catch (error) {
-  logger.error('❌ Error starting OpenTelemetry', error)
+  logger.error('Error starting OpenTelemetry', error)
 }
 
 export default sdk
