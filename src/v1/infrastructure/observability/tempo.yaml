@@ -11,11 +11,24 @@ distributor:
           endpoint: 'tempo:4317'
         http:
           endpoint: 'tempo:4318'
+  ring:
+    kvstore:
+      store: inmemory
+
+memberlist:
+  join_members: []
+  abort_if_cluster_join_fails: false
+  bind_port: 0
 
 ingester:
   trace_idle_period: 10s
   max_block_bytes: 1_000_000
   max_block_duration: 5m
+  lifecycler:
+    ring:
+      kvstore:
+        store: inmemory
+      replication_factor: 1
 
 compactor:
   compaction:
