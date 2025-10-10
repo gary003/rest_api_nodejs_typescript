@@ -94,7 +94,6 @@ services:
     command:
       - '--config.file=/etc/loki/local-config.yaml'
       - '--log.level=warn'
-    container_name: loki
     volumes:
       - ./src/v1/infrastructure/observability/loki-config.yaml:/etc/loki/local-config.yaml
     healthcheck:
@@ -108,7 +107,6 @@ services:
 
   prometheus:
     image: prom/prometheus:latest
-    container_name: promtail
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
@@ -145,7 +143,6 @@ services:
 
   grafana:
     image: grafana/grafana:latest
-    container_name: grafana
     depends_on:
       - loki
       - prometheus

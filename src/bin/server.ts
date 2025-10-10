@@ -4,6 +4,7 @@ import ip from 'ip'
 import app from '../app'
 import logger from '../v1/helpers/logger'
 import { closeConnection } from '../v1/infrastructure/persistence/database/db_connection/connectionFile'
+import sdk from './tracing'
 
 const urlBase: string = 'api/v1'
 
@@ -16,7 +17,10 @@ const server: http.Server = http.createServer(app)
 // Graceful shutdown
 const shutdown = async () => {
   try {
-    await closeConnection()
+    // Close database connection
+    closeConnection()
+    // Close monitoring tracing scrapping
+    sdk.shutdown()
     process.exit(0)
   } catch (error) {
     logger.error('Error during shutdown:', error)
@@ -26,7 +30,7 @@ const shutdown = async () => {
 
 server.on('error', async (error) => {
   logger.error(JSON.stringify(error))
-  await shutdown()
+  shutdown()
   process.exit(1)
 })
 

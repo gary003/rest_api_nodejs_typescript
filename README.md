@@ -2,35 +2,34 @@
 
 ## Skills
 
+- Languages: **Typescript**, Markdown, JSON
 - **Clean architecture** (onion architecture)
-- CI/CD pipeline with **github actions**
-  - test, build docker image, deploy docker image to **docker hub**
-- Testing using **sinon.js** and **mocha**
+- CI/CD pipeline with **Github actions** && **Docker**
+  - docker-compose.yaml
+  - Dockerfile
+  - Test, build docker image, deploy docker image to **Docker hub**
+- Testing using **Sinon.js** and **Mocha**
   - Mocks
   - Coverage
   - Unit tests
-  - Integration tests with **testcontainers** and **supertest**
-- Persistence with **typeorm**
+  - Integration tests with **Testcontainers** and **Supertest**
+- Persistence with **Typeorm**
   - Entities handling
   - Table join
   - Table lock
   - Transactions (rollback and commit)
-- Observability **opentelemetry**
-  - logs with **promtail** && **loki**
-  - metrics with **prometheus**
-  - traces with **tempo**
-  - dashboard with **grafana**
+- Observability **Opentelemetry**
+  - Logs with **Promtail** && **Loki**
+  - Metrics with **Prometheus**
+  - Traces with **Tempo**
+  - Dashboard with **Grafana**
 - Streams
   - Pipeline handling
   - Transformation
   - Async generators
 - Documentation with **Swagger**
-- **Docker**
-  - docker-compose.yaml
-  - Dockerfile
 - Logging with **Winston**
 - Validation using **Zod**
-- **Typescript**
 
 ## Description
 
@@ -89,9 +88,10 @@ To make things easier for github users, there in no need for a .env, easier to t
 ## Developer
 
 - Gary Johnson
-  - mail: gary.johnson.top@gmail.com
-  - github: https://github.com/gary003
+  - Mail: gary.johnson.top@gmail.com
+  - Github: https://github.com/gary003
+  - LinkedIn: https://www.linkedin.com/in/gary-johnson-0168b985/
 
 ## License
 
-    [MIT]
+[MIT]
