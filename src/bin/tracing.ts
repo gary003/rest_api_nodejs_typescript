@@ -10,7 +10,6 @@ import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http'
 
 // import { OTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-http' // Use HTTP exporter for logs
 // import { BatchLogRecordProcessor } from '@opentelemetry/sdk-logs'
-import logger from '../v1/helpers/logger'
 
 export const sdk = new NodeSDK({
   resource: resourceFromAttributes({
@@ -23,9 +22,11 @@ export const sdk = new NodeSDK({
   // metricReader: new PeriodicExportingMetricReader({
   //   exporter: new ConsoleMetricExporter()
   // }),
-  metricReader: new PeriodicExportingMetricReader({ exporter: new OTLPMetricExporter({ url: 'http://otel-collector:4318/v1/metrics' }) }),
+  metricReader: new PeriodicExportingMetricReader({
+    exporter: new OTLPMetricExporter({ url: process.env.OTEL_METRIC_EXPORTER_ENDPOINT })
+  }),
+  traceExporter: new OTLPTraceExporter({ url: process.env.OTEL_TRACE_EXPORTER_ENDPOINT })
 
-  traceExporter: new OTLPTraceExporter({ url: 'http://otel-collector:4318/v1/traces' })
   // traceExporter: new ConsoleSpanExporter()
 
   // logRecordProcessor: new BatchLogRecordProcessor(
@@ -36,12 +37,5 @@ export const sdk = new NodeSDK({
   //   })
   // )
 })
-
-try {
-  sdk.start()
-  logger.info('OpenTelemetry started')
-} catch (error) {
-  logger.error('Error starting OpenTelemetry', error)
-}
 
 export default sdk

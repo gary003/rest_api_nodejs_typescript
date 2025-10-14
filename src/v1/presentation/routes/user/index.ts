@@ -25,7 +25,7 @@ userRouter
       span.setAttribute('http.route', '/users')
       const { traceId } = span.spanContext()
 
-      logger.info(traceId)
+      logger.info(`route:userAll - traceId : ${traceId}`)
 
       try {
         const results = await getAllUsers().catch((err) => err)
