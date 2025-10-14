@@ -1,10 +1,10 @@
 require('dotenv').config()
+import sdk from './tracing'
 import * as http from 'http'
 import ip from 'ip'
 import app from '../app'
 import logger from '../v1/helpers/logger'
 import { closeConnection } from '../v1/infrastructure/persistence/database/db_connection/connectionFile'
-import sdk from './tracing'
 
 const urlBase: string = 'api/v1'
 
@@ -18,7 +18,7 @@ const server: http.Server = http.createServer(app)
 const shutdown = async () => {
   try {
     // Close database connection
-    closeConnection()
+    await closeConnection()
     // Close monitoring tracing scrapping
     sdk.shutdown()
     process.exit(0)
@@ -33,6 +33,13 @@ server.on('error', async (error) => {
   shutdown()
   process.exit(1)
 })
+
+try {
+  sdk.start()
+  logger.info('node-sdk tracing started')
+} catch (error) {
+  logger.error('Error starting node-sdk tracing', error)
+}
 
 server.on('listening', async () => {
   if (!process.env.production) logger.info(`app running ... api documentation on localhost:${port} or http://${localIp}:${port}/${urlBase}/doc3/apiDocumentation`)
