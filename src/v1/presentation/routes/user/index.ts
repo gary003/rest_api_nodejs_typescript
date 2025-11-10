@@ -7,8 +7,11 @@ import { errorAPIUSER } from './error.dto'
 import logger from '../../../helpers/logger'
 import { apiResponseGetAllUserType, apiResponseGetUserType, apiResponseCreateUserType, apiResponseDeleteUserType } from './apiResponse.dto'
 import { userWalletDTO } from '../../../services/user/dto'
-import { validateUserId } from '../../middlewares/user/user.validation'
+import { validateUserId } from '../../validation/user.validation'
 import { trace, Span, Tracer, SpanOptions } from '@opentelemetry/api'
+
+import isAuthorized from '../../middlewares/loggedUser/isAuthorized'
+import isAdmin from '../../middlewares/loggedUser/isAdmin'
 
 const userRouter = Router()
 
@@ -124,7 +127,7 @@ userRouter
 
     return res.status(200).json({ data: result } as apiResponseGetUserType)
   })
-  .delete(validateUserId, async (req: Request, res: Response) => {
+  .delete(validateUserId, isAuthorized, isAdmin, async (req: Request, res: Response) => {
     const result = await deleteUserById(String(req.params.userId)).catch((err) => err)
 
     if (result instanceof Error) {

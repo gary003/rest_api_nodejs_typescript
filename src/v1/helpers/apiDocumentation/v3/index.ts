@@ -57,6 +57,34 @@ const apiDocumentation: OpenAPIObject = {
           }
         }
       },
+      loggedUser: {
+        type: 'object',
+        required: ['id', 'name', 'email', 'phone'],
+        properties: {
+          id: {
+            type: 'string',
+            format: 'number',
+            description: 'Unique identifier for the user'
+          },
+          name: {
+            type: 'string',
+            minLength: 2,
+            example: 'John',
+            description: 'The user name'
+          },
+          email: {
+            type: 'string',
+            minLength: 12,
+            example: 'Deoe@gmail.com',
+            description: 'The user s email'
+          },
+          role: {
+            type: 'string',
+            format: 'string',
+            description: 'role the user have [admin, standard]'
+          }
+        }
+      },
       ErrorResponse: {
         type: 'object',
         properties: {
@@ -77,15 +105,57 @@ const apiDocumentation: OpenAPIObject = {
           }
         }
       }
+    },
+    securitySchemes: {
+      bearerAuth: {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT'
+      }
     }
   },
   paths: {
+    '/auth': {
+      post: {
+        tags: ['authorization'],
+        summary: 'Create a jwt token for api restricted routes',
+        description: 'Create a jwt token for api restricted routes',
+        // security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['firstname', 'lastname'],
+                properties: {
+                  loggedUser: {
+                    $ref: '#/components/schemas/loggedUser'
+                  }
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          '201': {
+            description: 'Token created successfully',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/User'
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     '/user': {
       get: {
         tags: ['user'],
         summary: 'Get all users',
         description: 'Retrieves a list of all registered users with their wallet information',
-        security: [{ BearerAuth: [] }],
         responses: {
           '200': {
             description: 'Successful operation',
@@ -154,7 +224,6 @@ const apiDocumentation: OpenAPIObject = {
         tags: ['user'],
         summary: 'Stream users',
         description: 'Real-time stream of user data updates',
-        security: [{ BearerAuth: [] }],
         responses: {
           '200': {
             description: 'Successful operation',
@@ -202,6 +271,7 @@ const apiDocumentation: OpenAPIObject = {
         tags: ['user'],
         summary: 'Delete user',
         description: 'Permanently removes a user and associated wallet',
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
             name: 'userId',
@@ -224,7 +294,6 @@ const apiDocumentation: OpenAPIObject = {
         tags: ['user'],
         summary: 'Create transaction',
         description: 'Transfer funds between wallets',
-        security: [{ BearerAuth: [] }],
         requestBody: {
           required: true,
           content: {

@@ -1,6 +1,7 @@
 require('dotenv').config()
 import express from 'express'
 import userRoute from './v1/presentation/routes/user/index'
+import authRoute from './v1/presentation/routes/auth/index'
 
 import swaggerUi from 'swagger-ui-express'
 import apiDocumentation from './v1/helpers/apiDocumentation/v2'
@@ -29,7 +30,13 @@ if (!process.env.production) {
 
 app.use(compression())
 app.use(helmet())
-app.use(cors())
+app.use(
+  cors({
+    origin: 'http://localhost:8080',
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true
+  })
+)
 app.use(express.json())
 
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100 })) // 100 req/15min
@@ -39,6 +46,7 @@ app.get('/', (req, res) => {
   return res.status(300).redirect(`/${urlBase}/doc3/apiDocumentation`)
 })
 
+app.use(`/${urlBase}/auth`, authRoute)
 app.use(`/${urlBase}/user`, userRoute)
 
 const handleNotFound = (req: express.Request, res: express.Response, next: express.NextFunction) => {
