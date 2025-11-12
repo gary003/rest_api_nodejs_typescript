@@ -23,7 +23,7 @@ const isAdmin = (req: Request, res: Response, next: NextFunction) => {
 
     return next()
   } catch (error) {
-    logger.error(`isAdin: ${error}`)
+    logger.error(`isAdmin: ${error}`)
     return res.status(401).json({ message: 'Middleware user:isAdmin - Unauthorized - wrong rights (not admin)' })
   }
 }

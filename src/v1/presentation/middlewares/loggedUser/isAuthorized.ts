@@ -6,8 +6,6 @@ import logger from '../../../helpers/logger'
 const isAuthorized = (req: Request, res: Response, next: NextFunction) => {
   const token = req.headers['authorization']?.split(' ').at(1)
 
-  logger.debug('headers: ' + token)
-
   if (!token) {
     return res.status(401).json({ message: 'Middleware:isAuthorized, failed to get a valid token' })
   }
@@ -15,7 +13,7 @@ const isAuthorized = (req: Request, res: Response, next: NextFunction) => {
   try {
     const userFromToken = jwt.verify(token, process.env.JWT_SECRET_KEY || 'secret')
 
-    logger.debug(JSON.stringify(userFromToken))
+    // logger.debug(JSON.stringify(userFromToken))
 
     req.body.user = userFromToken
 
@@ -37,7 +35,7 @@ const isAuthorized = (req: Request, res: Response, next: NextFunction) => {
       })
     }
 
-    logger.error(`Middleware:isAuthorized: Unexpected error - ${error}`)
+    // logger.error(`Middleware:isAuthorized: Unexpected error - ${error}`)
     return res.status(401).json({ message: 'Middleware:isAuthorized - Authentication failed' })
   }
 }

@@ -81,6 +81,9 @@ To make things easier for github users, there in no need for a .env, easier to t
 
 ## Tests + Coverage
 
+- (!! use npm v20 or lesser !!)
+  `nvm use 20`
+
 - Launch global tests
 
   `npm run test`

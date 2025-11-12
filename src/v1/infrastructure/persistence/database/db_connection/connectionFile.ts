@@ -88,8 +88,8 @@ export const getConnection = async (): Promise<DataSource> => {
 
   const newConnection = await connectionDB().catch((err) => err) // Attempt to connect
 
-  if (connection instanceof Error) {
-    const errorMessage = `Failed to establish database connection - ${String(connection)}`
+  if (newConnection instanceof Error) {
+    const errorMessage = `Failed to establish database connection - ${String(newConnection)}`
     logger.error(errorMessage)
     throw new Error(errorMessage)
   }

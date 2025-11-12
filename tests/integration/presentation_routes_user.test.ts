@@ -8,6 +8,7 @@ import { createSandbox, SinonSandbox } from 'sinon'
 import logger from '../../src/v1/helpers/logger'
 import { errorAPIUSER } from '../../src/v1/presentation/routes/user/error.dto'
 import { moneyTypesO } from '../../src/v1/domain'
+import jwt from 'jsonwebtoken'
 
 const DB_READY_WAIT_MS = 30000
 
@@ -266,8 +267,36 @@ describe('Integration tests - presentation:routes:user', () => {
       sandbox.restore()
     })
 
-    it('should delete a specified user', async () => {
-      const response = await request(app).delete(`/${urlBase}/user/${testUserId1}`).set('Accept', 'application/json')
+    it('should fail deleting a specified user (logged user is not an admin)', async () => {
+      // Create an admin token for authentication
+      const stdUser = {
+        id: 1,
+        email: 'user213@test.com',
+        name: 'user#213',
+        role: 'standard'
+      }
+
+      const token = jwt.sign(stdUser, process.env.JWT_SECRET_KEY || 'secret', { expiresIn: 30 })
+
+      const response = await request(app).delete(`/${urlBase}/user/${testUserId1}`).set('Accept', 'application/json').set('Authorization', `Bearer ${token}`)
+
+      // logger.debug(JSON.stringify(response))
+
+      expect(response.statusCode).to.be.equal(401)
+    })
+
+    it('should delete a specified user (logged user is admin)', async () => {
+      // Create an admin token for authentication
+      const adminUser = {
+        id: 1,
+        email: 'admin@test.com',
+        name: 'Admin User',
+        role: 'admin'
+      }
+
+      const token = jwt.sign(adminUser, process.env.JWT_SECRET_KEY || 'secret', { expiresIn: 30 })
+
+      const response = await request(app).delete(`/${urlBase}/user/${testUserId1}`).set('Accept', 'application/json').set('Authorization', `Bearer ${token}`)
 
       expect(response.statusCode).to.be.within(200, 299)
       expect(response.text).to.not.be.null
