@@ -35,7 +35,7 @@ const isAuthorized = (req: Request, res: Response, next: NextFunction) => {
       })
     }
 
-    // logger.error(`Middleware:isAuthorized: Unexpected error - ${error}`)
+    logger.error(`Middleware:isAuthorized: Unexpected error - ${error}`)
     return res.status(401).json({ message: 'Middleware:isAuthorized - Authentication failed' })
   }
 }

@@ -23,6 +23,7 @@
     "clean:images": "docker image prune -af || true",
     "lint": "npx eslint .",
     "test": "npm run lint && npm run clean && npx c8 mocha -r ts-node/register --timeout 800000 './tests/integration/**/*.test.ts' './tests/unit/v1/**/*.test.ts'",
+    "test:demo": "node -v | grep -q 'v20' && npm run test || (echo 'Please, for the tests, use node.js v20' >&2; exit 1)",
     "test:dev": "npm run lint && npm run clean && npx c8 mocha -r ts-node/register --timeout 800000 './tests/integration/**/*.test.ts' './tests/unit/v1/**/*.test.ts'",
     "test:integration": "npm run clean && npx c8 mocha -r ts-node/register --timeout 500000 './tests/integration/**/*.test.ts'",
     "test:performance": "npx mocha -r ts-node/register --timeout 500000 './tests/performance/**/*.test.ts'",

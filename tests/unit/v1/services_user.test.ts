@@ -16,12 +16,12 @@ import { userWalletDTO } from '../../../src/v1/services/user/dto'
 describe('Unit tests - services:user', () => {
   const originalEnv = { ...process.env }
 
+  const sandbox: SinonSandbox = createSandbox()
+
   after(() => {
     sandbox.restore()
     process.env = originalEnv
   })
-
-  const sandbox: SinonSandbox = createSandbox()
 
   // Dont accidentally fetch real database (use of mocks in the tests) !
   process.env.DB_URI = ''

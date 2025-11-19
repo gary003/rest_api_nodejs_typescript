@@ -7,7 +7,7 @@ import { errorAPIUSER } from './error.dto'
 import logger from '../../../helpers/logger'
 import { apiResponseGetAllUserType, apiResponseGetUserType, apiResponseCreateUserType, apiResponseDeleteUserType } from './apiResponse.dto'
 import { userWalletDTO } from '../../../services/user/dto'
-import { validateUserId } from '../../validation/user.validation'
+import { validateUserId } from '../../middlewares/validation/route_user'
 import { trace, Span, Tracer, SpanOptions } from '@opentelemetry/api'
 
 import isAuthorized from '../../middlewares/loggedUser/isAuthorized'
@@ -26,9 +26,9 @@ userRouter
     return tracer.startActiveSpan('getAllUsers', spanOptions, async (span: Span) => {
       // Add attributes (tags) to the span
       span.setAttribute('http.route', '/users')
-      const { traceId } = span.spanContext()
 
-      logger.info(`route:userAll - traceId : ${traceId}`)
+      // const { traceId } = span.spanContext()
+      // logger.info(`route:userAll - traceId : ${traceId}`)
 
       try {
         const results = await getAllUsers().catch((err) => err)

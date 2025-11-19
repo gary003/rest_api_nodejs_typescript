@@ -7,7 +7,7 @@
 - CI/CD pipeline with **Github actions** && **Docker**
   - docker-compose.yaml
   - Dockerfile
-  - Test, build docker image, deploy docker image to **Docker hub**
+  - Test, build docker image, deploy docker image to **DockerHub**
 - Testing using **Sinon.js** and **Mocha**
   - Mocks
   - Coverage
@@ -27,6 +27,7 @@
   - Pipeline handling
   - Transformation
   - Async generators
+- Authentication with **JWT**
 - Documentation with **Swagger**
 - Logging with **Winston**
 - Validation using **Zod**
@@ -86,7 +87,7 @@ To make things easier for github users, there in no need for a .env, easier to t
 
 - Launch global tests
 
-  `npm run test`
+  `npm run test:demo`
 
 ## Developer
 
