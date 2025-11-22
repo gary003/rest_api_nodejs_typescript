@@ -7,14 +7,14 @@ import isAdmin from '../../../src/v1/presentation/middlewares/loggedUser/isAdmin
 import isAuthorized from '../../../src/v1/presentation/middlewares/loggedUser/isAuthorized'
 import logger from '../../../src/v1/helpers/logger'
 
-describe('Unit tests - presentation:middlewares:isAdmin', () => {
+describe('Unit tests - presentation:middlewares', () => {
   const sandbox = sinon.createSandbox()
 
   after(() => {
     sandbox.restore()
   })
 
-  describe('src > v1 > presentation > routes > middlewares > loggedUser > isAdmin', () => {
+  describe('src > v1 > presentation > middlewares > loggedUser > isAdmin', () => {
     beforeEach(() => {
       sandbox.restore()
     })
@@ -56,8 +56,6 @@ describe('Unit tests - presentation:middlewares:isAdmin', () => {
 
       isAdmin(mockRequest, mockResponse, nextFunction)
 
-      logger.debug(JSON.stringify(jsStub))
-
       // Assert
       sinon.assert.notCalled(nextFunction)
       sinon.assert.called(mockResponse.status as sinon.SinonStub)
@@ -69,7 +67,7 @@ describe('Unit tests - presentation:middlewares:isAdmin', () => {
     })
   })
 
-  describe('src > v1 > presentation > routes > middlewares > loggedUser > isAuthorized', () => {
+  describe('src > v1 > presentation > middlewares > loggedUser > isAuthorized', () => {
     beforeEach(() => {
       sandbox.restore()
     })
@@ -133,7 +131,7 @@ describe('Unit tests - presentation:middlewares:isAdmin', () => {
       sinon.assert.calledWith(statusStub, 401)
       sinon.assert.calledOnce(jsonStub)
       sinon.assert.calledWith(jsonStub, {
-        message: 'Middleware:isAuthorized, failed to get a valid token'
+        message: 'presentation:middleware:isAuthorized, failed to get a valid token'
       })
     })
 
@@ -160,7 +158,7 @@ describe('Unit tests - presentation:middlewares:isAdmin', () => {
       // Stub jwt.verify to throw TokenExpiredError
       const tokenExpiredError = new jwt.TokenExpiredError('Token expired', expiredAt)
       const jwtVerifyStub = sandbox.stub(jwt, 'verify').throws(tokenExpiredError)
-      const loggerErrorStub = sandbox.stub(logger, 'error')
+      const loggerInfoStub = sandbox.stub(logger, 'info')
 
       // Act
       isAuthorized(mockRequest, mockResponse, nextFunction)
@@ -172,10 +170,10 @@ describe('Unit tests - presentation:middlewares:isAdmin', () => {
       sinon.assert.calledWith(statusStub, 401)
       sinon.assert.calledOnce(jsonStub)
       sinon.assert.calledWith(jsonStub, {
-        message: 'Middleware:isAuthorized - Token expired',
+        message: 'presentation:middleware:isAuthorized - Token expired',
         expiredAt: expiredAt
       })
-      sinon.assert.calledOnce(loggerErrorStub)
+      sinon.assert.calledOnce(loggerInfoStub)
     })
 
     it('Should fail authorization when token is invalid', async () => {
@@ -200,7 +198,7 @@ describe('Unit tests - presentation:middlewares:isAdmin', () => {
       // Stub jwt.verify to throw JsonWebTokenError
       const jsonWebTokenError = new jwt.JsonWebTokenError('Invalid token')
       const jwtVerifyStub = sandbox.stub(jwt, 'verify').throws(jsonWebTokenError)
-      const loggerErrorStub = sandbox.stub(logger, 'error')
+      const loggerInfoStub = sandbox.stub(logger, 'info')
 
       // Act
       isAuthorized(mockRequest, mockResponse, nextFunction)
@@ -212,10 +210,10 @@ describe('Unit tests - presentation:middlewares:isAdmin', () => {
       sinon.assert.calledWith(statusStub, 401)
       sinon.assert.calledOnce(jsonStub)
       sinon.assert.calledWith(jsonStub, {
-        message: 'Middleware:isAuthorized - Invalid token',
+        message: 'presentation:middleware:isAuthorized - Invalid token',
         error: 'Invalid token'
       })
-      sinon.assert.calledOnce(loggerErrorStub)
+      sinon.assert.calledOnce(loggerInfoStub)
     })
 
     it('Should fail authorization with unexpected error', async () => {
@@ -251,7 +249,7 @@ describe('Unit tests - presentation:middlewares:isAdmin', () => {
       sinon.assert.calledWith(statusStub, 401)
       sinon.assert.calledOnce(jsonStub)
       sinon.assert.calledWith(jsonStub, {
-        message: 'Middleware:isAuthorized - Authentication failed'
+        message: 'presentation:middleware:isAuthorized - Authentication failed'
       })
       sinon.assert.calledOnce(loggerErrorStub)
     })
@@ -282,7 +280,7 @@ describe('Unit tests - presentation:middlewares:isAdmin', () => {
       sinon.assert.calledWith(statusStub, 401)
       sinon.assert.calledOnce(jsonStub)
       sinon.assert.calledWith(jsonStub, {
-        message: 'Middleware:isAuthorized, failed to get a valid token'
+        message: 'presentation:middleware:isAuthorized, failed to get a valid token'
       })
     })
   })

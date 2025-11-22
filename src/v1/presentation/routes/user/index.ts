@@ -25,12 +25,12 @@ userRouter
 
     return tracer.startActiveSpan('getAllUsers', spanOptions, async (span: Span) => {
       // Add attributes (tags) to the span
-      span.setAttribute('http.route', '/users')
-
-      // const { traceId } = span.spanContext()
-      // logger.info(`route:userAll - traceId : ${traceId}`)
-
       try {
+        span.setAttribute('http.route', '/users')
+
+        const { traceId, ...rest } = span.spanContext()
+        logger.info(`presentation:routes:getAllUsers - traceId : ${traceId} \n context : ${JSON.stringify(rest, null, 2)}`)
+
         const results = await getAllUsers().catch((err) => err)
 
         if (results instanceof Error) {
@@ -46,7 +46,7 @@ userRouter
       } catch (err) {
         if (err instanceof Error) span.recordException(String(err))
         span.end()
-        const errInfo: string = `route:getAllUsers - Internal Server Error - ${err}`
+        const errInfo: string = `presentation:routes:getAllUsers - Internal Server Error - ${err}`
         return res.status(500).send(errInfo)
       }
     })
@@ -127,7 +127,7 @@ userRouter
 
     return res.status(200).json({ data: result } as apiResponseGetUserType)
   })
-  .delete(validateUserId, isAuthorized, isAdmin, async (req: Request, res: Response) => {
+  .delete(isAuthorized, isAdmin, validateUserId, async (req: Request, res: Response) => {
     const result = await deleteUserById(String(req.params.userId)).catch((err) => err)
 
     if (result instanceof Error) {

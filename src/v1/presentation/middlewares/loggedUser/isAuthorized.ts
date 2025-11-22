@@ -7,7 +7,7 @@ const isAuthorized = (req: Request, res: Response, next: NextFunction) => {
   const token = req.headers['authorization']?.split(' ').at(1)
 
   if (!token) {
-    return res.status(401).json({ message: 'Middleware:isAuthorized, failed to get a valid token' })
+    return res.status(401).json({ message: 'presentation:middleware:isAuthorized, failed to get a valid token' })
   }
 
   try {
@@ -20,23 +20,23 @@ const isAuthorized = (req: Request, res: Response, next: NextFunction) => {
     return next()
   } catch (error) {
     if (error instanceof TokenExpiredError) {
-      logger.error(`Middleware:isAuthorized: Token expired at ${error.expiredAt}`)
+      logger.info(`presentation:middleware:isAuthorized: Token expired at ${error.expiredAt}`)
       return res.status(401).json({
-        message: 'Middleware:isAuthorized - Token expired',
+        message: 'presentation:middleware:isAuthorized - Token expired',
         expiredAt: error.expiredAt
       })
     }
 
     if (error instanceof JsonWebTokenError) {
-      logger.error(`Middleware:isAuthorized: Invalid token - ${error.message}`)
+      logger.info(`presentation:middleware:isAuthorized: Invalid token - ${error.message}`)
       return res.status(401).json({
-        message: 'Middleware:isAuthorized - Invalid token',
+        message: 'presentation:middleware:isAuthorized - Invalid token',
         error: error.message
       })
     }
 
-    logger.error(`Middleware:isAuthorized: Unexpected error - ${error}`)
-    return res.status(401).json({ message: 'Middleware:isAuthorized - Authentication failed' })
+    logger.error(`presentation:middleware:isAuthorized: Unexpected error - ${error}`)
+    return res.status(401).json({ message: 'presentation:middleware:isAuthorized - Authentication failed' })
   }
 }
 
