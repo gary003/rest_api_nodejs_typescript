@@ -115,7 +115,7 @@ const apiDocumentation: OpenAPIObject = {
     }
   },
   paths: {
-    '/auth': {
+    '/auth/getToken': {
       post: {
         tags: ['authorization'],
         summary: 'Create a jwt token for api restricted routes',
@@ -143,7 +143,56 @@ const apiDocumentation: OpenAPIObject = {
             content: {
               'application/json': {
                 schema: {
-                  $ref: '#/components/schemas/User'
+                  type: 'object',
+                  properties: {
+                    accessToken: {
+                      type: 'string'
+                    },
+                    refreshToken: {
+                      type: 'string'
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    '/auth/refreshToken': {
+      post: {
+        tags: ['authorization'],
+        summary: 'Get a new jwt token (refresh) for api restricted routes',
+        description: 'Refresh a jwt token for api restricted routes',
+        // security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['refreshToken'],
+                properties: {
+                  refreshToken: {
+                    type: 'string'
+                  } 
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          '201': {
+            description: 'Token refreshed successfully',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    refreshToken: {
+                      type: 'string'
+                    }
+                  }
                 }
               }
             }

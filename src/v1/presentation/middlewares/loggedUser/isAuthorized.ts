@@ -20,7 +20,7 @@ const isAuthorized = (req: Request, res: Response, next: NextFunction) => {
     return next()
   } catch (error) {
     if (error instanceof TokenExpiredError) {
-      logger.info(`presentation:middleware:isAuthorized: Token expired at ${error.expiredAt}`)
+      logger.info(`presentation:middleware:isAuthorized - Token expired at ${error.expiredAt}`)
       return res.status(401).json({
         message: 'presentation:middleware:isAuthorized - Token expired',
         expiredAt: error.expiredAt
@@ -28,7 +28,7 @@ const isAuthorized = (req: Request, res: Response, next: NextFunction) => {
     }
 
     if (error instanceof JsonWebTokenError) {
-      logger.info(`presentation:middleware:isAuthorized: Invalid token - ${error.message}`)
+      logger.info(`presentation:middleware:isAuthorized - Invalid token - ${error.message}`)
       return res.status(401).json({
         message: 'presentation:middleware:isAuthorized - Invalid token',
         error: error.message

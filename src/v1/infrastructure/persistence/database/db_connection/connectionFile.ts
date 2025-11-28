@@ -1,6 +1,7 @@
 import { DataSourceOptions, QueryRunner, DataSource } from 'typeorm'
 import logger from '../../../../helpers/logger'
 import { v4 as uuidv4 } from 'uuid'
+import { setTimeout } from 'timers/promises'
 
 export type transactionQueryRunnerType = QueryRunner
 
@@ -64,11 +65,10 @@ export const connectionDB = async (currentAttempt: number = 1, maxAttempts: numb
     return await tryToConnectDB() // Attempt to connect
   } catch (error) {
     if (currentAttempt < maxAttempts) {
-      const nextAttempt = currentAttempt + 1 // Increment attempt count
       const waitTime = delay * Math.pow(2, currentAttempt) // Exponential backoff
       logger.warn(`Warning - fail to connect to DB - retry in ${waitTime} seconds`)
-      await new Promise((resolve) => setTimeout(resolve, waitTime)) // Wait before retrying
-      return connectionDB(nextAttempt, maxAttempts, delay) // Retry connection
+      await setTimeout(waitTime) // Wait before retrying
+      return connectionDB(currentAttempt + 1, maxAttempts, delay) // Retry connection
     }
 
     // Throw error if max attempts reached
