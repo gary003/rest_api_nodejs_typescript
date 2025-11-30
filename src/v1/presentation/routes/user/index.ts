@@ -28,8 +28,8 @@ userRouter
       try {
         span.setAttribute('http.route', '/users')
 
-        const { traceId, ...rest } = span.spanContext()
-        logger.info(`presentation:routes:getAllUsers - traceId : ${traceId} \n context : ${JSON.stringify(rest, null, 2)}`)
+        // const { traceId, ...rest } = span.spanContext()
+        // logger.info(`presentation:routes:getAllUsers - traceId : ${traceId} \n context : ${JSON.stringify(rest, null, 2)}`)
 
         const results = await getAllUsers().catch((err) => err)
 

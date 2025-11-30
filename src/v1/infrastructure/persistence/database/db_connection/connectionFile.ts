@@ -103,15 +103,15 @@ export const getConnection = async (): Promise<DataSource> => {
  * @throws {Error} - If closing the connection fails.
  */
 export const closeConnection = async (): Promise<void> => {
-  if (connection && connection.isInitialized) {
-    try {
-      await connection.destroy() // Destroy the connection
-      connection = null // Clear the connection object
-    } catch (error) {
-      const errorMessage = `Error closing database connection - ${String(error)}`
-      logger.error(errorMessage)
-      throw new Error(errorMessage)
-    }
+  if (!connection || !connection.isInitialized) return
+  
+  try {
+    await connection.destroy() // Destroy the connection
+    connection = null // Clear the connection object
+  } catch (error) {
+    const errorMessage = `Error closing database connection - ${String(error)}`
+    logger.error(errorMessage)
+    throw new Error(errorMessage)
   }
 }
 

@@ -10,7 +10,7 @@ authRouter.route('/getToken').post(async (req: Request, res: Response) => {
   try {
     const userInfo = req.body.loggedUser
 
-    logger.debug('presentation:routes:auth:getToken - ' + JSON.stringify(req.body))
+    // logger.debug('presentation:routes:auth:getToken - ' + JSON.stringify(req.body))
 
     const accessToken = jwt.sign(userInfo, process.env.JWT_SECRET_KEY || 'secret', { expiresIn: '60s' })
     const refreshToken = jwt.sign(userInfo, process.env.JWT_REFRESH_SECRET_KEY || 'refresh_secret', { expiresIn: '1d' })
@@ -28,13 +28,13 @@ authRouter.route('/refreshToken').post(isValidRefreshToken, async (req: Request,
     const { refreshToken } = req.body
 
     const response = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET_KEY || 'refresh_secret')
-    
+
     if (response instanceof Error) return res.status(403).send('Invalid Refresh Token')
 
     // Remove exp and iat from user object before signing new token
-    const { exp, iat, ...userInfo } = response as jwt.JwtPayload
+    const { userInfo } = response as jwt.JwtPayload
 
-    logger.debug('presentation:routes:auth:refreshToken - ' + JSON.stringify(response))
+    //logger.debug('presentation:routes:auth:refreshToken - ' + JSON.stringify(response))
 
     const accessToken = jwt.sign(userInfo, process.env.JWT_SECRET_KEY || 'secret', { expiresIn: '15m' })
     return res.status(200).json({ accessToken })
