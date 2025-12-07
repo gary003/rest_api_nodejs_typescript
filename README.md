@@ -7,13 +7,13 @@
 - CI/CD pipeline with **Github actions** && **Docker**
   - docker-compose.yaml
   - Dockerfile
-  - Test, build docker image, deploy docker image to **DockerHub**
-- Testing using **Sinon.js** and **Mocha**
+  - Test, build docker images, deploy docker images to **DockerHub**
+- Testing using **Sinon.js** && **Mocha**
   - Mocks
   - Coverage
   - Unit tests
-  - Integration tests with **Testcontainers** and **Supertest**
-- Persistence with **Typeorm**
+  - Integration tests with **Testcontainers** && **Supertest**
+- Persistence with **Typeorm** && **MySQL** && **Redis**
   - Entities handling
   - Table join
   - Table lock
@@ -48,7 +48,7 @@ To make things easier for github users, there in no need for a .env, easier to t
   !! A docker group must be created, then your user(as a sudoer) musty be added to it.
   Otherwise you'll have trouble launching the tests !!
 
-  Link to install and configure docker properly : https://medium.com/devops-technical-notes-and-manuals/how-to-run-docker-commands-without-sudo-28019814198f
+  Link to install and configure docker properly : <https://medium.com/devops-technical-notes-and-manuals/how-to-run-docker-commands-without-sudo-28019814198f>
 
   Don't forgot to restart your computer or session for the changes to be available on all shells
 
@@ -92,9 +92,9 @@ To make things easier for github users, there in no need for a .env, easier to t
 ## Developer
 
 - Gary Johnson
-  - Mail: gary.johnson.top@gmail.com
-  - Github: https://github.com/gary003
-  - LinkedIn: https://www.linkedin.com/in/gary-johnson-0168b985/
+  - Mail: <gary.johnson.top@gmail.com>
+  - Github: <https://github.com/gary003>
+  - LinkedIn: <https://www.linkedin.com/in/gary-johnson-0168b985/>
 
 ## License
 
