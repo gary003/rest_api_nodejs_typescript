@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { Request, Response, NextFunction } from 'express'
 
-export const validateUserId = async (req: Request, res: Response, next: NextFunction) => {
+export const isValidUserId = async (req: Request, res: Response, next: NextFunction) => {
   const { userId } = req.params
 
   const UserIdScheme = z.string().length(36)

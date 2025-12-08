@@ -1,11 +1,9 @@
 import { NextFunction, Request, Response } from 'express'
 
-const isAdmin = (req: Request, res: Response, next: NextFunction) => {
+export const isAdmin = (req: Request, res: Response, next: NextFunction) => {
   if (req.body.user.role !== 'admin') {
     return res.status(401).json({ message: 'Middleware user:isAdmin - Unauthorized (not an admin user)' })
   }
 
   return next()
 }
-
-export default isAdmin

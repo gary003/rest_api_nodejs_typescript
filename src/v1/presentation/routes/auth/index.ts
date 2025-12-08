@@ -2,7 +2,8 @@ import { Router, Request, Response } from 'express'
 // import logger from '../../../helpers/logger'
 import jwt from 'jsonwebtoken'
 import logger from '../../../helpers/logger'
-import { isValidRefreshToken } from '../../middlewares/validation/route_auth'
+import { isValidRefreshToken } from '../../middlewares/auth/isValidRefreshToken'
+import { storeRefreshToken } from '../../../services/auth'
 
 const authRouter = Router()
 
@@ -12,8 +13,14 @@ authRouter.route('/getToken').post(async (req: Request, res: Response) => {
 
     // logger.debug('presentation:routes:auth:getToken - ' + JSON.stringify(req.body))
 
+    if (!userInfo || !userInfo.id) {
+      return res.status(400).send('presentation:routes:auth:getToken -User ID is required')
+    }
+
     const accessToken = jwt.sign(userInfo, process.env.JWT_SECRET_KEY || 'secret', { expiresIn: '60s' })
     const refreshToken = jwt.sign(userInfo, process.env.JWT_REFRESH_SECRET_KEY || 'refresh_secret', { expiresIn: '1d' })
+
+    await storeRefreshToken(refreshToken, userInfo.id)
 
     return res.status(200).json({ accessToken, refreshToken })
   } catch (err) {

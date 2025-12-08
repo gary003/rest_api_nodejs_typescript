@@ -7,11 +7,11 @@ import { errorAPIUSER } from './error.dto'
 import logger from '../../../helpers/logger'
 import { apiResponseGetAllUserType, apiResponseGetUserType, apiResponseCreateUserType, apiResponseDeleteUserType } from './apiResponse.dto'
 import { userWalletDTO } from '../../../services/user/dto'
-import { validateUserId } from '../../middlewares/validation/route_user'
+import { isValidUserId } from '../../middlewares/user/isValidUserId'
 import { trace, Span, Tracer, SpanOptions } from '@opentelemetry/api'
 
-import isAuthorized from '../../middlewares/loggedUser/isAuthorized'
-import isAdmin from '../../middlewares/loggedUser/isAdmin'
+import { isAuthorized } from '../../middlewares/auth/isAuthorized'
+import { isAdmin } from '../../middlewares/auth/isAdmin'
 
 const userRouter = Router()
 
@@ -117,7 +117,7 @@ userRouter.route('/stream').get(async (_: Request, res: Response) => {
 
 userRouter
   .route('/:userId')
-  .get(validateUserId, async (req: Request, res: Response) => {
+  .get(isValidUserId, async (req: Request, res: Response) => {
     const result = await getUserWalletInfo(String(req.params.userId)).catch((err) => err)
 
     if (result instanceof Error) {
@@ -127,7 +127,7 @@ userRouter
 
     return res.status(200).json({ data: result } as apiResponseGetUserType)
   })
-  .delete(isAuthorized, isAdmin, validateUserId, async (req: Request, res: Response) => {
+  .delete(isAuthorized, isAdmin, isValidUserId, async (req: Request, res: Response) => {
     const result = await deleteUserById(String(req.params.userId)).catch((err) => err)
 
     if (result instanceof Error) {

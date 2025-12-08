@@ -3,8 +3,8 @@ const jwt = require('jsonwebtoken')
 import Sinon, * as sinon from 'sinon'
 import { describe, it } from 'mocha'
 import { Request, Response } from 'express'
-import isAdmin from '../../../src/v1/presentation/middlewares/loggedUser/isAdmin'
-import isAuthorized from '../../../src/v1/presentation/middlewares/loggedUser/isAuthorized'
+import { isAdmin } from '../../../src/v1/presentation/middlewares/auth/isAdmin'
+import { isAuthorized } from '../../../src/v1/presentation/middlewares/auth/isAuthorized'
 import logger from '../../../src/v1/helpers/logger'
 
 describe('Unit tests - presentation:middlewares', () => {

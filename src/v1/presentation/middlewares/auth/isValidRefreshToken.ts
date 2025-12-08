@@ -1,6 +1,8 @@
 import { z } from 'zod'
 import { Request, Response, NextFunction } from 'express'
 
+import { isTokenValid } from '../../../services/auth'
+
 export const isValidRefreshToken = async (req: Request, res: Response, next: NextFunction) => {
   const { refreshToken } = req.body
 
@@ -8,6 +10,15 @@ export const isValidRefreshToken = async (req: Request, res: Response, next: Nex
 
   try {
     RefreshTokenSchema.parse(refreshToken)
+
+    const isValid = await isTokenValid(refreshToken)
+    if (!isValid) {
+      return res.status(401).json({
+        middlewareError: 'Invalid Refresh Token',
+        validationError: 'Token not found or expired'
+      })
+    }
+
     next()
     return
   } catch (err) {

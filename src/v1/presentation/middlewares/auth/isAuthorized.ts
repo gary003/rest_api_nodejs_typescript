@@ -3,7 +3,7 @@ import jwt, { TokenExpiredError, JsonWebTokenError } from 'jsonwebtoken'
 import logger from '../../../helpers/logger'
 // import { loggedUser } from '../../../domain/dto/loggedUser.dto'
 
-const isAuthorized = (req: Request, res: Response, next: NextFunction) => {
+export const isAuthorized = (req: Request, res: Response, next: NextFunction) => {
   const token = req.headers['authorization']?.split(' ').at(1)
 
   if (!token) {
@@ -39,5 +39,3 @@ const isAuthorized = (req: Request, res: Response, next: NextFunction) => {
     return res.status(401).json({ message: 'presentation:middleware:isAuthorized - Authentication failed' })
   }
 }
-
-export default isAuthorized
